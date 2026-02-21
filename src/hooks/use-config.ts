@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useProjectContext } from "@/components/ProjectContext"
 import type { AgentFile, Scope } from "@/shared/types"
 
 const REFETCH_OPTIONS = {
@@ -9,11 +10,13 @@ const REFETCH_OPTIONS = {
 // ── Overview ──────────────────────────────────────────────────────────────────
 
 export function useOverview() {
+  const { activeProjectPath } = useProjectContext()
+
   return useQuery({
-    queryKey: ["overview"],
+    queryKey: ["overview", activeProjectPath],
     queryFn: async () => {
       const { getOverview } = await import("@/server/overview")
-      return getOverview({ data: {} })
+      return getOverview({ data: { projectPath: activeProjectPath } })
     },
     ...REFETCH_OPTIONS,
   })
@@ -22,13 +25,14 @@ export function useOverview() {
 // ── CLAUDE.md ─────────────────────────────────────────────────────────────────
 
 export function useClaudeMd(scope: Scope) {
+  const { activeProjectPath } = useProjectContext()
   const queryClient = useQueryClient()
 
   const query = useQuery({
-    queryKey: ["claude-md", scope],
+    queryKey: ["claude-md", scope, activeProjectPath],
     queryFn: async () => {
       const { getClaudeMdFn } = await import("@/server/claude-md")
-      return getClaudeMdFn({ data: { scope } })
+      return getClaudeMdFn({ data: { scope, projectPath: activeProjectPath } })
     },
     ...REFETCH_OPTIONS,
   })
@@ -36,10 +40,14 @@ export function useClaudeMd(scope: Scope) {
   const mutation = useMutation({
     mutationFn: async (content: string) => {
       const { saveClaudeMdFn } = await import("@/server/claude-md")
-      return saveClaudeMdFn({ data: { scope, content } })
+      return saveClaudeMdFn({
+        data: { scope, content, projectPath: activeProjectPath },
+      })
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["claude-md", scope] })
+      queryClient.invalidateQueries({
+        queryKey: ["claude-md", scope, activeProjectPath],
+      })
       queryClient.invalidateQueries({ queryKey: ["overview"] })
     },
   })
@@ -78,13 +86,14 @@ export function usePlugins() {
 // ── MCP Servers ───────────────────────────────────────────────────────────────
 
 export function useMcpServers() {
+  const { activeProjectPath } = useProjectContext()
   const queryClient = useQueryClient()
 
   const query = useQuery({
-    queryKey: ["mcp-servers"],
+    queryKey: ["mcp-servers", activeProjectPath],
     queryFn: async () => {
       const { getMcpServersFn } = await import("@/server/mcp")
-      return getMcpServersFn({ data: {} })
+      return getMcpServersFn({ data: { projectPath: activeProjectPath } })
     },
     ...REFETCH_OPTIONS,
   })
@@ -99,7 +108,9 @@ export function useMcpServers() {
       scope: Scope
     }) => {
       const { addMcpServerFn } = await import("@/server/mcp")
-      return addMcpServerFn({ data: params })
+      return addMcpServerFn({
+        data: { ...params, projectPath: activeProjectPath },
+      })
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["mcp-servers"] })
@@ -110,7 +121,9 @@ export function useMcpServers() {
   const removeMutation = useMutation({
     mutationFn: async (params: { name: string; scope: Scope }) => {
       const { removeMcpServerFn } = await import("@/server/mcp")
-      return removeMcpServerFn({ data: params })
+      return removeMcpServerFn({
+        data: { ...params, projectPath: activeProjectPath },
+      })
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["mcp-servers"] })
@@ -124,13 +137,16 @@ export function useMcpServers() {
 // ── Agent Files ───────────────────────────────────────────────────────────────
 
 export function useAgentFiles(type: AgentFile["type"]) {
+  const { activeProjectPath } = useProjectContext()
   const queryClient = useQueryClient()
 
   const query = useQuery({
-    queryKey: ["agent-files", type],
+    queryKey: ["agent-files", type, activeProjectPath],
     queryFn: async () => {
       const { getItemsFn } = await import("@/server/items")
-      return getItemsFn({ data: { type } })
+      return getItemsFn({
+        data: { type, projectPath: activeProjectPath },
+      })
     },
     ...REFETCH_OPTIONS,
   })
@@ -142,7 +158,9 @@ export function useAgentFiles(type: AgentFile["type"]) {
       scope: Scope
     }) => {
       const { saveItemFn } = await import("@/server/items")
-      return saveItemFn({ data: { type, ...params } })
+      return saveItemFn({
+        data: { type, ...params, projectPath: activeProjectPath },
+      })
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["agent-files", type] })
@@ -153,7 +171,9 @@ export function useAgentFiles(type: AgentFile["type"]) {
   const deleteMutation = useMutation({
     mutationFn: async (params: { name: string; scope: Scope }) => {
       const { deleteItemFn } = await import("@/server/items")
-      return deleteItemFn({ data: { type, ...params } })
+      return deleteItemFn({
+        data: { type, ...params, projectPath: activeProjectPath },
+      })
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["agent-files", type] })

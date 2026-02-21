@@ -1,11 +1,26 @@
 import { createFileRoute } from "@tanstack/react-router"
-import { AlertCircle, Clock, FileText, HardDrive, Save } from "lucide-react"
+import {
+  AlertCircle,
+  ChevronRight,
+  Clock,
+  FileText,
+  FolderOpen,
+  Globe,
+  HardDrive,
+  Save,
+} from "lucide-react"
 import { useEffect, useState } from "react"
+import { useProjectContext } from "@/components/ProjectContext"
 import { ScopeBadge } from "@/components/ScopeBadge"
 import { Button } from "@/components/ui/button"
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
+import { useClaudeMdFiles } from "@/hooks/use-claude-md-files"
 import { useClaudeMd } from "@/hooks/use-config"
 import { m } from "@/paraglide/messages"
 import type { Scope } from "@/shared/types"
@@ -68,7 +83,6 @@ function ClaudeMdEditor({ scope }: { scope: Scope }) {
 
   return (
     <div className="space-y-4">
-      {/* File metadata */}
       {data && (
         <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
           <div className="flex items-center gap-1">
@@ -92,7 +106,6 @@ function ClaudeMdEditor({ scope }: { scope: Scope }) {
         </p>
       )}
 
-      {/* Editor */}
       <Textarea
         value={content}
         onChange={(e) => handleChange(e.target.value)}
@@ -100,7 +113,6 @@ function ClaudeMdEditor({ scope }: { scope: Scope }) {
         className="font-mono text-sm min-h-[400px] resize-y"
       />
 
-      {/* Save button */}
       <div className="flex items-center justify-between">
         <span className="text-xs text-muted-foreground">
           {isDirty ? "Unsaved changes" : ""}
@@ -126,31 +138,123 @@ function ClaudeMdEditor({ scope }: { scope: Scope }) {
   )
 }
 
+function ProjectClaudeMdFiles() {
+  const { activeProject } = useProjectContext()
+  const { data: files, isLoading } = useClaudeMdFiles()
+
+  if (!activeProject) return null
+
+  if (isLoading) {
+    return (
+      <div className="space-y-2">
+        <Skeleton className="h-4 w-48" />
+        <Skeleton className="h-4 w-36" />
+      </div>
+    )
+  }
+
+  if (!files || files.length === 0) {
+    return (
+      <p className="text-sm text-muted-foreground py-2">
+        No CLAUDE.md files found in this project.
+      </p>
+    )
+  }
+
+  return (
+    <div className="space-y-1">
+      {files.map((file) => (
+        <div
+          key={file.relativePath}
+          className="flex items-center justify-between py-1.5 px-2 rounded-md hover:bg-muted/50 text-sm"
+        >
+          <div className="flex items-center gap-2 min-w-0">
+            <FileText className="w-4 h-4 shrink-0 text-muted-foreground" />
+            <span className="font-mono text-xs truncate">
+              {file.relativePath}
+            </span>
+          </div>
+          <span className="text-xs text-muted-foreground shrink-0 ml-2">
+            {formatFileSize(file.size)}
+          </span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 function ClaudeMdPage() {
+  const { activeProject } = useProjectContext()
+  const [selectedScope, setSelectedScope] = useState<Scope>("global")
+
   return (
     <div>
       <div className="flex items-center gap-3 mb-6">
         <h1 className="text-2xl font-bold">{m.nav_claude_md()}</h1>
       </div>
 
-      <Tabs defaultValue="global">
-        <TabsList className="mb-4">
-          <TabsTrigger value="global" className="gap-2">
-            <ScopeBadge scope="global" />
-          </TabsTrigger>
-          <TabsTrigger value="project" className="gap-2">
-            <ScopeBadge scope="project" />
-          </TabsTrigger>
-        </TabsList>
+      <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-6">
+        {/* Left: File tree */}
+        <div className="space-y-2">
+          {/* Global section */}
+          <Collapsible defaultOpen>
+            <CollapsibleTrigger className="flex items-center gap-2 w-full p-2 rounded-md hover:bg-muted/50 text-sm font-medium [&[data-state=open]>svg:first-child]:rotate-90">
+              <ChevronRight className="size-4 transition-transform" />
+              <Globe className="size-4" />
+              <span>Global</span>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="pl-6">
+              <button
+                type="button"
+                onClick={() => setSelectedScope("global")}
+                className={`flex items-center gap-2 w-full py-1.5 px-2 rounded-md text-sm ${
+                  selectedScope === "global"
+                    ? "bg-muted font-medium"
+                    : "hover:bg-muted/50"
+                }`}
+              >
+                <FileText className="w-4 h-4 text-muted-foreground" />
+                <span className="font-mono text-xs">~/.claude/CLAUDE.md</span>
+              </button>
+            </CollapsibleContent>
+          </Collapsible>
 
-        <TabsContent value="global">
-          <ClaudeMdEditor scope="global" />
-        </TabsContent>
+          {/* Project section */}
+          {activeProject && (
+            <Collapsible defaultOpen>
+              <CollapsibleTrigger className="flex items-center gap-2 w-full p-2 rounded-md hover:bg-muted/50 text-sm font-medium [&[data-state=open]>svg:first-child]:rotate-90">
+                <ChevronRight className="size-4 transition-transform" />
+                <FolderOpen className="size-4" />
+                <span className="truncate">{activeProject.name}</span>
+                <ScopeBadge scope="project" />
+              </CollapsibleTrigger>
+              <CollapsibleContent className="pl-6">
+                <button
+                  type="button"
+                  onClick={() => setSelectedScope("project")}
+                  className={`flex items-center gap-2 w-full py-1.5 px-2 rounded-md text-sm ${
+                    selectedScope === "project"
+                      ? "bg-muted font-medium"
+                      : "hover:bg-muted/50"
+                  }`}
+                >
+                  <FileText className="w-4 h-4 text-muted-foreground" />
+                  <span className="font-mono text-xs">.claude/CLAUDE.md</span>
+                </button>
+                <ProjectClaudeMdFiles />
+              </CollapsibleContent>
+            </Collapsible>
+          )}
+        </div>
 
-        <TabsContent value="project">
-          <ClaudeMdEditor scope="project" />
-        </TabsContent>
-      </Tabs>
+        {/* Right: Editor */}
+        <div>
+          <div className="mb-4">
+            <ScopeBadge scope={selectedScope} />
+          </div>
+          <ClaudeMdEditor scope={selectedScope} />
+        </div>
+      </div>
     </div>
   )
 }

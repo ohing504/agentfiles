@@ -10,6 +10,7 @@ import {
 } from "lucide-react"
 
 import { LanguageSwitcher } from "@/components/LanguageSwitcher"
+import { ProjectSwitcher } from "@/components/ProjectSwitcher"
 import {
   Sidebar,
   SidebarContent,
@@ -39,21 +40,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild>
-              <Link to="/">
-                <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-                  <Sparkles className="size-4" />
-                </div>
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">{m.app_name()}</span>
-                  <span className="truncate text-xs">{m.app_subtitle()}</span>
-                </div>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
+        <ProjectSwitcher />
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
