@@ -431,6 +431,69 @@ export async function getOverview(projectPath?: string): Promise<Overview> {
   }
 }
 
+// ── CLAUDE.md 재귀 탐색 (프로젝트 전체) ──
+
+export interface ClaudeMdFile {
+  relativePath: string // e.g., "src/CLAUDE.md"
+  absolutePath: string
+  size: number
+  lastModified: string
+}
+
+const EXCLUDED_DIRS = new Set([
+  "node_modules",
+  ".git",
+  "dist",
+  ".output",
+  "build",
+  ".next",
+  ".nuxt",
+  ".turbo",
+  "coverage",
+  "__pycache__",
+])
+
+const MAX_SCAN_DEPTH = 5
+
+export async function scanClaudeMdFiles(
+  projectPath: string,
+): Promise<ClaudeMdFile[]> {
+  const results: ClaudeMdFile[] = []
+
+  async function walk(dir: string, depth: number): Promise<void> {
+    if (depth > MAX_SCAN_DEPTH) return
+
+    let entries: Dirent[]
+    try {
+      entries = await fs.readdir(dir, { withFileTypes: true })
+    } catch {
+      return
+    }
+
+    for (const entry of entries) {
+      if (entry.isFile() && entry.name === "CLAUDE.md") {
+        const fullPath = path.join(dir, entry.name)
+        try {
+          const stat = await fs.stat(fullPath)
+          results.push({
+            relativePath: path.relative(projectPath, fullPath),
+            absolutePath: fullPath,
+            size: stat.size,
+            lastModified: stat.mtime.toISOString(),
+          })
+        } catch {
+          // skip unreadable files
+        }
+      } else if (entry.isDirectory() && !EXCLUDED_DIRS.has(entry.name)) {
+        await walk(path.join(dir, entry.name), depth + 1)
+      }
+    }
+  }
+
+  await walk(projectPath, 0)
+  return results
+}
+
 // ── 모든 AgentFile 반환 (타입별) ──
 
 export async function getAgentFiles(
