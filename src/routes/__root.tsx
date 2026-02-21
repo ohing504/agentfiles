@@ -3,6 +3,7 @@ import { createRootRoute, HeadContent, Scripts } from "@tanstack/react-router"
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools"
 
 import { Layout } from "@/components/Layout"
+import { ProjectProvider } from "@/components/ProjectContext"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { getLocale } from "@/paraglide/runtime"
 import appCss from "../styles.css?url"
@@ -44,7 +45,9 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </head>
       <body className="h-full antialiased">
         <TooltipProvider delayDuration={300}>
-          <Layout>{children}</Layout>
+          <ProjectProvider>
+            <Layout>{children}</Layout>
+          </ProjectProvider>
         </TooltipProvider>
         <TanStackDevtools
           config={{

@@ -1,0 +1,47 @@
+import { createContext, useContext } from "react"
+import { useProjects } from "@/hooks/use-projects"
+import type { Project } from "@/shared/types"
+
+interface ProjectContextValue {
+  projects: Project[]
+  activeProject: Project | null
+  activeProjectPath: string | undefined
+  isLoading: boolean
+  setActiveProject: (path: string | null) => void
+  addProject: (path: string) => void
+  removeProject: (path: string) => void
+}
+
+const ProjectContext = createContext<ProjectContextValue | null>(null)
+
+export function ProjectProvider({ children }: { children: React.ReactNode }) {
+  const { query, addMutation, removeMutation, setActiveMutation } =
+    useProjects()
+
+  const projects = query.data?.projects ?? []
+  const activeProjectPath = query.data?.activeProject ?? undefined
+  const activeProject =
+    projects.find((p) => p.path === activeProjectPath) ?? null
+
+  const value: ProjectContextValue = {
+    projects,
+    activeProject,
+    activeProjectPath,
+    isLoading: query.isLoading,
+    setActiveProject: (path) => setActiveMutation.mutate(path),
+    addProject: (path) => addMutation.mutate(path),
+    removeProject: (path) => removeMutation.mutate(path),
+  }
+
+  return (
+    <ProjectContext.Provider value={value}>{children}</ProjectContext.Provider>
+  )
+}
+
+export function useProjectContext() {
+  const context = useContext(ProjectContext)
+  if (!context) {
+    throw new Error("useProjectContext must be used within ProjectProvider")
+  }
+  return context
+}
