@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 agentfiles는 AI 에이전트 설정 파일의 패키지 매니저 + 커뮤니티 플랫폼이다. `npx agentfiles` 실행 시 `localhost:3000`에서 Chrome 앱 모드로 로컬 웹앱이 열리며, `~/.claude/`와 프로젝트별 `.claude/` 설정을 GUI로 관리한다.
 
-현재 상태: Phase 1 완료 (프로젝트 초기화), Phase 2 개발 중
+현재 상태: Phase 2-7 완료 + 코드리뷰 반영 완료, Phase 8 개발 대기
 
 ## Key Documents
 
@@ -62,9 +62,22 @@ src/
     claude-cli.ts            ← CLI 위임
   server/                    ← Server Functions (createServerFn)
     overview.ts              ← getOverview()
+    claude-md.ts             ← getClaudeMdFn, saveClaudeMdFn
+    plugins.ts               ← getPluginsFn, togglePluginFn
+    mcp.ts                   ← getMcpServersFn, addMcpServerFn, removeMcpServerFn
+    items.ts                 ← getItemsFn, getItemFn, saveItemFn, deleteItemFn
+    cli-status.ts            ← getCliStatusFn
+    config.ts                ← 경로 헬퍼, 토큰, CLI 탐색
+    validation.ts            ← 입력 검증 (path traversal 방지)
+    middleware/
+      auth.ts                ← Bearer 토큰 인증 미들웨어
   components/                ← UI 컴포넌트
+    Layout.tsx               ← 사이드바 + 메인 콘텐츠 레이아웃
+    Sidebar.tsx              ← 네비게이션 (7개 메뉴)
+    ScopeBadge.tsx           ← global/project/user 스코프 배지
     ui/                      ← shadcn 컴포넌트
   lib/                       ← 유틸리티
+    auth.ts                  ← 토큰 관리 (추출, 저장, 헤더)
   shared/                    ← 공유 타입
     types.ts
 bin/                         ← CLI 진입점
