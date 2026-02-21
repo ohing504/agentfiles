@@ -116,9 +116,13 @@ tests/                       ← 테스트
 - 보안: 127.0.0.1 바인딩, 랜덤 토큰 인증, CORS 미설정
 - 개발 서버 실행 시 Chrome 앱 모드(`--app`)로 열기
 
-## Development Guideline
+## Development Guidelines
 
 - 개발 시 andrej-karpathy-skills 의 가이드라인을 따를 것
 - context7 을 활용해서 최신 문서 기반으로 official 권장 사항을 따를 것
 - web search, context7 등을 통해 best practice 를 따를 것
 - 확장에 대비하는 것은 좋지만 과도한 오버엔지니어링을 피할 것
+
+### Commit Convention
+- Use English for all commit messages, PR titles, and issue comments
+- Format: `type(scope): description`
