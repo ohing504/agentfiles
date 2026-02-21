@@ -3,6 +3,15 @@
   "type": "module",
   "version": "0.1.0",
   "description": "AI agent configuration file manager and community platform",
+  "license": "MIT",
+  "keywords": [
+    "claude",
+    "agent",
+    "config",
+    "mcp",
+    "plugin",
+    "agentfiles"
+  ],
   "bin": {
     "agentfiles": "./dist/cli.js"
   },
