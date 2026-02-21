@@ -6,13 +6,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 agentfiles는 AI 에이전트 설정 파일의 패키지 매니저 + 커뮤니티 플랫폼이다. `npx agentfiles` 실행 시 `localhost:3000`에서 Chrome 앱 모드로 로컬 웹앱이 열리며, `~/.claude/`와 프로젝트별 `.claude/` 설정을 GUI로 관리한다.
 
-현재 상태: Phase 2-10 완료 (CLI 진입점 구현), Phase 11 (빌드 설정) 개발 대기
+현재 상태: v1 개발 완료 (Phase 1-13 전체 완료)
 
 ## Key Documents
 
-- `PRD.md` — 제품 요구사항 (what)
-- `docs/plans/2026-02-21-agentfiles-v1-design.md` — v1 기술 설계 (how)
-- `docs/plans/2026-02-21-agentfiles-v1-tasks.md` — v1 개발 태스크
+- `docs/FEATURES.md` — 제품 요구사항 및 기능 정의 (what)
+- `docs/ARCHITECTURE.md` — v1 기술 설계 (how)
 
 ## Architecture
 
