@@ -78,3 +78,16 @@ export interface CliStatus {
   version?: string
   reason?: string
 }
+
+// ── Project ──
+export interface Project {
+  path: string
+  name: string
+  addedAt: string // ISO 8601
+  hasClaudeDir?: boolean
+}
+
+export interface ProjectsConfig {
+  projects: Project[]
+  activeProject: string | null // project path or null for Global Only
+}
