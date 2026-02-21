@@ -18,15 +18,20 @@ export function getGlobalConfigPath(): string {
   return path.join(os.homedir(), ".claude")
 }
 
-export function getProjectConfigPath(): string {
-  return path.join(process.cwd(), ".claude")
+export function getProjectConfigPath(projectPath?: string): string {
+  return path.join(projectPath ?? process.cwd(), ".claude")
 }
 
 // ── CLAUDE.md 읽기 ──
 
-export async function getClaudeMd(scope: Scope): Promise<ClaudeMd | null> {
+export async function getClaudeMd(
+  scope: Scope,
+  projectPath?: string,
+): Promise<ClaudeMd | null> {
   const basePath =
-    scope === "global" ? getGlobalConfigPath() : getProjectConfigPath()
+    scope === "global"
+      ? getGlobalConfigPath()
+      : getProjectConfigPath(projectPath)
   const filePath = path.join(basePath, "CLAUDE.md")
 
   try {
@@ -313,10 +318,12 @@ function parseMcpServers(
   return servers
 }
 
-export async function getMcpServers(): Promise<McpServer[]> {
+export async function getMcpServers(
+  projectPath?: string,
+): Promise<McpServer[]> {
   const [globalSettings, projectSettings] = await Promise.all([
     readSettingsJson(getGlobalConfigPath()),
-    readSettingsJson(getProjectConfigPath()),
+    readSettingsJson(getProjectConfigPath(projectPath)),
   ])
 
   const globalServers = globalSettings.mcpServers
@@ -338,9 +345,9 @@ export async function getMcpServers(): Promise<McpServer[]> {
 
 // ── Overview 생성 ──
 
-export async function getOverview(): Promise<Overview> {
+export async function getOverview(projectPath?: string): Promise<Overview> {
   const globalBase = getGlobalConfigPath()
-  const projectBase = getProjectConfigPath()
+  const projectBase = getProjectConfigPath(projectPath)
 
   const [
     globalClaudeMd,
@@ -355,9 +362,9 @@ export async function getOverview(): Promise<Overview> {
     projectSkills,
   ] = await Promise.all([
     getClaudeMd("global"),
-    getClaudeMd("project"),
+    getClaudeMd("project", projectPath),
     getPlugins(),
-    getMcpServers(),
+    getMcpServers(projectPath),
     scanMdDirWithScope(path.join(globalBase, "agents"), "agent", "global"),
     scanMdDirWithScope(path.join(projectBase, "agents"), "agent", "project"),
     scanMdDirWithScope(path.join(globalBase, "commands"), "command", "global"),
@@ -428,9 +435,10 @@ export async function getOverview(): Promise<Overview> {
 
 export async function getAgentFiles(
   type: AgentFile["type"],
+  projectPath?: string,
 ): Promise<AgentFile[]> {
   const globalBase = getGlobalConfigPath()
-  const projectBase = getProjectConfigPath()
+  const projectBase = getProjectConfigPath(projectPath)
 
   const dirName = `${type}s` // 'agent' → 'agents', 'command' → 'commands', 'skill' → 'skills'
 
