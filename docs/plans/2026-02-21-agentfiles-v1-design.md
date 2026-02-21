@@ -28,47 +28,61 @@ VS Code Extension 대신 로컬 웹앱을 선택한 이유:
 │                     Browser (React SPA)                  │
 │                                                          │
 │  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌───────────┐  │
-│  │Dashboard │ │ Explorer │ │  Detail  │ │ Conflict  │  │
-│  │  Page    │ │  Page    │ │  Page    │ │   Page    │  │
-│  └────┬─────┘ └────┬─────┘ └────┬─────┘ └─────┬─────┘  │
-│       └─────────────┴────────────┴─────────────┘        │
+│  │Dashboard │ │ Explorer │ │  Detail  │               │
+│  │  Page    │ │  Page    │ │  Page    │               │
+│  └────┬─────┘ └────┬─────┘ └────┬─────┘               │
+│       └─────────────┴────────────┘                     │
 │                         │                                │
 │                    React Query                           │
 │                    (데이터 fetching + 캐시)                │
 └─────────────────────────┬───────────────────────────────┘
                           │ HTTP REST API
-                          │ + WebSocket (파일 변경 실시간 알림)
 ┌─────────────────────────┴───────────────────────────────┐
 │                  Local Server (Hono)                      │
 │                                                          │
 │  ┌─────────────────────────────────────────────────┐    │
 │  │                 ConfigService                    │    │
 │  │                                                  │    │
-│  │  ┌──────────┐ ┌──────────┐ ┌──────────────┐    │    │
-│  │  │ Claude   │ │ Plugin   │ │   Skill      │    │    │
-│  │  │ MdParser │ │ Scanner  │ │   Scanner    │    │    │
-│  │  └──────────┘ └──────────┘ └──────────────┘    │    │
-│  │  ┌──────────┐ ┌──────────┐ ┌──────────────┐    │    │
-│  │  │  MCP     │ │ Command  │ │  Conflict    │    │    │
-│  │  │ Scanner  │ │ Scanner  │ │  Detector    │    │    │
-│  │  └──────────┘ └──────────┘ └──────────────┘    │    │
+│  │  ┌───────────────────┐ ┌───────────────────┐    │    │
+│  │  │  scanMdDir()      │ │ parseJsonConfig() │    │    │
+│  │  │  (agents,commands,│ │ (plugins, mcp,    │    │    │
+│  │  │   skills,CLAUDE.md│ │  settings.json)   │    │    │
+│  │  │   + frontmatter)  │ │                   │    │    │
+│  │  └───────────────────┘ └───────────────────┘    │    │
 │  └─────────────────────────────────────────────────┘    │
 │                                                          │
-│  ┌──────────────┐  ┌──────────────┐                     │
-│  │  FileWatcher  │  │  FileWriter   │                    │
-│  │  (chokidar)   │  │  (CRUD ops)   │                    │
-│  └──────┬────────┘  └──────────────┘                     │
-└─────────┴────────────────────────────────────────────────┘
-          │
-    ~/.claude/  +  .claude/  (파일시스템)
+│  ┌──────────────┐  ┌───────────────┐                      │
+│  │  FileWriter   │  │  Claude CLI    │                     │
+│  │  (md 직접편집) │  │  (MCP/Plugin)  │                     │
+│  └──────┬────────┘  └───────┬───────┘                      │
+└─────────┴───────────────────┴──────────────────────────────┘
+          │                   │
+    ~/.claude/  +  .claude/   claude CLI
 ```
+
+### 읽기/쓰기 하이브리드 전략
+
+Claude Code CLI(`claude mcp`, `claude plugin` 등)는 대화형 TUI를 렌더링하여 구조화된 데이터 출력이 불가하다. 반면 쓰기 명령(`add`, `remove`, `enable`, `disable`)은 비대화형으로 동작한다. 이를 활용한 하이브리드 전략:
+
+| 작업 | 방법 | 이유 |
+|------|------|------|
+| **읽기** (목록 조회, 대시보드) | 파일 직접 파싱 | CLI가 JSON 출력 미지원. 파일 직접 읽기가 빠름 |
+| **마크다운 편집** (CLAUDE.md, agents, commands, skills) | 파일 직접 쓰기 | 단순 텍스트 파일이므로 직접 편집이 자연스러움 |
+| **MCP 서버 추가/삭제** | `claude mcp add/remove` CLI 위임 | settings.json 직접 수정 시 Claude Code와 race condition 위험 |
+| **플러그인 토글** | `claude plugin enable/disable` CLI 위임 | installed_plugins.json 포맷 변경에 안전 |
+
+**CLI 위임의 장점:**
+- Claude Code가 자체적으로 유효성 검증을 수행
+- 파일 포맷 변경 시에도 CLI가 호환성을 보장
+- 직접 JSON 수정으로 인한 Claude Code 설정 손상 방지
 
 ### 핵심 데이터 흐름
 
 1. 서버 시작 → ConfigService가 `~/.claude/` + `.claude/` 스캔
-2. FileWatcher가 파일 변경 감시 → WebSocket으로 브라우저에 push
-3. 브라우저에서 CRUD 요청 → REST API → FileWriter가 파일 생성/수정/삭제
-4. React Query가 캐시 관리 + WebSocket 이벤트로 자동 invalidation
+2. 브라우저에서 읽기 요청 → REST API → ConfigService가 파일 직접 파싱
+3. 브라우저에서 마크다운 편집 → REST API → FileWriter가 파일 직접 저장
+4. 브라우저에서 MCP/Plugin 조작 → REST API → Claude CLI 위임 (`claude mcp add/remove`, `claude plugin enable/disable`)
+5. React Query가 캐시 관리 (`refetchOnWindowFocus` + `refetchInterval`로 최신 상태 유지)
 
 ---
 
@@ -85,21 +99,11 @@ agentfiles/
 │  ├─ server/
 │  │  ├─ index.ts                  ← 서버 진입점
 │  │  ├─ router.ts                 ← API 라우트 정의
-│  │  ├─ ws.ts                     ← WebSocket 핸들러
 │  │  │
 │  │  ├─ services/
-│  │  │  ├─ config-service.ts      ← 통합 설정 조회
-│  │  │  ├─ file-watcher.ts        ← chokidar 파일 감시
-│  │  │  └─ file-writer.ts         ← CRUD 파일 작업
-│  │  │
-│  │  ├─ scanners/
-│  │  │  ├─ claude-md.ts           ← CLAUDE.md 메타정보
-│  │  │  ├─ plugin-scanner.ts      ← installed_plugins.json
-│  │  │  ├─ mcp-scanner.ts         ← settings.json mcpServers
-│  │  │  ├─ skill-scanner.ts       ← skills/ symlink + frontmatter
-│  │  │  ├─ command-scanner.ts     ← commands/**/*.md
-│  │  │  ├─ agent-scanner.ts       ← agents/**/*.md
-│  │  │  └─ conflict-detector.ts   ← 글로벌 ↔ 프로젝트 충돌
+│  │  │  ├─ config-service.ts      ← 모든 읽기 로직 (md 스캔 + json 파싱)
+│  │  │  ├─ file-writer.ts         ← 마크다운 파일 직접 편집
+│  │  │  └─ claude-cli.ts          ← MCP/Plugin CLI 위임 (child_process)
 │  │  │
 │  │  └─ routes/
 │  │     ├─ overview.ts
@@ -108,29 +112,24 @@ agentfiles/
 │  │     ├─ agents.ts
 │  │     ├─ commands.ts
 │  │     ├─ skills.ts
-│  │     ├─ files.ts
-│  │     └─ conflicts.ts
+│  │     └─ files.ts
 │  │
 │  ├─ web/
 │  │  ├─ main.tsx
 │  │  ├─ App.tsx
 │  │  ├─ hooks/
-│  │  │  ├─ use-config.ts          ← React Query 훅
-│  │  │  └─ use-websocket.ts       ← WebSocket 연결
+│  │  │  └─ use-config.ts          ← TanStack Query 훅 + Hono RPC (hc)
 │  │  ├─ pages/
 │  │  │  ├─ Dashboard.tsx
 │  │  │  ├─ Explorer.tsx
 │  │  │  ├─ PluginDetail.tsx
 │  │  │  ├─ McpDetail.tsx
-│  │  │  └─ ConflictView.tsx
 │  │  ├─ components/
 │  │  │  ├─ ui/                    ← shadcn 컴포넌트
 │  │  │  ├─ Sidebar.tsx
 │  │  │  ├─ FileTree.tsx
-│  │  │  ├─ ScopeBadge.tsx
-│  │  │  └─ ConflictBanner.tsx
+│  │  │  └─ ScopeBadge.tsx         ← 충돌 시 badge 표시 포함
 │  │  └─ lib/
-│  │     └─ api-client.ts
 │  │
 │  └─ shared/
 │     └─ types.ts
@@ -203,15 +202,6 @@ interface AgentFile {
   symlinkTarget?: string;
 }
 
-// ── 충돌 ──
-interface Conflict {
-  type: 'agent' | 'command' | 'skill' | 'plugin' | 'mcp';
-  name: string;
-  global: { path: string; scope: 'global' };
-  project: { path: string; scope: 'project' };
-  resolution?: 'use-global' | 'use-project' | 'unresolved';
-}
-
 // ── 대시보드 ──
 interface Overview {
   claudeMd: { global?: ClaudeMd; project?: ClaudeMd };
@@ -220,15 +210,9 @@ interface Overview {
   agents: { total: number; global: number; project: number };
   commands: { total: number; global: number; project: number };
   skills: { total: number; global: number; project: number };
-  conflicts: Conflict[];
-  recentChanges: { path: string; type: string; changedAt: Date }[];
+  conflictCount: number;  // 글로벌 ↔ 프로젝트 동일 이름 항목 수
 }
 
-// ── WebSocket ──
-type WsEvent =
-  | { type: 'file-changed'; path: string; changeType: 'add' | 'change' | 'unlink' }
-  | { type: 'config-updated'; section: string }
-  | { type: 'conflict-detected'; conflict: Conflict };
 ```
 
 ---
@@ -240,43 +224,21 @@ type WsEvent =
 ```
 GET    /api/overview                    ← 대시보드 전체 데이터
 
-GET    /api/files/claude-md             ← 글로벌+프로젝트 CLAUDE.md 메타
-GET    /api/files/claude-md/:scope/content  ← 내용 읽기
-PUT    /api/files/claude-md/:scope/content  ← 내용 저장
+GET    /api/claude-md/:scope            ← CLAUDE.md 메타 + 내용
+PUT    /api/claude-md/:scope            ← CLAUDE.md 저장
 
 GET    /api/plugins                     ← 전체 플러그인 목록
-GET    /api/plugins/:id                 ← 플러그인 상세
-PUT    /api/plugins/:id/toggle          ← enable/disable
+PUT    /api/plugins/:id/toggle          ← enable/disable (CLI 위임)
 
 GET    /api/mcp                         ← MCP 서버 목록
-GET    /api/mcp/:name                   ← MCP 상세
-PUT    /api/mcp/:name                   ← MCP 수정
-DELETE /api/mcp/:name                   ← MCP 제거
+POST   /api/mcp                         ← MCP 추가 (CLI 위임)
+DELETE /api/mcp/:name                   ← MCP 제거 (CLI 위임)
 
 GET    /api/:type                       ← 목록 (agents|commands|skills)
 GET    /api/:type/:name                 ← 상세 + 내용
 POST   /api/:type                       ← 생성
 PUT    /api/:type/:name                 ← 수정
 DELETE /api/:type/:name?scope=          ← 삭제
-POST   /api/:type/:name/copy            ← 스코프 간 복사
-POST   /api/:type/:name/move            ← 스코프 간 이동
-
-GET    /api/conflicts                   ← 충돌 목록
-```
-
-### WebSocket
-
-```
-ws://localhost:4321/ws
-
-Server → Client:
-  { type: "file-changed", path, changeType }
-  { type: "config-updated", section }
-  { type: "conflict-detected", conflict }
-
-Client → Server:
-  { type: "subscribe", paths: string[] }
-  { type: "unsubscribe", paths: string[] }
 ```
 
 ---
@@ -287,25 +249,24 @@ Client → Server:
 
 ```
 /                       → Dashboard
-/global/claude-md       → CLAUDE.md 편집
-/global/commands        → Commands 목록
-/global/plugins         → Plugins 목록
-/global/plugins/:id     → Plugin 상세
-/global/mcp             → MCP Servers 목록
-/global/mcp/:name       → MCP 상세
-/project/claude-md      → Project CLAUDE.md
-/project/agents         → Agents 목록
-/project/agents/:name   → Agent 상세
-/conflicts              → 충돌 목록
-/conflicts/:id          → 충돌 비교
+/claude-md?scope=global → CLAUDE.md 편집 (scope로 글로벌/프로젝트 전환)
+/plugins                → Plugins 목록
+/plugins/:id            → Plugin 상세
+/mcp                    → MCP 목록
+/mcp/:name              → MCP 상세
+/agents                 → Agents 목록 (글로벌+프로젝트 통합, ScopeBadge 구분)
+/agents/:name           → Agent 상세
+/commands               → Commands 목록
+/skills                 → Skills 목록
 ```
 
-### Webview 패널 (4개)
+### 주요 페이지 (3개)
 
-1. **Dashboard** — 전체 요약 (카운트 카드, 충돌 경고, 최근 변경)
+1. **Dashboard** — 전체 요약 (카운트 카드, 충돌 badge 표시)
 2. **Plugin Detail** — 버전, 스코프, 포함된 skills, enable/disable
 3. **MCP Server Detail** — command, args, env, 스코프, 상태
-4. **Conflict View** — 글로벌 vs 프로젝트 side-by-side 비교
+
+> 충돌(글로벌 ↔ 프로젝트 동일 이름)은 각 항목 목록에서 ScopeBadge로 표시. 전용 페이지 불필요.
 
 ### 사이드바 동작
 
@@ -329,12 +290,11 @@ Client → Server:
 | 런타임 | Node.js ≥ 20 |
 | 언어 | TypeScript (strict) |
 | 패키지 매니저 | pnpm |
-| 서버 | Hono |
+| 서버 | Hono (RPC로 타입 안전한 클라이언트 제공) |
 | 서버 실행 | tsx (개발), tsup (빌드) |
-| 파일 감시 | chokidar v4 |
 | 프론트엔드 | React 19 |
 | 빌드 | Vite |
-| 라우팅 | React Router v7 |
+| 라우팅 | TanStack Router |
 | 데이터 페칭 | TanStack Query |
 | UI 컴포넌트 | shadcn/ui |
 | 스타일링 | Tailwind CSS v4 |
@@ -345,16 +305,27 @@ Client → Server:
 
 ---
 
-## 8. 실행 흐름
+## 8. 보안
+
+로컬 앱이지만 HTTP 서버가 열리므로 최소한의 보안 가드레일 적용:
+
+1. **`127.0.0.1` 바인딩** — 외부 네트워크에서 접근 불가
+2. **랜덤 토큰 인증** — 서버 시작 시 1회용 토큰 생성, URL 파라미터로 브라우저에 전달 (`localhost:4321?token=abc123`), 이후 모든 API 요청에 `Authorization: Bearer` 헤더 필요
+3. **CORS 차단** — `Access-Control-Allow-Origin`을 설정하지 않아 다른 출처의 fetch 차단
+
+> 이 3가지로 악성 탭에서의 CSRF/무단 접근을 방지한다.
+
+---
+
+## 9. 실행 흐름
 
 ### CLI (`npx agentfiles`)
 
 1. `bin/cli.ts` 실행
 2. 현재 디렉토리에서 `.claude/` 탐지 → projectPath 결정
 3. Hono 서버 시작 (`localhost:4321`)
-4. chokidar로 `~/.claude/` + `.claude/` 감시 시작
-5. `open` 패키지로 브라우저 자동 열기
-6. `Ctrl+C`로 종료
+4. `open` 패키지로 브라우저 자동 열기
+5. `Ctrl+C`로 종료
 
 ### 개발 (`pnpm dev`)
 
@@ -364,7 +335,7 @@ Client → Server:
 
 ---
 
-## 9. 실제 ~/.claude/ 파일 구조 (참조)
+## 10. 실제 ~/.claude/ 파일 구조 (참조)
 
 설계 근거가 된 실제 파일 구조:
 
@@ -377,25 +348,26 @@ Client → Server:
 │     ├─ commit.md
 │     └─ review-pr.md
 ├─ skills/
-│  └─ find-skills -> ~/.agents/skills/find-skills  ← symlink
+│  └─ find-skills -> ~/.agents/skills/find-skills  ← symlink (또는 hard copy)
 ├─ plugins/
 │  ├─ installed_plugins.json          ← 모든 플러그인 메타데이터
 │  ├─ config.json
 │  ├─ blocklist.json
 │  └─ cache/                          ← 마켓플레이스별 캐시
-└─ .agents/                           ← skills 실제 파일 위치
-   └─ skills/find-skills/SKILL.md
+
+~/.agents/                            ← skills.sh가 설치하는 별도 디렉토리
+└─ skills/find-skills/SKILL.md
 ```
 
 ---
 
-## 10. v2 확장 계획
+## 11. v2 확장 계획
 
 이 설계는 다음 확장을 고려하여 만들어짐:
 
 - **v2:** `config-service.ts`에 skills.sh API 클라이언트 추가, UI에 레지스트리 탭 추가
 - **v3:** 서버를 클라우드 배포, 인증 레이어 추가, 같은 React 코드 재사용
-- **v4:** `scanners/`에 cursor-scanner.ts, kiro-scanner.ts 등 추가
+- **v4:** `config-service.ts`에 Cursor, Kiro 등 멀티 에이전트 파싱 로직 추가
 
 ---
 
