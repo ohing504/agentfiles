@@ -1,5 +1,7 @@
 {
   "app_name": "agentfiles",
+  "app_subtitle": "에이전트 설정 관리자",
+  "nav_group_label": "메뉴",
   "nav_dashboard": "대시보드",
   "nav_claude_md": "CLAUDE.md",
   "nav_plugins": "플러그인",

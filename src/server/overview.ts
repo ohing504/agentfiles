@@ -1,9 +1,9 @@
-import { createServerFn } from '@tanstack/react-start'
+import { createServerFn } from "@tanstack/react-start"
 
-export const getOverview = createServerFn({ method: 'GET' }).handler(
+export const getOverview = createServerFn({ method: "GET" }).handler(
   async () => {
     const { getOverview: getOverviewService } = await import(
-      '@/services/config-service'
+      "@/services/config-service"
     )
     return getOverviewService()
   },

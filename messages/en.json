@@ -1,5 +1,7 @@
 {
   "app_name": "agentfiles",
+  "app_subtitle": "Agent Config Manager",
+  "nav_group_label": "Navigation",
   "nav_dashboard": "Dashboard",
   "nav_claude_md": "CLAUDE.md",
   "nav_plugins": "Plugins",

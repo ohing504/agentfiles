@@ -1,5 +1,5 @@
 // ── 스코프 ──
-export type Scope = 'global' | 'project'
+export type Scope = "global" | "project"
 
 // ── CLAUDE.md ──
 export interface ClaudeMd {
@@ -15,7 +15,7 @@ export interface Plugin {
   id: string // "superpowers@claude-plugins-official"
   name: string
   marketplace: string
-  scope: 'user' | 'project'
+  scope: "user" | "project"
   projectPath?: string
   version: string
   installedAt: string
@@ -29,7 +29,7 @@ export interface Plugin {
 export interface McpServer {
   name: string
   scope: Scope
-  type: 'stdio' | 'sse' | 'streamable-http'
+  type: "stdio" | "sse" | "streamable-http"
   command?: string
   args?: string[]
   url?: string
@@ -50,7 +50,7 @@ export interface AgentFile {
   }
   size: number
   lastModified: string // ISO 8601
-  type: 'agent' | 'command' | 'skill'
+  type: "agent" | "command" | "skill"
   isSymlink?: boolean
   symlinkTarget?: string
 }

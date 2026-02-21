@@ -1,9 +1,9 @@
-import { AlertTriangle } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
-import { m } from '@/paraglide/messages'
+import { AlertTriangle } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { m } from "@/paraglide/messages"
 
 interface ScopeBadgeProps {
-  scope: 'global' | 'project' | 'user'
+  scope: "global" | "project" | "user"
   hasConflict?: boolean
 }
 
@@ -15,9 +15,9 @@ const scopeLabelFn: Record<string, () => string> = {
 
 export function ScopeBadge({ scope, hasConflict }: ScopeBadgeProps) {
   const variantMap: Record<string, string> = {
-    global: 'bg-blue-100 text-blue-800 border-blue-200',
-    project: 'bg-green-100 text-green-800 border-green-200',
-    user: 'bg-purple-100 text-purple-800 border-purple-200',
+    global: "bg-blue-100 text-blue-800 border-blue-200",
+    project: "bg-green-100 text-green-800 border-green-200",
+    user: "bg-purple-100 text-purple-800 border-purple-200",
   }
 
   return (

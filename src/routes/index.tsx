@@ -1,23 +1,23 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
-import { Bot, FileText, Puzzle, Server, Sparkles, Terminal } from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { m } from '@/paraglide/messages'
+import { createFileRoute, Link } from "@tanstack/react-router"
+import { Bot, FileText, Puzzle, Server, Sparkles, Terminal } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { m } from "@/paraglide/messages"
 
-export const Route = createFileRoute('/')({ component: DashboardPage })
+export const Route = createFileRoute("/")({ component: DashboardPage })
 
 const cards = [
-  { to: '/plugins', icon: Puzzle, labelFn: () => m.nav_plugins(), count: 0 },
-  { to: '/mcp', icon: Server, labelFn: () => m.nav_mcp_servers(), count: 0 },
-  { to: '/agents', icon: Bot, labelFn: () => m.nav_agents(), count: 0 },
+  { to: "/plugins", icon: Puzzle, labelFn: () => m.nav_plugins(), count: 0 },
+  { to: "/mcp", icon: Server, labelFn: () => m.nav_mcp_servers(), count: 0 },
+  { to: "/agents", icon: Bot, labelFn: () => m.nav_agents(), count: 0 },
   {
-    to: '/commands',
+    to: "/commands",
     icon: Terminal,
     labelFn: () => m.nav_commands(),
     count: 0,
   },
-  { to: '/skills', icon: Sparkles, labelFn: () => m.nav_skills(), count: 0 },
+  { to: "/skills", icon: Sparkles, labelFn: () => m.nav_skills(), count: 0 },
   {
-    to: '/claude-md',
+    to: "/claude-md",
     icon: FileText,
     labelFn: () => m.nav_claude_md(),
     count: 0,

@@ -7,7 +7,13 @@
   },
   "files": {
     "ignoreUnknown": true,
-    "includes": ["**/*.ts", "**/*.tsx", "**/*.json", "!src/routeTree.gen.ts"]
+    "includes": [
+      "**/*.ts",
+      "**/*.tsx",
+      "**/*.json",
+      "!src/routeTree.gen.ts",
+      "!src/components/ui"
+    ]
   },
   "formatter": {
     "enabled": true,
@@ -22,28 +28,10 @@
   },
   "javascript": {
     "formatter": {
-      "quoteStyle": "single",
+      "quoteStyle": "double",
       "semicolons": "asNeeded"
     }
   },
-  "overrides": [
-    {
-      "includes": ["src/components/ui/**"],
-      "linter": {
-        "rules": {
-          "a11y": {
-            "noRedundantAlt": "off",
-            "useSemanticElements": "off",
-            "useKeyWithClickEvents": "off"
-          },
-          "suspicious": {
-            "noArrayIndexKey": "off",
-            "noDoubleEquals": "off"
-          }
-        }
-      }
-    }
-  ],
   "assist": {
     "enabled": true,
     "actions": {

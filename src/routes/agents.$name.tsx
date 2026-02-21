@@ -1,7 +1,7 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { m } from '@/paraglide/messages'
+import { createFileRoute } from "@tanstack/react-router"
+import { m } from "@/paraglide/messages"
 
-export const Route = createFileRoute('/agents/$name')({
+export const Route = createFileRoute("/agents/$name")({
   component: AgentDetailPage,
 })
 

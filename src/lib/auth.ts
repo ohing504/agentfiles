@@ -1,22 +1,22 @@
 export function extractTokenFromUrl(): string | null {
-  if (typeof window === 'undefined') return null
+  if (typeof window === "undefined") return null
   const params = new URLSearchParams(window.location.search)
-  return params.get('token')
+  return params.get("token")
 }
 
 export function storeToken(token: string): void {
-  localStorage.setItem('agentfiles-token', token)
+  localStorage.setItem("agentfiles-token", token)
 }
 
 export function getStoredToken(): string | null {
-  if (typeof window === 'undefined') return null
-  return localStorage.getItem('agentfiles-token')
+  if (typeof window === "undefined") return null
+  return localStorage.getItem("agentfiles-token")
 }
 
 export function clearUrlToken(): void {
   const url = new URL(window.location.href)
-  url.searchParams.delete('token')
-  window.history.replaceState({}, '', url.toString())
+  url.searchParams.delete("token")
+  window.history.replaceState({}, "", url.toString())
 }
 
 export function initAuth(): void {

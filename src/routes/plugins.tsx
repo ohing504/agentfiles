@@ -1,7 +1,7 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { m } from '@/paraglide/messages'
+import { createFileRoute } from "@tanstack/react-router"
+import { m } from "@/paraglide/messages"
 
-export const Route = createFileRoute('/plugins')({ component: PluginsPage })
+export const Route = createFileRoute("/plugins")({ component: PluginsPage })
 
 function PluginsPage() {
   return (

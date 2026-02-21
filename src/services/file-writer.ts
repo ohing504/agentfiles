@@ -1,5 +1,5 @@
-import fs from 'node:fs/promises'
-import path from 'node:path'
+import fs from "node:fs/promises"
+import path from "node:path"
 
 export async function writeMarkdown(
   filePath: string,
@@ -7,7 +7,7 @@ export async function writeMarkdown(
 ): Promise<void> {
   const dir = path.dirname(filePath)
   await fs.mkdir(dir, { recursive: true })
-  await fs.writeFile(filePath, content, 'utf-8')
+  await fs.writeFile(filePath, content, "utf-8")
 }
 
 export async function createFile(
@@ -17,7 +17,7 @@ export async function createFile(
 ): Promise<string> {
   await fs.mkdir(basePath, { recursive: true })
   const filePath = path.join(basePath, `${name}.md`)
-  await fs.writeFile(filePath, content, 'utf-8')
+  await fs.writeFile(filePath, content, "utf-8")
   return filePath
 }
 
