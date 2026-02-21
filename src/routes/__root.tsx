@@ -18,6 +18,10 @@ export const Route = createRootRoute({
         content: "width=device-width, initial-scale=1",
       },
       {
+        name: "description",
+        content: "Manage your Claude Code agent configuration files",
+      },
+      {
         title: "agentfiles",
       },
     ],
@@ -34,12 +38,12 @@ export const Route = createRootRoute({
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
-    <html lang={getLocale()}>
+    <html lang={getLocale()} className="h-full">
       <head>
         <HeadContent />
       </head>
-      <body>
-        <TooltipProvider>
+      <body className="h-full antialiased">
+        <TooltipProvider delayDuration={300}>
           <Layout>{children}</Layout>
         </TooltipProvider>
         <TanStackDevtools

@@ -35,9 +35,9 @@ const navItems = [
   { to: "/skills", icon: Sparkles, labelFn: () => m.nav_skills() },
 ] as const
 
-export function AppSidebar() {
+export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
   return (
-    <Sidebar collapsible="icon">
+    <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
@@ -47,17 +47,14 @@ export function AppSidebar() {
                   <Sparkles className="size-4" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">{m.app_name()}</span>
-                  <span className="truncate text-xs text-sidebar-foreground/60">
-                    {m.app_subtitle()}
-                  </span>
+                  <span className="truncate font-medium">{m.app_name()}</span>
+                  <span className="truncate text-xs">{m.app_subtitle()}</span>
                 </div>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
-
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>{m.nav_group_label()}</SidebarGroupLabel>
@@ -70,7 +67,6 @@ export function AppSidebar() {
                       to={to}
                       activeProps={{
                         "data-active": true,
-                        className: "font-medium",
                       }}
                       activeOptions={to === "/" ? { exact: true } : undefined}
                     >
@@ -84,11 +80,9 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-
       <SidebarFooter>
         <LanguageSwitcher />
       </SidebarFooter>
-
       <SidebarRail />
     </Sidebar>
   )
