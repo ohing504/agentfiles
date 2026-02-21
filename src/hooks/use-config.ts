@@ -13,7 +13,7 @@ export function useOverview() {
     queryKey: ["overview"],
     queryFn: async () => {
       const { getOverview } = await import("@/server/overview")
-      return getOverview()
+      return getOverview({ data: {} })
     },
     ...REFETCH_OPTIONS,
   })
@@ -84,7 +84,7 @@ export function useMcpServers() {
     queryKey: ["mcp-servers"],
     queryFn: async () => {
       const { getMcpServersFn } = await import("@/server/mcp")
-      return getMcpServersFn()
+      return getMcpServersFn({ data: {} })
     },
     ...REFETCH_OPTIONS,
   })

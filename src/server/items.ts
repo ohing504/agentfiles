@@ -2,22 +2,40 @@ import { createServerFn } from "@tanstack/react-start"
 import type { AgentFile, Scope } from "@/shared/types"
 
 export const getItemsFn = createServerFn({ method: "GET" })
-  .inputValidator((data: { type: AgentFile["type"] }) => data)
-  // @ts-expect-error -- AgentFile.frontmatter index signature incompatible with TanStack Start serialization
-  .handler(async ({ data }: { data: { type: AgentFile["type"] } }) => {
-    const { getAgentFiles } = await import("@/services/config-service")
-    return getAgentFiles(data.type)
-  })
+  .inputValidator(
+    (data: { type: AgentFile["type"]; projectPath?: string }) => data,
+  )
+  .handler(
+    // @ts-expect-error -- AgentFile.frontmatter index signature incompatible with TanStack Start serialization
+    async ({
+      data,
+    }: {
+      data: { type: AgentFile["type"]; projectPath?: string }
+    }) => {
+      const { getAgentFiles } = await import("@/services/config-service")
+      return getAgentFiles(data.type, data.projectPath)
+    },
+  )
 
 export const getItemFn = createServerFn({ method: "GET" })
   .inputValidator(
-    (data: { type: AgentFile["type"]; name: string; scope: Scope }) => data,
+    (data: {
+      type: AgentFile["type"]
+      name: string
+      scope: Scope
+      projectPath?: string
+    }) => data,
   )
   .handler(
     async ({
       data,
     }: {
-      data: { type: AgentFile["type"]; name: string; scope: Scope }
+      data: {
+        type: AgentFile["type"]
+        name: string
+        scope: Scope
+        projectPath?: string
+      }
     }) => {
       const fs = await import("node:fs/promises")
       const path = await import("node:path")
@@ -27,7 +45,7 @@ export const getItemFn = createServerFn({ method: "GET" })
 
       validateItemName(data.name)
 
-      const files = await getAgentFiles(data.type)
+      const files = await getAgentFiles(data.type, data.projectPath)
       const file = files.find(
         (f) => f.name === data.name && f.scope === data.scope,
       )
@@ -36,7 +54,7 @@ export const getItemFn = createServerFn({ method: "GET" })
         const basePath =
           data.scope === "global"
             ? getGlobalConfigPath()
-            : getProjectConfigPath()
+            : getProjectConfigPath(data.projectPath)
         const dirName = `${data.type}s`
         const filePath = path.join(basePath, dirName, `${data.name}.md`)
         try {
@@ -68,6 +86,7 @@ export const saveItemFn = createServerFn({ method: "POST" })
       name: string
       content: string
       scope: Scope
+      projectPath?: string
     }) => data,
   )
   .handler(
@@ -79,6 +98,7 @@ export const saveItemFn = createServerFn({ method: "POST" })
         name: string
         content: string
         scope: Scope
+        projectPath?: string
       }
     }) => {
       const path = await import("node:path")
@@ -91,7 +111,9 @@ export const saveItemFn = createServerFn({ method: "POST" })
       validateItemName(data.name)
 
       const basePath =
-        data.scope === "global" ? getGlobalConfigPath() : getProjectConfigPath()
+        data.scope === "global"
+          ? getGlobalConfigPath()
+          : getProjectConfigPath(data.projectPath)
       const dirName = `${data.type}s`
       const filePath = path.join(basePath, dirName, `${data.name}.md`)
       await writeMarkdown(filePath, data.content)
@@ -101,13 +123,23 @@ export const saveItemFn = createServerFn({ method: "POST" })
 
 export const deleteItemFn = createServerFn({ method: "POST" })
   .inputValidator(
-    (data: { type: AgentFile["type"]; name: string; scope: Scope }) => data,
+    (data: {
+      type: AgentFile["type"]
+      name: string
+      scope: Scope
+      projectPath?: string
+    }) => data,
   )
   .handler(
     async ({
       data,
     }: {
-      data: { type: AgentFile["type"]; name: string; scope: Scope }
+      data: {
+        type: AgentFile["type"]
+        name: string
+        scope: Scope
+        projectPath?: string
+      }
     }) => {
       const path = await import("node:path")
       const { getGlobalConfigPath, getProjectConfigPath } = await import(
@@ -119,7 +151,9 @@ export const deleteItemFn = createServerFn({ method: "POST" })
       validateItemName(data.name)
 
       const basePath =
-        data.scope === "global" ? getGlobalConfigPath() : getProjectConfigPath()
+        data.scope === "global"
+          ? getGlobalConfigPath()
+          : getProjectConfigPath(data.projectPath)
       const dirName = `${data.type}s`
       const filePath = path.join(basePath, dirName, `${data.name}.md`)
       await deleteFile(filePath)

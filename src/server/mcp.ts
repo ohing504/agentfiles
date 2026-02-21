@@ -1,12 +1,12 @@
 import { createServerFn } from "@tanstack/react-start"
 import type { Scope } from "@/shared/types"
 
-export const getMcpServersFn = createServerFn({ method: "GET" }).handler(
-  async () => {
+export const getMcpServersFn = createServerFn({ method: "GET" })
+  .inputValidator((data: { projectPath?: string }) => data)
+  .handler(async ({ data }: { data: { projectPath?: string } }) => {
     const { getMcpServers } = await import("@/services/config-service")
-    return getMcpServers()
-  },
-)
+    return getMcpServers(data.projectPath)
+  })
 
 export const addMcpServerFn = createServerFn({ method: "POST" })
   .inputValidator(
@@ -17,6 +17,7 @@ export const addMcpServerFn = createServerFn({ method: "POST" })
       url?: string
       env?: Record<string, string>
       scope: Scope
+      projectPath?: string
     }) => data,
   )
   .handler(
@@ -30,6 +31,7 @@ export const addMcpServerFn = createServerFn({ method: "POST" })
         url?: string
         env?: Record<string, string>
         scope: Scope
+        projectPath?: string
       }
     }) => {
       const { mcpAdd } = await import("@/services/claude-cli")
@@ -43,9 +45,17 @@ export const addMcpServerFn = createServerFn({ method: "POST" })
   )
 
 export const removeMcpServerFn = createServerFn({ method: "POST" })
-  .inputValidator((data: { name: string; scope: Scope }) => data)
-  .handler(async ({ data }: { data: { name: string; scope: Scope } }) => {
-    const { mcpRemove } = await import("@/services/claude-cli")
-    await mcpRemove(data.name, data.scope)
-    return { success: true }
-  })
+  .inputValidator(
+    (data: { name: string; scope: Scope; projectPath?: string }) => data,
+  )
+  .handler(
+    async ({
+      data,
+    }: {
+      data: { name: string; scope: Scope; projectPath?: string }
+    }) => {
+      const { mcpRemove } = await import("@/services/claude-cli")
+      await mcpRemove(data.name, data.scope)
+      return { success: true }
+    },
+  )
