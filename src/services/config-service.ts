@@ -1,7 +1,8 @@
-import fs from 'node:fs/promises'
-import os from 'node:os'
-import path from 'node:path'
-import matter from 'gray-matter'
+import type { Dirent } from "node:fs"
+import fs from "node:fs/promises"
+import os from "node:os"
+import path from "node:path"
+import matter from "gray-matter"
 import type {
   AgentFile,
   ClaudeMd,
@@ -9,28 +10,28 @@ import type {
   Overview,
   Plugin,
   Scope,
-} from '@/shared/types'
+} from "@/shared/types"
 
 // ── 경로 헬퍼 ──
 
 export function getGlobalConfigPath(): string {
-  return path.join(os.homedir(), '.claude')
+  return path.join(os.homedir(), ".claude")
 }
 
 export function getProjectConfigPath(): string {
-  return path.join(process.cwd(), '.claude')
+  return path.join(process.cwd(), ".claude")
 }
 
 // ── CLAUDE.md 읽기 ──
 
 export async function getClaudeMd(scope: Scope): Promise<ClaudeMd | null> {
   const basePath =
-    scope === 'global' ? getGlobalConfigPath() : getProjectConfigPath()
-  const filePath = path.join(basePath, 'CLAUDE.md')
+    scope === "global" ? getGlobalConfigPath() : getProjectConfigPath()
+  const filePath = path.join(basePath, "CLAUDE.md")
 
   try {
     const [content, stat] = await Promise.all([
-      fs.readFile(filePath, 'utf-8'),
+      fs.readFile(filePath, "utf-8"),
       fs.stat(filePath),
     ])
 
@@ -42,7 +43,7 @@ export async function getClaudeMd(scope: Scope): Promise<ClaudeMd | null> {
       lastModified: stat.mtime.toISOString(),
     }
   } catch (err) {
-    if ((err as NodeJS.ErrnoException).code === 'ENOENT') {
+    if ((err as NodeJS.ErrnoException).code === "ENOENT") {
       return null
     }
     throw err
@@ -53,17 +54,20 @@ export async function getClaudeMd(scope: Scope): Promise<ClaudeMd | null> {
 
 export async function scanMdDir(
   basePath: string,
-  type: AgentFile['type'],
+  type: AgentFile["type"],
 ): Promise<AgentFile[]> {
   const results: AgentFile[] = []
 
   async function walk(dir: string, namespace?: string): Promise<void> {
-    let entries: Awaited<ReturnType<typeof fs.readdir>>
+    let entries: Dirent[]
 
     try {
-      entries = await fs.readdir(dir, { withFileTypes: true })
+      entries = await fs.readdir(dir, {
+        withFileTypes: true,
+        encoding: "utf-8",
+      })
     } catch (err) {
-      if ((err as NodeJS.ErrnoException).code === 'ENOENT') {
+      if ((err as NodeJS.ErrnoException).code === "ENOENT") {
         return
       }
       throw err
@@ -77,20 +81,20 @@ export async function scanMdDir(
         await walk(fullPath, entry.name)
       } else if (entry.isSymbolicLink()) {
         // symlink 처리
-        if (entry.name.endsWith('.md')) {
+        if (entry.name.endsWith(".md")) {
           try {
             const [symlinkTarget, lstat, content] = await Promise.all([
               fs.readlink(fullPath),
               fs.lstat(fullPath),
-              fs.readFile(fullPath, 'utf-8').catch(() => ''),
+              fs.readFile(fullPath, "utf-8").catch(() => ""),
             ])
 
             const parsed = matter(content)
-            const name = entry.name.replace(/\.md$/, '')
+            const name = entry.name.replace(/\.md$/, "")
 
             results.push({
               name,
-              scope: 'global',
+              scope: "global",
               path: fullPath,
               namespace,
               frontmatter:
@@ -116,19 +120,19 @@ export async function scanMdDir(
             // 무효한 symlink 무시
           }
         }
-      } else if (entry.isFile() && entry.name.endsWith('.md')) {
+      } else if (entry.isFile() && entry.name.endsWith(".md")) {
         try {
           const [content, stat] = await Promise.all([
-            fs.readFile(fullPath, 'utf-8'),
+            fs.readFile(fullPath, "utf-8"),
             fs.stat(fullPath),
           ])
 
           const parsed = matter(content)
-          const name = entry.name.replace(/\.md$/, '')
+          const name = entry.name.replace(/\.md$/, "")
 
           results.push({
             name,
-            scope: 'global',
+            scope: "global",
             path: fullPath,
             namespace,
             frontmatter:
@@ -153,7 +157,7 @@ export async function scanMdDir(
 
 async function scanMdDirWithScope(
   basePath: string,
-  type: AgentFile['type'],
+  type: AgentFile["type"],
   scope: Scope,
 ): Promise<AgentFile[]> {
   const files = await scanMdDir(basePath, type)
@@ -165,9 +169,9 @@ async function scanMdDirWithScope(
 async function readSettingsJson(
   basePath: string,
 ): Promise<Record<string, unknown>> {
-  const settingsPath = path.join(basePath, 'settings.json')
+  const settingsPath = path.join(basePath, "settings.json")
   try {
-    const content = await fs.readFile(settingsPath, 'utf-8')
+    const content = await fs.readFile(settingsPath, "utf-8")
     return JSON.parse(content) as Record<string, unknown>
   } catch {
     return {}
@@ -180,16 +184,16 @@ export async function getPlugins(): Promise<Plugin[]> {
   const globalBase = getGlobalConfigPath()
   const pluginsJsonPath = path.join(
     globalBase,
-    'plugins',
-    'installed_plugins.json',
+    "plugins",
+    "installed_plugins.json",
   )
 
   let rawData: Record<string, unknown> = {}
   try {
-    const content = await fs.readFile(pluginsJsonPath, 'utf-8')
+    const content = await fs.readFile(pluginsJsonPath, "utf-8")
     rawData = JSON.parse(content) as Record<string, unknown>
   } catch (err) {
-    if ((err as NodeJS.ErrnoException).code === 'ENOENT') {
+    if ((err as NodeJS.ErrnoException).code === "ENOENT") {
       return []
     }
     throw err
@@ -204,7 +208,7 @@ export async function getPlugins(): Promise<Plugin[]> {
     if (Array.isArray(enabledPlugins)) {
       return (enabledPlugins as string[]).includes(id)
     }
-    if (enabledPlugins && typeof enabledPlugins === 'object') {
+    if (enabledPlugins && typeof enabledPlugins === "object") {
       return (enabledPlugins as Record<string, boolean>)[id] === true
     }
     return false
@@ -216,7 +220,7 @@ export async function getPlugins(): Promise<Plugin[]> {
   if (
     rawData.version === 2 &&
     rawData.plugins &&
-    typeof rawData.plugins === 'object'
+    typeof rawData.plugins === "object"
   ) {
     const pluginsMap = rawData.plugins as Record<string, unknown[]>
 
@@ -224,24 +228,24 @@ export async function getPlugins(): Promise<Plugin[]> {
       if (!Array.isArray(entries)) continue
 
       for (const entry of entries) {
-        if (typeof entry !== 'object' || entry === null) continue
+        if (typeof entry !== "object" || entry === null) continue
 
         const e = entry as Record<string, unknown>
-        const [name, marketplace] = pluginId.includes('@')
-          ? pluginId.split('@')
-          : [pluginId, '']
+        const [name, marketplace] = pluginId.includes("@")
+          ? pluginId.split("@")
+          : [pluginId, ""]
 
         plugins.push({
           id: pluginId,
           name: name ?? pluginId,
-          marketplace: marketplace ?? '',
-          scope: (e.scope as 'user' | 'project') ?? 'user',
+          marketplace: marketplace ?? "",
+          scope: (e.scope as "user" | "project") ?? "user",
           projectPath: e.projectPath as string | undefined,
-          version: (e.version as string) ?? '',
-          installedAt: (e.installedAt as string) ?? '',
-          lastUpdated: (e.lastUpdated as string) ?? '',
-          gitCommitSha: (e.gitCommitSha as string) ?? '',
-          installPath: (e.installPath as string) ?? '',
+          version: (e.version as string) ?? "",
+          installedAt: (e.installedAt as string) ?? "",
+          lastUpdated: (e.lastUpdated as string) ?? "",
+          gitCommitSha: (e.gitCommitSha as string) ?? "",
+          installPath: (e.installPath as string) ?? "",
           enabled: isEnabled(pluginId),
         })
       }
@@ -249,19 +253,19 @@ export async function getPlugins(): Promise<Plugin[]> {
   } else if (Array.isArray(rawData)) {
     // 레거시 배열 형태
     for (const entry of rawData as Record<string, unknown>[]) {
-      if (typeof entry !== 'object' || entry === null) continue
-      const id = (entry.id as string) ?? ''
+      if (typeof entry !== "object" || entry === null) continue
+      const id = (entry.id as string) ?? ""
       plugins.push({
         id,
         name: (entry.name as string) ?? id,
-        marketplace: (entry.marketplace as string) ?? '',
-        scope: (entry.scope as 'user' | 'project') ?? 'user',
+        marketplace: (entry.marketplace as string) ?? "",
+        scope: (entry.scope as "user" | "project") ?? "user",
         projectPath: entry.projectPath as string | undefined,
-        version: (entry.version as string) ?? '',
-        installedAt: (entry.installedAt as string) ?? '',
-        lastUpdated: (entry.lastUpdated as string) ?? '',
-        gitCommitSha: (entry.gitCommitSha as string) ?? '',
-        installPath: (entry.installPath as string) ?? '',
+        version: (entry.version as string) ?? "",
+        installedAt: (entry.installedAt as string) ?? "",
+        lastUpdated: (entry.lastUpdated as string) ?? "",
+        gitCommitSha: (entry.gitCommitSha as string) ?? "",
+        installPath: (entry.installPath as string) ?? "",
         enabled: isEnabled(id),
       })
     }
@@ -279,19 +283,19 @@ function parseMcpServers(
   const servers: McpServer[] = []
 
   for (const [name, config] of Object.entries(mcpServersRaw)) {
-    if (typeof config !== 'object' || config === null) continue
+    if (typeof config !== "object" || config === null) continue
 
     const c = config as Record<string, unknown>
 
-    let type: McpServer['type']
+    let type: McpServer["type"]
     if (c.command) {
-      type = 'stdio'
+      type = "stdio"
     } else if (c.url) {
       // streamable-http vs sse 구분: transportType 필드가 있으면 사용
       const transportType = c.transportType as string | undefined
-      type = transportType === 'streamable-http' ? 'streamable-http' : 'sse'
+      type = transportType === "streamable-http" ? "streamable-http" : "sse"
     } else {
-      type = 'stdio'
+      type = "stdio"
     }
 
     servers.push({
@@ -318,14 +322,14 @@ export async function getMcpServers(): Promise<McpServer[]> {
   const globalServers = globalSettings.mcpServers
     ? parseMcpServers(
         globalSettings.mcpServers as Record<string, unknown>,
-        'global',
+        "global",
       )
     : []
 
   const projectServers = projectSettings.mcpServers
     ? parseMcpServers(
         projectSettings.mcpServers as Record<string, unknown>,
-        'project',
+        "project",
       )
     : []
 
@@ -350,20 +354,20 @@ export async function getOverview(): Promise<Overview> {
     globalSkills,
     projectSkills,
   ] = await Promise.all([
-    getClaudeMd('global'),
-    getClaudeMd('project'),
+    getClaudeMd("global"),
+    getClaudeMd("project"),
     getPlugins(),
     getMcpServers(),
-    scanMdDirWithScope(path.join(globalBase, 'agents'), 'agent', 'global'),
-    scanMdDirWithScope(path.join(projectBase, 'agents'), 'agent', 'project'),
-    scanMdDirWithScope(path.join(globalBase, 'commands'), 'command', 'global'),
+    scanMdDirWithScope(path.join(globalBase, "agents"), "agent", "global"),
+    scanMdDirWithScope(path.join(projectBase, "agents"), "agent", "project"),
+    scanMdDirWithScope(path.join(globalBase, "commands"), "command", "global"),
     scanMdDirWithScope(
-      path.join(projectBase, 'commands'),
-      'command',
-      'project',
+      path.join(projectBase, "commands"),
+      "command",
+      "project",
     ),
-    scanMdDirWithScope(path.join(globalBase, 'skills'), 'skill', 'global'),
-    scanMdDirWithScope(path.join(projectBase, 'skills'), 'skill', 'project'),
+    scanMdDirWithScope(path.join(globalBase, "skills"), "skill", "global"),
+    scanMdDirWithScope(path.join(projectBase, "skills"), "skill", "project"),
   ])
 
   // 충돌 감지: 양쪽에 동일 name이 있는 항목 수
@@ -380,11 +384,11 @@ export async function getOverview(): Promise<Overview> {
     countConflicts(globalCommands, projectCommands) +
     countConflicts(globalSkills, projectSkills)
 
-  const globalMcpCount = mcpServers.filter((s) => s.scope === 'global').length
-  const projectMcpCount = mcpServers.filter((s) => s.scope === 'project').length
+  const globalMcpCount = mcpServers.filter((s) => s.scope === "global").length
+  const projectMcpCount = mcpServers.filter((s) => s.scope === "project").length
 
-  const userPluginCount = plugins.filter((p) => p.scope === 'user').length
-  const projectPluginCount = plugins.filter((p) => p.scope === 'project').length
+  const userPluginCount = plugins.filter((p) => p.scope === "user").length
+  const projectPluginCount = plugins.filter((p) => p.scope === "project").length
 
   return {
     claudeMd: {
@@ -423,7 +427,7 @@ export async function getOverview(): Promise<Overview> {
 // ── 모든 AgentFile 반환 (타입별) ──
 
 export async function getAgentFiles(
-  type: AgentFile['type'],
+  type: AgentFile["type"],
 ): Promise<AgentFile[]> {
   const globalBase = getGlobalConfigPath()
   const projectBase = getProjectConfigPath()
@@ -431,8 +435,8 @@ export async function getAgentFiles(
   const dirName = `${type}s` // 'agent' → 'agents', 'command' → 'commands', 'skill' → 'skills'
 
   const [globalFiles, projectFiles] = await Promise.all([
-    scanMdDirWithScope(path.join(globalBase, dirName), type, 'global'),
-    scanMdDirWithScope(path.join(projectBase, dirName), type, 'project'),
+    scanMdDirWithScope(path.join(globalBase, dirName), type, "global"),
+    scanMdDirWithScope(path.join(projectBase, dirName), type, "project"),
   ])
 
   return [...globalFiles, ...projectFiles]

@@ -45,6 +45,7 @@ pnpm build        # 프로덕션 빌드 (Vinxi/Nitro)
 pnpm test         # Vitest 실행
 pnpm lint         # Biome check
 pnpm lint:fix     # Biome check --write
+pnpm typecheck    # TypeScript 타입 체크 (tsc --noEmit)
 ```
 
 ## Project Structure
@@ -84,6 +85,15 @@ bin/                         ← CLI 진입점
   cli.ts
 tests/                       ← 테스트
 ```
+
+## Quality Checks (작업 완료 전 필수)
+
+코드 변경 후 커밋 전에 반드시 다음을 확인:
+
+1. `pnpm lint` — Biome 린트 통과
+2. `pnpm typecheck` — TypeScript 타입 체크 통과
+3. `pnpm test` — 테스트 통과
+4. `pnpm build` — 프로덕션 빌드 성공
 
 ## Conventions
 
