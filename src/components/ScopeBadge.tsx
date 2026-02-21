@@ -1,9 +1,16 @@
 import { AlertTriangle } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
+import { m } from '@/paraglide/messages'
 
 interface ScopeBadgeProps {
   scope: 'global' | 'project' | 'user'
   hasConflict?: boolean
+}
+
+const scopeLabelFn: Record<string, () => string> = {
+  global: () => m.scope_global(),
+  project: () => m.scope_project(),
+  user: () => m.scope_user(),
 }
 
 export function ScopeBadge({ scope, hasConflict }: ScopeBadgeProps) {
@@ -13,18 +20,12 @@ export function ScopeBadge({ scope, hasConflict }: ScopeBadgeProps) {
     user: 'bg-purple-100 text-purple-800 border-purple-200',
   }
 
-  const labelMap: Record<string, string> = {
-    global: 'global',
-    project: 'project',
-    user: 'user',
-  }
-
   return (
     <Badge
       className={`${variantMap[scope]} flex items-center gap-1 w-fit`}
       variant="outline"
     >
-      {labelMap[scope]}
+      {scopeLabelFn[scope]()}
       {hasConflict && <AlertTriangle className="w-3 h-3 ml-1" />}
     </Badge>
   )

@@ -1,0 +1,19 @@
+{
+  "app_name": "agentfiles",
+  "nav_dashboard": "대시보드",
+  "nav_claude_md": "CLAUDE.md",
+  "nav_plugins": "플러그인",
+  "nav_mcp_servers": "MCP 서버",
+  "nav_agents": "에이전트",
+  "nav_commands": "명령어",
+  "nav_skills": "스킬",
+  "scope_global": "글로벌",
+  "scope_project": "프로젝트",
+  "scope_user": "사용자",
+  "detail_mcp_server": "MCP 서버: {name}",
+  "detail_agent": "에이전트: {name}",
+  "detail_plugin": "플러그인: {name}",
+  "app_coming_soon": "Phase 9에서 구현 예정",
+  "app_language_en": "EN",
+  "app_language_ko": "한국어"
+}

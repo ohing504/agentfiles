@@ -21,6 +21,9 @@ dist-ssr/
 # worktrees
 .worktrees/
 
+# paraglide generated
+src/paraglide/
+
 # misc
 .DS_Store
 .wrangler/

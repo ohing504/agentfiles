@@ -1,0 +1,19 @@
+{
+  "app_name": "agentfiles",
+  "nav_dashboard": "Dashboard",
+  "nav_claude_md": "CLAUDE.md",
+  "nav_plugins": "Plugins",
+  "nav_mcp_servers": "MCP Servers",
+  "nav_agents": "Agents",
+  "nav_commands": "Commands",
+  "nav_skills": "Skills",
+  "scope_global": "global",
+  "scope_project": "project",
+  "scope_user": "user",
+  "detail_mcp_server": "MCP Server: {name}",
+  "detail_agent": "Agent: {name}",
+  "detail_plugin": "Plugin: {name}",
+  "app_coming_soon": "Coming in Phase 9",
+  "app_language_en": "EN",
+  "app_language_ko": "한국어"
+}
