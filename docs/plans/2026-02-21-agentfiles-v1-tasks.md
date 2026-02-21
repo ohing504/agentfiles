@@ -313,14 +313,14 @@ tests/
 
 ### 8-1. `src/hooks/use-config.ts`
 
-- [ ] Server Functions (`createServerFn`) 직접 호출 (Hono RPC 대신)
-- [ ] `useOverview()` — `getOverviewFn()` 호출, 대시보드 데이터
-- [ ] `useClaudeMd(scope)` — `getClaudeMdFn()` + `saveClaudeMdFn()` mutation
-- [ ] `usePlugins()` — `getPluginsFn()` + `togglePluginFn()` mutation
-- [ ] `useMcpServers()` — `getMcpServersFn()` + add/remove mutation
-- [ ] `useAgentFiles(type)` — `getItemsFn()` + CRUD mutation (`saveItemFn`, `deleteItemFn`)
-- [ ] `useCliStatus()` — `getCliStatusFn()` 호출
-- [ ] 공통 Query 옵션: `refetchOnWindowFocus: true`, `refetchInterval: 5000`
+- [x] Server Functions (`createServerFn`) 직접 호출 (Hono RPC 대신)
+- [x] `useOverview()` — `getOverviewFn()` 호출, 대시보드 데이터
+- [x] `useClaudeMd(scope)` — `getClaudeMdFn()` + `saveClaudeMdFn()` mutation
+- [x] `usePlugins()` — `getPluginsFn()` + `togglePluginFn()` mutation
+- [x] `useMcpServers()` — `getMcpServersFn()` + add/remove mutation
+- [x] `useAgentFiles(type)` — `getItemsFn()` + CRUD mutation (`saveItemFn`, `deleteItemFn`)
+- [x] `useCliStatus()` — `getCliStatusFn()` 호출
+- [x] 공통 Query 옵션: `refetchOnWindowFocus: true`, `refetchInterval: 5000`
 
 ### 완료 기준
 - React DevTools에서 Query 캐시 확인
@@ -334,39 +334,39 @@ tests/
 **목표:** 모든 UI 페이지 구현
 
 ### 9-1. Dashboard (`/`)
-- [ ] 카운트 카드: Plugins, MCP Servers, Agents, Commands, Skills
-- [ ] 각 카드에 글로벌/프로젝트 수 표시
-- [ ] 충돌 수 경고 badge
-- [ ] CLI 상태 표시 (설치됨/미설치)
-- [ ] 각 카드 클릭 → 해당 목록 페이지 이동
+- [x] 카운트 카드: Plugins, MCP Servers, Agents, Commands, Skills
+- [x] 각 카드에 글로벌/프로젝트 수 표시
+- [x] 충돌 수 경고 badge
+- [x] CLI 상태 표시 (설치됨/미설치)
+- [x] 각 카드 클릭 → 해당 목록 페이지 이동
 
 ### 9-2. CLAUDE.md Editor (`/claude-md?scope=global`)
-- [ ] 스코프 전환 탭 (Global / Project)
-- [ ] textarea 기반 마크다운 편집
-- [ ] 저장 버튼 (수동 저장)
-- [ ] 파일 메타 표시 (크기, 수정일)
-- [ ] 파일 미존재 시 생성 안내
+- [x] 스코프 전환 탭 (Global / Project)
+- [x] textarea 기반 마크다운 편집
+- [x] 저장 버튼 (수동 저장)
+- [x] 파일 메타 표시 (크기, 수정일)
+- [x] 파일 미존재 시 생성 안내
 
 ### 9-3. Plugin 관련 페이지
-- [ ] `PluginList.tsx` (`/plugins`) — 목록 + ScopeBadge + enable/disable 토글
-- [ ] `PluginDetail.tsx` (`/plugins/:id`) — 상세 정보 (버전, 경로, 포함 skills)
+- [x] `PluginList.tsx` (`/plugins`) — 목록 + ScopeBadge + enable/disable 토글
+- [x] `PluginDetail.tsx` (`/plugins/:id`) — 상세 정보 (버전, 경로, 포함 skills)
 
 ### 9-4. MCP 관련 페이지
-- [ ] `McpList.tsx` (`/mcp`) — 목록 + ScopeBadge + 타입 표시
-- [ ] `McpDetail.tsx` (`/mcp/:name`) — command, args, env 표시
-- [ ] MCP 추가 폼: name, command, args(배열), env(key-value), scope 선택
+- [x] `McpList.tsx` (`/mcp`) — 목록 + ScopeBadge + 타입 표시
+- [x] `McpDetail.tsx` (`/mcp/:name`) — command, args, env 표시
+- [x] MCP 추가 폼: name, command, args(배열), env(key-value), scope 선택
 
 ### 9-5. Agents 페이지
-- [ ] `AgentList.tsx` (`/agents`) — 글로벌+프로젝트 통합, ScopeBadge 구분
-- [ ] `AgentDetail.tsx` (`/agents/:name`) — frontmatter + 내용 편집
+- [x] `AgentList.tsx` (`/agents`) — 글로벌+프로젝트 통합, ScopeBadge 구분
+- [x] `AgentDetail.tsx` (`/agents/:name`) — frontmatter + 내용 편집
 
 ### 9-6. Commands 페이지
-- [ ] `CommandList.tsx` (`/commands`) — 동일 패턴
-- [ ] `CommandDetail.tsx` (`/commands/:name`) — 네임스페이스 표시 포함
+- [x] `CommandList.tsx` (`/commands`) — 동일 패턴
+- [x] `CommandDetail.tsx` (`/commands/:name`) — 네임스페이스 표시 포함
 
 ### 9-7. Skills 페이지
-- [ ] `SkillList.tsx` (`/skills`) — symlink 여부 표시
-- [ ] `SkillDetail.tsx` (`/skills/:name`) — symlinkTarget 표시
+- [x] `SkillList.tsx` (`/skills`) — symlink 여부 표시
+- [x] `SkillDetail.tsx` (`/skills/:name`) — symlinkTarget 표시
 
 ### 완료 기준
 - 모든 페이지에서 CRUD 동작 확인
@@ -382,18 +382,18 @@ tests/
 
 ### 10-1. `bin/cli.ts`
 
-- [ ] shebang: `#!/usr/bin/env node`
-- [ ] 현재 디렉토리에서 `.claude/` 탐지
+- [x] shebang: `#!/usr/bin/env node`
+- [x] 현재 디렉토리에서 `.claude/` 탐지
   - 없으면 글로벌 전용 모드 (projectPath = null)
   - `--project <path>` 옵션으로 수동 지정 가능
-- [ ] Claude CLI 존재 여부 확인
+- [x] Claude CLI 존재 여부 확인
   - 없으면 경고 메시지 출력 + 읽기 전용 모드 알림
-- [ ] 랜덤 토큰 생성 (`crypto.randomUUID()`)
-- [ ] Vinxi/Nitro 서버 시작 (`127.0.0.1:3000`)
+- [x] 랜덤 토큰 생성 (`crypto.randomUUID()`)
+- [x] Vinxi/Nitro 서버 시작 (`127.0.0.1:3000`)
   - 포트 충돌 시 3001, 3002... 순차 탐색
-- [ ] `open` 패키지로 브라우저 열기 (`http://127.0.0.1:4321?token=xxx`)
-- [ ] 터미널에 접속 URL 출력
-- [ ] `Ctrl+C` → graceful shutdown (서버 종료)
+- [x] `open` 패키지로 브라우저 열기 (`http://127.0.0.1:4321?token=xxx`)
+- [x] 터미널에 접속 URL 출력
+- [x] `Ctrl+C` → graceful shutdown (서버 종료)
 
 ### 완료 기준
 - `npx agentfiles` 실행 → 브라우저 자동 열림

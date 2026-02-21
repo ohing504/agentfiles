@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 agentfiles는 AI 에이전트 설정 파일의 패키지 매니저 + 커뮤니티 플랫폼이다. `npx agentfiles` 실행 시 `localhost:3000`에서 Chrome 앱 모드로 로컬 웹앱이 열리며, `~/.claude/`와 프로젝트별 `.claude/` 설정을 GUI로 관리한다.
 
-현재 상태: Phase 2-7 완료 + 코드리뷰 반영 완료, Phase 8 개발 대기
+현재 상태: Phase 2-10 완료 (CLI 진입점 구현), Phase 11 (빌드 설정) 개발 대기
 
 ## Key Documents
 
@@ -42,6 +42,7 @@ Browser (React SSR) → Server Functions → 파일시스템
 ```bash
 pnpm dev          # 개발 서버 (Vinxi dev, localhost:3000)
 pnpm build        # 프로덕션 빌드 (Vinxi/Nitro)
+pnpm start        # CLI 실행 (빌드 후 프로덕션 서버 + 브라우저)
 pnpm test         # Vitest 실행
 pnpm lint         # Biome check
 pnpm lint:fix     # Biome check --write
@@ -55,6 +56,17 @@ src/
   routes/                    ← TanStack Start 파일 기반 라우팅
     __root.tsx               ← 루트 레이아웃
     index.tsx                ← Dashboard (/)
+    claude-md.tsx            ← CLAUDE.md 에디터 (스코프 탭 + textarea)
+    plugins.tsx              ← Plugin 목록 (토글 스위치)
+    plugins.$id.tsx          ← Plugin 상세
+    mcp.tsx                  ← MCP 서버 목록 (추가 Dialog)
+    mcp.$name.tsx            ← MCP 서버 상세
+    agents.tsx               ← Agent 목록
+    agents.$name.tsx         ← Agent 상세 (편집)
+    commands.tsx             ← Command 목록
+    commands.$name.tsx       ← Command 상세 (편집)
+    skills.tsx               ← Skill 목록 (symlink 표시)
+    skills.$name.tsx         ← Skill 상세 (편집)
     api/                     ← API Routes (server.handlers)
       health.ts              ← GET /api/health
   services/                  ← 서버 사이드 서비스

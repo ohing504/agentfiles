@@ -2,11 +2,15 @@
   "name": "agentfiles",
   "private": true,
   "type": "module",
+  "bin": {
+    "agentfiles": "./bin/cli.ts"
+  },
   "scripts": {
     "dev": "vite dev --port 3000",
     "dev:app": "vite dev --port 3000 & sleep 2 && open -a 'Google Chrome' --args --app=http://localhost:3000 && wait",
     "build": "vite build",
     "preview": "vite preview",
+    "start": "tsx bin/cli.ts",
     "test": "vitest run",
     "lint": "biome check",
     "lint:fix": "biome check --write",
@@ -51,6 +55,7 @@
     "jsdom": "^27.0.0",
     "lefthook": "^2.1.1",
     "shadcn": "^3.8.5",
+    "tsx": "^4.21.0",
     "typescript": "^5.7.2",
     "vite": "^7.1.7",
     "vitest": "^3.0.5",

@@ -2,16 +2,15 @@ import { createServerFn } from "@tanstack/react-start"
 import type { AgentFile, Scope } from "@/shared/types"
 
 export const getItemsFn = createServerFn({ method: "GET" })
-  // @ts-expect-error -- TanStack Start validator type not in current definitions
-  .validator((data: { type: AgentFile["type"] }) => data)
+  .inputValidator((data: { type: AgentFile["type"] }) => data)
+  // @ts-expect-error -- AgentFile.frontmatter index signature incompatible with TanStack Start serialization
   .handler(async ({ data }: { data: { type: AgentFile["type"] } }) => {
     const { getAgentFiles } = await import("@/services/config-service")
     return getAgentFiles(data.type)
   })
 
 export const getItemFn = createServerFn({ method: "GET" })
-  // @ts-expect-error -- TanStack Start validator type not in current definitions
-  .validator(
+  .inputValidator(
     (data: { type: AgentFile["type"]; name: string; scope: Scope }) => data,
   )
   .handler(
@@ -63,8 +62,7 @@ export const getItemFn = createServerFn({ method: "GET" })
   )
 
 export const saveItemFn = createServerFn({ method: "POST" })
-  // @ts-expect-error -- TanStack Start validator type not in current definitions
-  .validator(
+  .inputValidator(
     (data: {
       type: AgentFile["type"]
       name: string
@@ -102,8 +100,7 @@ export const saveItemFn = createServerFn({ method: "POST" })
   )
 
 export const deleteItemFn = createServerFn({ method: "POST" })
-  // @ts-expect-error -- TanStack Start validator type not in current definitions
-  .validator(
+  .inputValidator(
     (data: { type: AgentFile["type"]; name: string; scope: Scope }) => data,
   )
   .handler(

@@ -8,8 +8,7 @@ export const getPluginsFn = createServerFn({ method: "GET" }).handler(
 )
 
 export const togglePluginFn = createServerFn({ method: "POST" })
-  // @ts-expect-error -- TanStack Start validator type not in current definitions
-  .validator((data: { id: string; enable: boolean }) => data)
+  .inputValidator((data: { id: string; enable: boolean }) => data)
   .handler(async ({ data }: { data: { id: string; enable: boolean } }) => {
     const { pluginToggle } = await import("@/services/claude-cli")
     await pluginToggle(data.id, data.enable)

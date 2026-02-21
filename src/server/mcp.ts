@@ -9,8 +9,7 @@ export const getMcpServersFn = createServerFn({ method: "GET" }).handler(
 )
 
 export const addMcpServerFn = createServerFn({ method: "POST" })
-  // @ts-expect-error -- TanStack Start validator type not in current definitions
-  .validator(
+  .inputValidator(
     (data: {
       name: string
       command?: string
@@ -44,8 +43,7 @@ export const addMcpServerFn = createServerFn({ method: "POST" })
   )
 
 export const removeMcpServerFn = createServerFn({ method: "POST" })
-  // @ts-expect-error -- TanStack Start validator type not in current definitions
-  .validator((data: { name: string; scope: Scope }) => data)
+  .inputValidator((data: { name: string; scope: Scope }) => data)
   .handler(async ({ data }: { data: { name: string; scope: Scope } }) => {
     const { mcpRemove } = await import("@/services/claude-cli")
     await mcpRemove(data.name, data.scope)

@@ -2,16 +2,14 @@ import { createServerFn } from "@tanstack/react-start"
 import type { Scope } from "@/shared/types"
 
 export const getClaudeMdFn = createServerFn({ method: "GET" })
-  // @ts-expect-error -- TanStack Start validator type not in current definitions
-  .validator((data: { scope: Scope }) => data)
+  .inputValidator((data: { scope: Scope }) => data)
   .handler(async ({ data }: { data: { scope: Scope } }) => {
     const { getClaudeMd } = await import("@/services/config-service")
     return getClaudeMd(data.scope)
   })
 
 export const saveClaudeMdFn = createServerFn({ method: "POST" })
-  // @ts-expect-error -- TanStack Start validator type not in current definitions
-  .validator((data: { scope: Scope; content: string }) => data)
+  .inputValidator((data: { scope: Scope; content: string }) => data)
   .handler(async ({ data }: { data: { scope: Scope; content: string } }) => {
     const { getGlobalConfigPath, getProjectConfigPath } = await import(
       "@/services/config-service"

@@ -29,10 +29,11 @@ export const authMiddleware = createMiddleware({ type: "function" }).server(
 
 export function validateBearerToken(authHeader: string | null): boolean {
   if (!authHeader) return false
-  if (!currentToken) return false
+  const token = currentToken ?? process.env.AGENTFILES_TOKEN ?? null
+  if (!token) return false
   const parts = authHeader.split(" ")
   if (parts.length !== 2 || parts[0] !== "Bearer") return false
-  return parts[1] === currentToken
+  return parts[1] === token
 }
 
 export function createAuthError(): Response {

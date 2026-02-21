@@ -16,8 +16,10 @@ import { Route as CommandsRouteImport } from './routes/commands'
 import { Route as ClaudeMdRouteImport } from './routes/claude-md'
 import { Route as AgentsRouteImport } from './routes/agents'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SkillsNameRouteImport } from './routes/skills.$name'
 import { Route as PluginsIdRouteImport } from './routes/plugins.$id'
 import { Route as McpNameRouteImport } from './routes/mcp.$name'
+import { Route as CommandsNameRouteImport } from './routes/commands.$name'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as AgentsNameRouteImport } from './routes/agents.$name'
 
@@ -56,6 +58,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SkillsNameRoute = SkillsNameRouteImport.update({
+  id: '/$name',
+  path: '/$name',
+  getParentRoute: () => SkillsRoute,
+} as any)
 const PluginsIdRoute = PluginsIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -65,6 +72,11 @@ const McpNameRoute = McpNameRouteImport.update({
   id: '/$name',
   path: '/$name',
   getParentRoute: () => McpRoute,
+} as any)
+const CommandsNameRoute = CommandsNameRouteImport.update({
+  id: '/$name',
+  path: '/$name',
+  getParentRoute: () => CommandsRoute,
 } as any)
 const ApiHealthRoute = ApiHealthRouteImport.update({
   id: '/api/health',
@@ -81,41 +93,47 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/agents': typeof AgentsRouteWithChildren
   '/claude-md': typeof ClaudeMdRoute
-  '/commands': typeof CommandsRoute
+  '/commands': typeof CommandsRouteWithChildren
   '/mcp': typeof McpRouteWithChildren
   '/plugins': typeof PluginsRouteWithChildren
-  '/skills': typeof SkillsRoute
+  '/skills': typeof SkillsRouteWithChildren
   '/agents/$name': typeof AgentsNameRoute
   '/api/health': typeof ApiHealthRoute
+  '/commands/$name': typeof CommandsNameRoute
   '/mcp/$name': typeof McpNameRoute
   '/plugins/$id': typeof PluginsIdRoute
+  '/skills/$name': typeof SkillsNameRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/agents': typeof AgentsRouteWithChildren
   '/claude-md': typeof ClaudeMdRoute
-  '/commands': typeof CommandsRoute
+  '/commands': typeof CommandsRouteWithChildren
   '/mcp': typeof McpRouteWithChildren
   '/plugins': typeof PluginsRouteWithChildren
-  '/skills': typeof SkillsRoute
+  '/skills': typeof SkillsRouteWithChildren
   '/agents/$name': typeof AgentsNameRoute
   '/api/health': typeof ApiHealthRoute
+  '/commands/$name': typeof CommandsNameRoute
   '/mcp/$name': typeof McpNameRoute
   '/plugins/$id': typeof PluginsIdRoute
+  '/skills/$name': typeof SkillsNameRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/agents': typeof AgentsRouteWithChildren
   '/claude-md': typeof ClaudeMdRoute
-  '/commands': typeof CommandsRoute
+  '/commands': typeof CommandsRouteWithChildren
   '/mcp': typeof McpRouteWithChildren
   '/plugins': typeof PluginsRouteWithChildren
-  '/skills': typeof SkillsRoute
+  '/skills': typeof SkillsRouteWithChildren
   '/agents/$name': typeof AgentsNameRoute
   '/api/health': typeof ApiHealthRoute
+  '/commands/$name': typeof CommandsNameRoute
   '/mcp/$name': typeof McpNameRoute
   '/plugins/$id': typeof PluginsIdRoute
+  '/skills/$name': typeof SkillsNameRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -129,8 +147,10 @@ export interface FileRouteTypes {
     | '/skills'
     | '/agents/$name'
     | '/api/health'
+    | '/commands/$name'
     | '/mcp/$name'
     | '/plugins/$id'
+    | '/skills/$name'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -142,8 +162,10 @@ export interface FileRouteTypes {
     | '/skills'
     | '/agents/$name'
     | '/api/health'
+    | '/commands/$name'
     | '/mcp/$name'
     | '/plugins/$id'
+    | '/skills/$name'
   id:
     | '__root__'
     | '/'
@@ -155,18 +177,20 @@ export interface FileRouteTypes {
     | '/skills'
     | '/agents/$name'
     | '/api/health'
+    | '/commands/$name'
     | '/mcp/$name'
     | '/plugins/$id'
+    | '/skills/$name'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AgentsRoute: typeof AgentsRouteWithChildren
   ClaudeMdRoute: typeof ClaudeMdRoute
-  CommandsRoute: typeof CommandsRoute
+  CommandsRoute: typeof CommandsRouteWithChildren
   McpRoute: typeof McpRouteWithChildren
   PluginsRoute: typeof PluginsRouteWithChildren
-  SkillsRoute: typeof SkillsRoute
+  SkillsRoute: typeof SkillsRouteWithChildren
   ApiHealthRoute: typeof ApiHealthRoute
 }
 
@@ -221,6 +245,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/skills/$name': {
+      id: '/skills/$name'
+      path: '/$name'
+      fullPath: '/skills/$name'
+      preLoaderRoute: typeof SkillsNameRouteImport
+      parentRoute: typeof SkillsRoute
+    }
     '/plugins/$id': {
       id: '/plugins/$id'
       path: '/$id'
@@ -234,6 +265,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/mcp/$name'
       preLoaderRoute: typeof McpNameRouteImport
       parentRoute: typeof McpRoute
+    }
+    '/commands/$name': {
+      id: '/commands/$name'
+      path: '/$name'
+      fullPath: '/commands/$name'
+      preLoaderRoute: typeof CommandsNameRouteImport
+      parentRoute: typeof CommandsRoute
     }
     '/api/health': {
       id: '/api/health'
@@ -263,6 +301,18 @@ const AgentsRouteChildren: AgentsRouteChildren = {
 const AgentsRouteWithChildren =
   AgentsRoute._addFileChildren(AgentsRouteChildren)
 
+interface CommandsRouteChildren {
+  CommandsNameRoute: typeof CommandsNameRoute
+}
+
+const CommandsRouteChildren: CommandsRouteChildren = {
+  CommandsNameRoute: CommandsNameRoute,
+}
+
+const CommandsRouteWithChildren = CommandsRoute._addFileChildren(
+  CommandsRouteChildren,
+)
+
 interface McpRouteChildren {
   McpNameRoute: typeof McpNameRoute
 }
@@ -284,14 +334,25 @@ const PluginsRouteChildren: PluginsRouteChildren = {
 const PluginsRouteWithChildren =
   PluginsRoute._addFileChildren(PluginsRouteChildren)
 
+interface SkillsRouteChildren {
+  SkillsNameRoute: typeof SkillsNameRoute
+}
+
+const SkillsRouteChildren: SkillsRouteChildren = {
+  SkillsNameRoute: SkillsNameRoute,
+}
+
+const SkillsRouteWithChildren =
+  SkillsRoute._addFileChildren(SkillsRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AgentsRoute: AgentsRouteWithChildren,
   ClaudeMdRoute: ClaudeMdRoute,
-  CommandsRoute: CommandsRoute,
+  CommandsRoute: CommandsRouteWithChildren,
   McpRoute: McpRouteWithChildren,
   PluginsRoute: PluginsRouteWithChildren,
-  SkillsRoute: SkillsRoute,
+  SkillsRoute: SkillsRouteWithChildren,
   ApiHealthRoute: ApiHealthRoute,
 }
 export const routeTree = rootRouteImport
