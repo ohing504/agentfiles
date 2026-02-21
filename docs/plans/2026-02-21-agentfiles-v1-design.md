@@ -6,7 +6,7 @@
 
 ## 1. 제품 개요
 
-- **형태:** 로컬 웹앱 (`npx agentfiles` → `localhost:4321`)
+- **형태:** 로컬 웹앱 (`npx agentfiles` → Chrome 앱 모드로 `localhost:3000` 열기)
 - **목표:** Claude Code 설정 파일을 GUI로 탐색/편집/관리
 - **대상:** Claude Code를 매일 사용하는 개발자 (IDE 무관)
 
@@ -25,20 +25,20 @@ VS Code Extension 대신 로컬 웹앱을 선택한 이유:
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                     Browser (React SPA)                  │
+│              Browser (React SSR + CSR 하이브리드)          │
 │                                                          │
-│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌───────────┐  │
-│  │Dashboard │ │ Explorer │ │  Detail  │               │
-│  │  Page    │ │  Page    │ │  Page    │               │
-│  └────┬─────┘ └────┬─────┘ └────┬─────┘               │
-│       └─────────────┴────────────┘                     │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐                │
+│  │Dashboard │ │ Explorer │ │  Detail  │                │
+│  │  Page    │ │  Page    │ │  Page    │                │
+│  └────┬─────┘ └────┬─────┘ └────┬─────┘                │
+│       └─────────────┴────────────┘                      │
 │                         │                                │
 │                    React Query                           │
 │                    (데이터 fetching + 캐시)                │
 └─────────────────────────┬───────────────────────────────┘
-                          │ HTTP REST API
+                          │ Server Functions + API Routes
 ┌─────────────────────────┴───────────────────────────────┐
-│                  Local Server (Hono)                      │
+│            TanStack Start (Vinxi/Nitro)                  │
 │                                                          │
 │  ┌─────────────────────────────────────────────────┐    │
 │  │                 ConfigService                    │    │
@@ -51,10 +51,10 @@ VS Code Extension 대신 로컬 웹앱을 선택한 이유:
 │  │  └───────────────────┘ └───────────────────┘    │    │
 │  └─────────────────────────────────────────────────┘    │
 │                                                          │
-│  ┌──────────────┐  ┌───────────────┐                      │
-│  │  FileWriter   │  │  Claude CLI    │                     │
-│  │  (md 직접편집) │  │  (MCP/Plugin)  │                     │
-│  └──────┬────────┘  └───────┬───────┘                      │
+│  ┌──────────────┐  ┌───────────────┐                    │
+│  │  FileWriter   │  │  Claude CLI    │                   │
+│  │  (md 직접편집) │  │  (MCP/Plugin)  │                   │
+│  └──────┬────────┘  └───────┬───────┘                    │
 └─────────┴───────────────────┴──────────────────────────────┘
           │                   │
     ~/.claude/  +  .claude/   claude CLI
@@ -79,9 +79,9 @@ Claude Code CLI(`claude mcp`, `claude plugin` 등)는 대화형 TUI를 렌더링
 ### 핵심 데이터 흐름
 
 1. 서버 시작 → ConfigService가 `~/.claude/` + `.claude/` 스캔
-2. 브라우저에서 읽기 요청 → REST API → ConfigService가 파일 직접 파싱
-3. 브라우저에서 마크다운 편집 → REST API → FileWriter가 파일 직접 저장
-4. 브라우저에서 MCP/Plugin 조작 → REST API → Claude CLI 위임 (`claude mcp add/remove`, `claude plugin enable/disable`)
+2. 브라우저에서 읽기 요청 → Server Functions → ConfigService가 파일 직접 파싱
+3. 브라우저에서 마크다운 편집 → Server Functions → FileWriter가 파일 직접 저장
+4. 브라우저에서 MCP/Plugin 조작 → Server Functions → Claude CLI 위임 (`claude mcp add/remove`, `claude plugin enable/disable`)
 5. React Query가 캐시 관리 (`refetchOnWindowFocus` + `refetchInterval`로 최신 상태 유지)
 
 ---
@@ -92,54 +92,47 @@ Claude Code CLI(`claude mcp`, `claude plugin` 등)는 대화형 TUI를 렌더링
 agentfiles/
 ├─ package.json
 ├─ tsconfig.json
-├─ vite.config.ts
+├─ vite.config.ts              ← TanStack Start + Vinxi 설정
+├─ biome.json                  ← Biome 린터/포매터 설정
+├─ components.json             ← shadcn/ui 설정
 ├─ pnpm-lock.yaml
 │
 ├─ src/
-│  ├─ server/
-│  │  ├─ index.ts                  ← 서버 진입점
-│  │  ├─ router.ts                 ← API 라우트 정의
-│  │  │
-│  │  ├─ services/
-│  │  │  ├─ config-service.ts      ← 모든 읽기 로직 (md 스캔 + json 파싱)
-│  │  │  ├─ file-writer.ts         ← 마크다운 파일 직접 편집
-│  │  │  └─ claude-cli.ts          ← MCP/Plugin CLI 위임 (child_process)
-│  │  │
-│  │  └─ routes/
-│  │     ├─ overview.ts
-│  │     ├─ plugins.ts
-│  │     ├─ mcp.ts
-│  │     ├─ agents.ts
-│  │     ├─ commands.ts
-│  │     ├─ skills.ts
-│  │     └─ files.ts
+│  ├─ routes/                  ← TanStack Start 파일 기반 라우팅
+│  │  ├─ __root.tsx            ← 루트 레이아웃 (사이드바 + 메인)
+│  │  ├─ index.tsx             ← Dashboard (/)
+│  │  ├─ claude-md.tsx         ← CLAUDE.md 편집
+│  │  ├─ plugins.tsx           ← Plugins 목록
+│  │  ├─ mcp.tsx               ← MCP 서버 목록
+│  │  ├─ agents.tsx            ← Agents 목록
+│  │  └─ api/                  ← API Routes (server.handlers)
+│  │     └─ health.ts          ← GET /api/health
 │  │
-│  ├─ web/
-│  │  ├─ main.tsx
-│  │  ├─ App.tsx
-│  │  ├─ hooks/
-│  │  │  └─ use-config.ts          ← TanStack Query 훅 + Hono RPC (hc)
-│  │  ├─ pages/
-│  │  │  ├─ Dashboard.tsx
-│  │  │  ├─ Explorer.tsx
-│  │  │  ├─ PluginDetail.tsx
-│  │  │  ├─ McpDetail.tsx
-│  │  ├─ components/
-│  │  │  ├─ ui/                    ← shadcn 컴포넌트
-│  │  │  ├─ Sidebar.tsx
-│  │  │  ├─ FileTree.tsx
-│  │  │  └─ ScopeBadge.tsx         ← 충돌 시 badge 표시 포함
-│  │  └─ lib/
+│  ├─ services/                ← 서버 사이드 서비스
+│  │  ├─ config-service.ts     ← 모든 읽기 로직 (md 스캔 + json 파싱)
+│  │  ├─ file-writer.ts        ← 마크다운 파일 직접 편집
+│  │  └─ claude-cli.ts         ← MCP/Plugin CLI 위임 (child_process)
+│  │
+│  ├─ server/                  ← Server Functions (createServerFn)
+│  │  └─ overview.ts           ← getOverview()
+│  │
+│  ├─ components/              ← UI 컴포넌트
+│  │  ├─ ui/                   ← shadcn 컴포넌트
+│  │  ├─ Sidebar.tsx
+│  │  ├─ FileTree.tsx
+│  │  └─ ScopeBadge.tsx        ← 충돌 시 badge 표시 포함
+│  │
+│  ├─ lib/                     ← 유틸리티
+│  │  └─ utils.ts
 │  │
 │  └─ shared/
 │     └─ types.ts
 │
 ├─ bin/
-│  └─ cli.ts                       ← npx agentfiles 진입점
+│  └─ cli.ts                   ← npx agentfiles 진입점 (Chrome 앱 모드로 열기)
 │
 └─ tests/
-   ├─ server/scanners/
-   ├─ server/services/
+   ├─ server/
    └─ e2e/
 ```
 
@@ -219,26 +212,29 @@ interface Overview {
 
 ## 5. API 설계
 
-### REST API
+### Server Functions + API Routes
 
+데이터 읽기/쓰기는 Server Functions(`createServerFn`)으로 처리하고, 외부 연동용 엔드포인트만 API Routes(`createFileRoute` + `server.handlers`)로 제공한다.
+
+**Server Functions (타입 안전한 RPC):**
+```typescript
+getOverview()                           ← 대시보드 전체 데이터
+getClaudeMd({ scope })                  ← CLAUDE.md 메타 + 내용
+saveClaudeMd({ scope, content })        ← CLAUDE.md 저장
+getPlugins()                            ← 전체 플러그인 목록
+togglePlugin({ id })                    ← enable/disable (CLI 위임)
+getMcpServers()                         ← MCP 서버 목록
+addMcpServer({ ... })                   ← MCP 추가 (CLI 위임)
+removeMcpServer({ name })               ← MCP 제거 (CLI 위임)
+getItems({ type })                      ← 목록 (agents|commands|skills)
+getItem({ type, name })                 ← 상세 + 내용
+saveItem({ type, name, content })       ← 생성/수정
+deleteItem({ type, name, scope })       ← 삭제
 ```
-GET    /api/overview                    ← 대시보드 전체 데이터
 
-GET    /api/claude-md/:scope            ← CLAUDE.md 메타 + 내용
-PUT    /api/claude-md/:scope            ← CLAUDE.md 저장
-
-GET    /api/plugins                     ← 전체 플러그인 목록
-PUT    /api/plugins/:id/toggle          ← enable/disable (CLI 위임)
-
-GET    /api/mcp                         ← MCP 서버 목록
-POST   /api/mcp                         ← MCP 추가 (CLI 위임)
-DELETE /api/mcp/:name                   ← MCP 제거 (CLI 위임)
-
-GET    /api/:type                       ← 목록 (agents|commands|skills)
-GET    /api/:type/:name                 ← 상세 + 내용
-POST   /api/:type                       ← 생성
-PUT    /api/:type/:name                 ← 수정
-DELETE /api/:type/:name?scope=          ← 삭제
+**API Routes (REST):**
+```
+GET    /api/health                      ← 헬스체크
 ```
 
 ---
@@ -290,12 +286,11 @@ DELETE /api/:type/:name?scope=          ← 삭제
 | 런타임 | Node.js ≥ 20 |
 | 언어 | TypeScript (strict) |
 | 패키지 매니저 | pnpm |
-| 서버 | Hono (RPC로 타입 안전한 클라이언트 제공) |
-| 서버 실행 | tsx (개발), tsup (빌드) |
+| 프레임워크 | TanStack Start (Router + Server Functions + Vinxi/Nitro) |
 | 프론트엔드 | React 19 |
-| 빌드 | Vite |
-| 라우팅 | TanStack Router |
-| 데이터 페칭 | TanStack Query |
+| 빌드/실행 | Vinxi (통합 빌드, 1개 프로세스) |
+| 라우팅 | TanStack Router (파일 기반) |
+| 데이터 페칭 | TanStack Query + Server Functions (`createServerFn`) |
 | UI 컴포넌트 | shadcn/ui |
 | 스타일링 | Tailwind CSS v4 |
 | 아이콘 | Lucide React |
@@ -310,7 +305,7 @@ DELETE /api/:type/:name?scope=          ← 삭제
 로컬 앱이지만 HTTP 서버가 열리므로 최소한의 보안 가드레일 적용:
 
 1. **`127.0.0.1` 바인딩** — 외부 네트워크에서 접근 불가
-2. **랜덤 토큰 인증** — 서버 시작 시 1회용 토큰 생성, URL 파라미터로 브라우저에 전달 (`localhost:4321?token=abc123`), 이후 모든 API 요청에 `Authorization: Bearer` 헤더 필요
+2. **랜덤 토큰 인증** — 서버 시작 시 1회용 토큰 생성, URL 파라미터로 브라우저에 전달 (`localhost:3000?token=abc123`), 이후 모든 API 요청에 `Authorization: Bearer` 헤더 필요
 3. **CORS 차단** — `Access-Control-Allow-Origin`을 설정하지 않아 다른 출처의 fetch 차단
 
 > 이 3가지로 악성 탭에서의 CSRF/무단 접근을 방지한다.
@@ -323,15 +318,15 @@ DELETE /api/:type/:name?scope=          ← 삭제
 
 1. `bin/cli.ts` 실행
 2. 현재 디렉토리에서 `.claude/` 탐지 → projectPath 결정
-3. Hono 서버 시작 (`localhost:4321`)
-4. `open` 패키지로 브라우저 자동 열기
+3. Vinxi/Nitro 서버 시작 (`localhost:3000`)
+4. `open` 패키지로 Chrome 앱 모드(`--app`) 열기 → 주소창 없는 앱 창
 5. `Ctrl+C`로 종료
 
 ### 개발 (`pnpm dev`)
 
-1. tsx로 서버 실행 (watch mode)
-2. Vite dev server (HMR, 프록시 → `localhost:4321/api`)
-3. 코드 수정 → 서버 자동 재시작 + 프론트 HMR
+1. Vinxi dev 서버 실행 (SSR + HMR, 1개 프로세스)
+2. 코드 수정 → 서버/클라이언트 자동 반영
+3. Chrome 앱 모드로 열기 (주소창 없는 깔끔한 창)
 
 ---
 
@@ -365,9 +360,9 @@ DELETE /api/:type/:name?scope=          ← 삭제
 
 이 설계는 다음 확장을 고려하여 만들어짐:
 
-- **v2:** `config-service.ts`에 skills.sh API 클라이언트 추가, UI에 레지스트리 탭 추가
+- **v2:** `services/config-service.ts`에 skills.sh API 클라이언트 추가, UI에 레지스트리 탭 추가
 - **v3:** 서버를 클라우드 배포, 인증 레이어 추가, 같은 React 코드 재사용
-- **v4:** `config-service.ts`에 Cursor, Kiro 등 멀티 에이전트 파싱 로직 추가
+- **v4:** `services/config-service.ts`에 Cursor, Kiro 등 멀티 에이전트 파싱 로직 추가
 
 ---
 
