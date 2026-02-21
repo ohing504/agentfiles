@@ -1,6 +1,9 @@
 # oh-my-claudecode state
 .omc/
 
+# worktrees
+.worktrees/
+
 # dependencies
 node_modules/
 
