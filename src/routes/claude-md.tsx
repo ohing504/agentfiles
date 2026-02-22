@@ -1,4 +1,3 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import {
   AlertCircle,
@@ -21,6 +20,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton"
 import { Textarea } from "@/components/ui/textarea"
 import { useClaudeMdFiles } from "@/hooks/use-claude-md-files"
+import { useClaudeMdFile, useClaudeMdGlobalMeta } from "@/hooks/use-config"
 import { m } from "@/paraglide/messages"
 
 export const Route = createFileRoute("/claude-md")({ component: ClaudeMdPage })
@@ -40,31 +40,11 @@ function ClaudeMdEditor({
 }: {
   fileId: { global: true } | { projectPath: string; relativePath: string }
 }) {
-  const queryClient = useQueryClient()
   const [content, setContent] = useState("")
-
-  const queryKey = [
-    "claude-md-file",
-    "global" in fileId
-      ? "global"
-      : `${fileId.projectPath}/${fileId.relativePath}`,
-  ]
-
-  const { data, isLoading, error } = useQuery({
-    queryKey,
-    queryFn: async () => {
-      const { readClaudeMdFileFn } = await import("@/server/claude-md")
-      return readClaudeMdFileFn({
-        data:
-          "global" in fileId
-            ? { global: true }
-            : {
-                projectPath: fileId.projectPath,
-                relativePath: fileId.relativePath,
-              },
-      })
-    },
-  })
+  const {
+    query: { data, isLoading, error },
+    mutation,
+  } = useClaudeMdFile(fileId)
 
   // 쿼리 데이터가 로드되면 편집 content를 초기화
   useEffect(() => {
@@ -74,26 +54,6 @@ function ClaudeMdEditor({
   }, [data])
 
   const isDirty = content !== (data?.content ?? "")
-
-  const mutation = useMutation({
-    mutationFn: async (newContent: string) => {
-      const { saveClaudeMdFileFn } = await import("@/server/claude-md")
-      return saveClaudeMdFileFn({
-        data:
-          "global" in fileId
-            ? { global: true, content: newContent }
-            : {
-                projectPath: fileId.projectPath,
-                relativePath: fileId.relativePath,
-                content: newContent,
-              },
-      })
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey })
-      queryClient.invalidateQueries({ queryKey: ["claude-md-global-meta"] })
-    },
-  })
 
   const handleSave = () => {
     mutation.mutate(content)
@@ -207,21 +167,10 @@ function ClaudeMdItem({
 // "global" for ~/.claude/CLAUDE.md, or a relative path for project files
 type SelectedFile = "global" | string
 
-function useGlobalFileMeta() {
-  return useQuery({
-    queryKey: ["claude-md-global-meta"],
-    queryFn: async () => {
-      const { readClaudeMdFileFn } = await import("@/server/claude-md")
-      const result = await readClaudeMdFileFn({ data: { global: true } })
-      return result.size
-    },
-  })
-}
-
 function ClaudeMdPage() {
   const { activeProject, activeProjectPath } = useProjectContext()
   const { data: projectFiles, isLoading: filesLoading } = useClaudeMdFiles()
-  const { data: globalSize } = useGlobalFileMeta()
+  const { data: globalSize } = useClaudeMdGlobalMeta()
   const [selected, setSelected] = useState<SelectedFile>("global")
 
   const editorKey =

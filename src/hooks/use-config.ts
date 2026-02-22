@@ -55,6 +55,72 @@ export function useClaudeMd(scope: Scope) {
   return { query, mutation }
 }
 
+// ── CLAUDE.md File (file-level read/write) ───────────────────────────────────
+
+type ClaudeMdFileId =
+  | { global: true }
+  | { projectPath: string; relativePath: string }
+
+export function useClaudeMdFile(fileId: ClaudeMdFileId) {
+  const queryClient = useQueryClient()
+
+  const fileKey =
+    "global" in fileId
+      ? "global"
+      : `${fileId.projectPath}/${fileId.relativePath}`
+
+  const query = useQuery({
+    queryKey: ["claude-md", "file", fileKey],
+    queryFn: async () => {
+      const { readClaudeMdFileFn } = await import("@/server/claude-md")
+      return readClaudeMdFileFn({
+        data:
+          "global" in fileId
+            ? { global: true }
+            : {
+                projectPath: fileId.projectPath,
+                relativePath: fileId.relativePath,
+              },
+      })
+    },
+  })
+
+  const mutation = useMutation({
+    mutationFn: async (content: string) => {
+      const { saveClaudeMdFileFn } = await import("@/server/claude-md")
+      return saveClaudeMdFileFn({
+        data:
+          "global" in fileId
+            ? { global: true, content }
+            : {
+                projectPath: fileId.projectPath,
+                relativePath: fileId.relativePath,
+                content,
+              },
+      })
+    },
+    onSuccess: () => {
+      // Invalidate all claude-md related queries for consistency
+      queryClient.invalidateQueries({ queryKey: ["claude-md"] })
+      queryClient.invalidateQueries({ queryKey: ["claude-md-files"] })
+      queryClient.invalidateQueries({ queryKey: ["overview"] })
+    },
+  })
+
+  return { query, mutation }
+}
+
+export function useClaudeMdGlobalMeta() {
+  return useQuery({
+    queryKey: ["claude-md", "file", "global-meta"],
+    queryFn: async () => {
+      const { readClaudeMdFileFn } = await import("@/server/claude-md")
+      const result = await readClaudeMdFileFn({ data: { global: true } })
+      return result.size
+    },
+  })
+}
+
 // ── Plugins ───────────────────────────────────────────────────────────────────
 
 export function usePlugins() {
