@@ -77,6 +77,32 @@ export const setActiveProjectFn = createServerFn({ method: "POST" })
     return { success: true }
   })
 
+export const browseDirFn = createServerFn({ method: "GET" })
+  .inputValidator((data: { path?: string }) => data)
+  .handler(async ({ data }: { data: { path?: string } }) => {
+    const fs = await import("node:fs")
+    const nodePath = await import("node:path")
+    const os = await import("node:os")
+
+    const basePath = data.path ? nodePath.resolve(data.path) : os.homedir()
+
+    if (!fs.existsSync(basePath) || !fs.statSync(basePath).isDirectory()) {
+      return { current: basePath, parent: nodePath.dirname(basePath), dirs: [] }
+    }
+
+    const entries = fs.readdirSync(basePath, { withFileTypes: true })
+    const dirs = entries
+      .filter((e) => e.isDirectory() && !e.name.startsWith("."))
+      .map((e) => e.name)
+      .sort((a, b) => a.localeCompare(b))
+
+    return {
+      current: basePath,
+      parent: nodePath.dirname(basePath),
+      dirs,
+    }
+  })
+
 export const scanClaudeMdFilesFn = createServerFn({ method: "GET" })
   .inputValidator((data: { projectPath: string }) => data)
   .handler(async ({ data }: { data: { projectPath: string } }) => {

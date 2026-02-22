@@ -8,7 +8,7 @@ interface ProjectContextValue {
   activeProjectPath: string | undefined
   isLoading: boolean
   setActiveProject: (path: string | null) => void
-  addProject: (path: string) => void
+  addProject: (path: string) => Promise<void>
   removeProject: (path: string) => void
 }
 
@@ -29,7 +29,9 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     activeProjectPath,
     isLoading: query.isLoading,
     setActiveProject: (path) => setActiveMutation.mutate(path),
-    addProject: (path) => addMutation.mutate(path),
+    addProject: async (path) => {
+      await addMutation.mutateAsync(path)
+    },
     removeProject: (path) => removeMutation.mutate(path),
   }
 

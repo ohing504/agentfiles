@@ -1,3 +1,4 @@
+import { useQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import {
   AlertCircle,
@@ -11,7 +12,6 @@ import {
 } from "lucide-react"
 import { useEffect, useState } from "react"
 import { useProjectContext } from "@/components/ProjectContext"
-import { ScopeBadge } from "@/components/ScopeBadge"
 import { Button } from "@/components/ui/button"
 import {
   Collapsible,
@@ -21,9 +21,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton"
 import { Textarea } from "@/components/ui/textarea"
 import { useClaudeMdFiles } from "@/hooks/use-claude-md-files"
-import { useClaudeMd } from "@/hooks/use-config"
 import { m } from "@/paraglide/messages"
-import type { Scope } from "@/shared/types"
 
 export const Route = createFileRoute("/claude-md")({ component: ClaudeMdPage })
 
@@ -36,34 +34,85 @@ function formatDate(iso: string): string {
   return new Date(iso).toLocaleString()
 }
 
-function ClaudeMdEditor({ scope }: { scope: Scope }) {
-  const { query, mutation } = useClaudeMd(scope)
+// Unified editor for any CLAUDE.md file
+function ClaudeMdEditor({
+  fileId,
+}: {
+  fileId: { global: true } | { projectPath: string; relativePath: string }
+}) {
   const [content, setContent] = useState("")
+  const [originalContent, setOriginalContent] = useState("")
   const [isDirty, setIsDirty] = useState(false)
-
-  const data = query.data
+  const [isLoading, setIsLoading] = useState(true)
+  const [isSaving, setIsSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [fileMeta, setFileMeta] = useState<{
+    path: string
+    size: number
+    lastModified: string
+  } | null>(null)
 
   useEffect(() => {
-    if (data) {
-      setContent(data.content)
-      setIsDirty(false)
-    }
-  }, [data])
+    setIsLoading(true)
+    setError(null)
+    import("@/server/claude-md")
+      .then(({ readClaudeMdFileFn }) =>
+        readClaudeMdFileFn({
+          data:
+            "global" in fileId
+              ? { global: true }
+              : {
+                  projectPath: fileId.projectPath,
+                  relativePath: fileId.relativePath,
+                },
+        }),
+      )
+      .then((result) => {
+        setContent(result.content)
+        setOriginalContent(result.content)
+        setFileMeta({
+          path: result.path,
+          size: result.size,
+          lastModified: result.lastModified,
+        })
+        setIsDirty(false)
+        setIsLoading(false)
+      })
+      .catch(() => {
+        setError("Failed to load CLAUDE.md")
+        setIsLoading(false)
+      })
+  }, [fileId])
 
   const handleChange = (value: string) => {
     setContent(value)
-    setIsDirty(value !== (data?.content ?? ""))
+    setIsDirty(value !== originalContent)
   }
 
-  const handleSave = () => {
-    mutation.mutate(content, {
-      onSuccess: () => {
-        setIsDirty(false)
-      },
-    })
+  const handleSave = async () => {
+    setIsSaving(true)
+    try {
+      const { saveClaudeMdFileFn } = await import("@/server/claude-md")
+      await saveClaudeMdFileFn({
+        data:
+          "global" in fileId
+            ? { global: true, content }
+            : {
+                projectPath: fileId.projectPath,
+                relativePath: fileId.relativePath,
+                content,
+              },
+      })
+      setOriginalContent(content)
+      setIsDirty(false)
+    } catch {
+      setError("Failed to save. Please try again.")
+    } finally {
+      setIsSaving(false)
+    }
   }
 
-  if (query.isLoading) {
+  if (isLoading) {
     return (
       <div className="space-y-4">
         <Skeleton className="h-4 w-48" />
@@ -72,44 +121,44 @@ function ClaudeMdEditor({ scope }: { scope: Scope }) {
     )
   }
 
-  if (query.isError) {
+  if (error) {
     return (
       <div className="flex items-center gap-2 text-destructive text-sm py-8">
         <AlertCircle className="w-4 h-4" />
-        <span>Failed to load CLAUDE.md</span>
+        <span>{error}</span>
       </div>
     )
   }
 
   return (
     <div className="space-y-4">
-      {data && (
+      {fileMeta?.lastModified && (
         <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
           <div className="flex items-center gap-1">
             <FileText className="w-3.5 h-3.5" />
-            <span className="font-mono truncate max-w-xs">{data.path}</span>
+            <span className="font-mono truncate max-w-xs">{fileMeta.path}</span>
           </div>
           <div className="flex items-center gap-1">
             <HardDrive className="w-3.5 h-3.5" />
-            <span>{formatFileSize(data.size)}</span>
+            <span>{formatFileSize(fileMeta.size)}</span>
           </div>
           <div className="flex items-center gap-1">
             <Clock className="w-3.5 h-3.5" />
-            <span>{formatDate(data.lastModified)}</span>
+            <span>{formatDate(fileMeta.lastModified)}</span>
           </div>
         </div>
       )}
 
-      {!data && (
+      {!fileMeta?.lastModified && (
         <p className="text-sm text-muted-foreground">
-          No CLAUDE.md file found for this scope. Start typing to create one.
+          No file found. Start typing to create one.
         </p>
       )}
 
       <Textarea
         value={content}
         onChange={(e) => handleChange(e.target.value)}
-        placeholder={`# CLAUDE.md (${scope})\n\nAdd instructions for Claude here...`}
+        placeholder="# CLAUDE.md\n\nAdd instructions for Claude here..."
         className="font-mono text-sm min-h-[400px] resize-y"
       />
 
@@ -119,73 +168,70 @@ function ClaudeMdEditor({ scope }: { scope: Scope }) {
         </span>
         <Button
           onClick={handleSave}
-          disabled={!isDirty || mutation.isPending}
+          disabled={!isDirty || isSaving}
           size="sm"
           className="gap-1.5"
         >
           <Save className="w-4 h-4" />
-          {mutation.isPending ? "Saving..." : "Save"}
+          {isSaving ? "Saving..." : "Save"}
         </Button>
       </div>
-
-      {mutation.isError && (
-        <div className="flex items-center gap-2 text-destructive text-sm">
-          <AlertCircle className="w-4 h-4" />
-          <span>Failed to save. Please try again.</span>
-        </div>
-      )}
     </div>
   )
 }
 
-function ProjectClaudeMdFiles() {
-  const { activeProject } = useProjectContext()
-  const { data: files, isLoading } = useClaudeMdFiles()
-
-  if (!activeProject) return null
-
-  if (isLoading) {
-    return (
-      <div className="space-y-2">
-        <Skeleton className="h-4 w-48" />
-        <Skeleton className="h-4 w-36" />
-      </div>
-    )
-  }
-
-  if (!files || files.length === 0) {
-    return (
-      <p className="text-sm text-muted-foreground py-2">
-        No CLAUDE.md files found in this project.
-      </p>
-    )
-  }
-
+// Shared file tree item component
+function ClaudeMdItem({
+  label,
+  size,
+  selected,
+  onClick,
+}: {
+  label: string
+  size?: number
+  selected: boolean
+  onClick: () => void
+}) {
   return (
-    <div className="space-y-1">
-      {files.map((file) => (
-        <div
-          key={file.relativePath}
-          className="flex items-center justify-between py-1.5 px-2 rounded-md hover:bg-muted/50 text-sm"
-        >
-          <div className="flex items-center gap-2 min-w-0">
-            <FileText className="w-4 h-4 shrink-0 text-muted-foreground" />
-            <span className="font-mono text-xs truncate">
-              {file.relativePath}
-            </span>
-          </div>
-          <span className="text-xs text-muted-foreground shrink-0 ml-2">
-            {formatFileSize(file.size)}
-          </span>
-        </div>
-      ))}
-    </div>
+    <Button
+      variant={selected ? "secondary" : "ghost"}
+      size="sm"
+      onClick={onClick}
+      className="w-full justify-start gap-2"
+    >
+      <FileText className="w-4 h-4 shrink-0 text-muted-foreground" />
+      <span className="font-mono text-xs truncate">{label}</span>
+      {size != null && (
+        <span className="text-xs text-muted-foreground shrink-0 ml-auto">
+          {formatFileSize(size)}
+        </span>
+      )}
+    </Button>
   )
+}
+
+// "global" for ~/.claude/CLAUDE.md, or a relative path for project files
+type SelectedFile = "global" | string
+
+function useGlobalFileMeta() {
+  return useQuery({
+    queryKey: ["claude-md-global-meta"],
+    queryFn: async () => {
+      const { readClaudeMdFileFn } = await import("@/server/claude-md")
+      const result = await readClaudeMdFileFn({ data: { global: true } })
+      return result.size
+    },
+  })
 }
 
 function ClaudeMdPage() {
-  const { activeProject } = useProjectContext()
-  const [selectedScope, setSelectedScope] = useState<Scope>("global")
+  const { activeProject, activeProjectPath } = useProjectContext()
+  const { data: projectFiles, isLoading: filesLoading } = useClaudeMdFiles()
+  const { data: globalSize } = useGlobalFileMeta()
+  const [selected, setSelected] = useState<SelectedFile>("global")
+
+  const editorKey =
+    selected === "global" ? "global" : `${activeProjectPath}/${selected}`
 
   return (
     <div>
@@ -196,7 +242,7 @@ function ClaudeMdPage() {
       <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-6">
         {/* Left: File tree */}
         <div className="space-y-2">
-          {/* Global section */}
+          {/* Global */}
           <Collapsible defaultOpen>
             <CollapsibleTrigger className="flex items-center gap-2 w-full p-2 rounded-md hover:bg-muted/50 text-sm font-medium [&[data-state=open]>svg:first-child]:rotate-90">
               <ChevronRight className="size-4 transition-transform" />
@@ -204,44 +250,46 @@ function ClaudeMdPage() {
               <span>Global</span>
             </CollapsibleTrigger>
             <CollapsibleContent className="pl-6">
-              <button
-                type="button"
-                onClick={() => setSelectedScope("global")}
-                className={`flex items-center gap-2 w-full py-1.5 px-2 rounded-md text-sm ${
-                  selectedScope === "global"
-                    ? "bg-muted font-medium"
-                    : "hover:bg-muted/50"
-                }`}
-              >
-                <FileText className="w-4 h-4 text-muted-foreground" />
-                <span className="font-mono text-xs">~/.claude/CLAUDE.md</span>
-              </button>
+              <ClaudeMdItem
+                label="~/.claude/CLAUDE.md"
+                size={globalSize}
+                selected={selected === "global"}
+                onClick={() => setSelected("global")}
+              />
             </CollapsibleContent>
           </Collapsible>
 
-          {/* Project section */}
+          {/* Project — all CLAUDE.md files from recursive scan */}
           {activeProject && (
             <Collapsible defaultOpen>
               <CollapsibleTrigger className="flex items-center gap-2 w-full p-2 rounded-md hover:bg-muted/50 text-sm font-medium [&[data-state=open]>svg:first-child]:rotate-90">
                 <ChevronRight className="size-4 transition-transform" />
                 <FolderOpen className="size-4" />
                 <span className="truncate">{activeProject.name}</span>
-                <ScopeBadge scope="project" />
               </CollapsibleTrigger>
               <CollapsibleContent className="pl-6">
-                <button
-                  type="button"
-                  onClick={() => setSelectedScope("project")}
-                  className={`flex items-center gap-2 w-full py-1.5 px-2 rounded-md text-sm ${
-                    selectedScope === "project"
-                      ? "bg-muted font-medium"
-                      : "hover:bg-muted/50"
-                  }`}
-                >
-                  <FileText className="w-4 h-4 text-muted-foreground" />
-                  <span className="font-mono text-xs">.claude/CLAUDE.md</span>
-                </button>
-                <ProjectClaudeMdFiles />
+                {filesLoading ? (
+                  <div className="space-y-2 py-1">
+                    <Skeleton className="h-4 w-36" />
+                    <Skeleton className="h-4 w-28" />
+                  </div>
+                ) : !projectFiles || projectFiles.length === 0 ? (
+                  <p className="text-xs text-muted-foreground py-2">
+                    No CLAUDE.md files found.
+                  </p>
+                ) : (
+                  <div className="space-y-0.5">
+                    {projectFiles.map((file) => (
+                      <ClaudeMdItem
+                        key={file.relativePath}
+                        label={file.relativePath}
+                        size={file.size}
+                        selected={selected === file.relativePath}
+                        onClick={() => setSelected(file.relativePath)}
+                      />
+                    ))}
+                  </div>
+                )}
               </CollapsibleContent>
             </Collapsible>
           )}
@@ -250,9 +298,21 @@ function ClaudeMdPage() {
         {/* Right: Editor */}
         <div>
           <div className="mb-4">
-            <ScopeBadge scope={selectedScope} />
+            <span className="font-mono text-xs text-muted-foreground">
+              {selected === "global" ? "~/.claude/CLAUDE.md" : selected}
+            </span>
           </div>
-          <ClaudeMdEditor scope={selectedScope} />
+          <ClaudeMdEditor
+            key={editorKey}
+            fileId={
+              selected === "global"
+                ? { global: true }
+                : {
+                    projectPath: activeProjectPath ?? "",
+                    relativePath: selected,
+                  }
+            }
+          />
         </div>
       </div>
     </div>
