@@ -2,6 +2,7 @@ import { TanStackDevtools } from "@tanstack/react-devtools"
 import { createRootRoute, HeadContent, Scripts } from "@tanstack/react-router"
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools"
 
+import { ErrorBoundary } from "@/components/ErrorBoundary"
 import { Layout } from "@/components/Layout"
 import { ProjectProvider } from "@/components/ProjectContext"
 import { TooltipProvider } from "@/components/ui/tooltip"
@@ -46,7 +47,9 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <body className="h-full antialiased">
         <TooltipProvider delayDuration={300}>
           <ProjectProvider>
-            <Layout>{children}</Layout>
+            <ErrorBoundary>
+              <Layout>{children}</Layout>
+            </ErrorBoundary>
           </ProjectProvider>
         </TooltipProvider>
         <TanStackDevtools
