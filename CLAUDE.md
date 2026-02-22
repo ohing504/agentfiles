@@ -87,9 +87,21 @@ src/
     Layout.tsx               ← 사이드바 + 메인 콘텐츠 레이아웃
     Sidebar.tsx              ← 네비게이션 (7개 메뉴)
     ScopeBadge.tsx           ← global/project/user 스코프 배지
+    AgentFileDetail.tsx      ← Agent/Command/Skill 상세 공통 컴포넌트
+    ProjectContext.tsx       ← 프로젝트 컨텍스트 프로바이더
+    ProjectSwitcher.tsx      ← 프로젝트 전환 UI
+    AddProjectDialog.tsx     ← 프로젝트 추가 다이얼로그
+    LanguageSwitcher.tsx     ← 언어 전환 (en/ko)
     ui/                      ← shadcn 컴포넌트
+  hooks/                     ← React 커스텀 훅
+    use-config.ts            ← TanStack Query 데이터 훅 (전체)
+    use-claude-md-files.ts   ← CLAUDE.md 파일 목록 훅
+    use-projects.ts          ← 프로젝트 관리 훅
   lib/                       ← 유틸리티
     auth.ts                  ← 토큰 관리 (추출, 저장, 헤더)
+    query-keys.ts            ← TanStack Query 키 정의
+    format.ts                ← formatFileSize, formatDate 유틸리티
+    parse-agent-file-param.ts ← URL 파라미터 파싱 (scope:name)
   shared/                    ← 공유 타입
     types.ts
 bin/                         ← CLI 진입점
@@ -126,3 +138,4 @@ tests/                       ← 테스트
 ### Commit Convention
 - Use English for all commit messages, PR titles, and issue comments
 - Format: `type(scope): description`
+- 커밋 전에는 항상 물어볼것
