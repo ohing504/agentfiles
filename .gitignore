@@ -24,6 +24,12 @@ dist-ssr/
 # paraglide generated
 src/paraglide/
 
+# claude local settings
+.claude/settings.local.json
+
+# playwright
+.playwright-mcp/
+
 # misc
 .DS_Store
 .wrangler/
