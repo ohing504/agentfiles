@@ -83,6 +83,7 @@ export function useClaudeMdFile(fileId: ClaudeMdFileId) {
               },
       })
     },
+    ...REFETCH_OPTIONS,
   })
 
   const mutation = useMutation({
@@ -100,9 +101,7 @@ export function useClaudeMdFile(fileId: ClaudeMdFileId) {
       })
     },
     onSuccess: () => {
-      // Invalidate all claude-md related queries for consistency
       queryClient.invalidateQueries({ queryKey: ["claude-md"] })
-      queryClient.invalidateQueries({ queryKey: ["claude-md-files"] })
       queryClient.invalidateQueries({ queryKey: ["overview"] })
     },
   })
@@ -118,6 +117,7 @@ export function useClaudeMdGlobalMeta() {
       const result = await readClaudeMdFileFn({ data: { global: true } })
       return result.size
     },
+    ...REFETCH_OPTIONS,
   })
 }
 

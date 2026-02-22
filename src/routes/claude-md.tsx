@@ -9,7 +9,7 @@ import {
   HardDrive,
   Save,
 } from "lucide-react"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useProjectContext } from "@/components/ProjectContext"
 import { Button } from "@/components/ui/button"
 import {
@@ -41,22 +41,28 @@ function ClaudeMdEditor({
   fileId: { global: true } | { projectPath: string; relativePath: string }
 }) {
   const [content, setContent] = useState("")
+  const [savedContent, setSavedContent] = useState("")
+  const initialized = useRef(false)
   const {
     query: { data, isLoading, error },
     mutation,
   } = useClaudeMdFile(fileId)
 
-  // 쿼리 데이터가 로드되면 편집 content를 초기화
+  // 최초 로드 시에만 content 초기화 (polling refetch 시 편집 내용 보호)
   useEffect(() => {
-    if (data !== undefined) {
+    if (data !== undefined && !initialized.current) {
       setContent(data.content)
+      setSavedContent(data.content)
+      initialized.current = true
     }
   }, [data])
 
-  const isDirty = content !== (data?.content ?? "")
+  const isDirty = content !== savedContent
 
   const handleSave = () => {
-    mutation.mutate(content)
+    mutation.mutate(content, {
+      onSuccess: () => setSavedContent(content),
+    })
   }
 
   if (isLoading) {
