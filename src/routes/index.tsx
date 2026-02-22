@@ -144,17 +144,14 @@ function DashboardPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">{m.nav_dashboard()}</h1>
-        <div className="flex items-center gap-3">
-          {conflictCount > 0 && (
-            <Badge variant="destructive" className="gap-1">
-              <TriangleAlert className="w-3 h-3" />
-              {conflictCount} conflict{conflictCount > 1 ? "s" : ""}
-            </Badge>
-          )}
-          <CliStatusBadge />
-        </div>
+      <div className="flex items-center justify-end gap-3 mb-4">
+        {conflictCount > 0 && (
+          <Badge variant="destructive" className="gap-1">
+            <TriangleAlert className="w-3 h-3" />
+            {conflictCount} conflict{conflictCount > 1 ? "s" : ""}
+          </Badge>
+        )}
+        <CliStatusBadge />
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">

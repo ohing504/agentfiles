@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router"
-import { ArrowLeft, Server, Trash2 } from "lucide-react"
+import { Server, Trash2 } from "lucide-react"
 import { ScopeBadge } from "@/components/ScopeBadge"
 import {
   AlertDialog,
@@ -17,7 +17,6 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useCliStatus, useMcpServers } from "@/hooks/use-config"
-import { m } from "@/paraglide/messages"
 
 export const Route = createFileRoute("/mcp/$name")({ component: McpDetailPage })
 
@@ -45,15 +44,6 @@ function McpDetailPage() {
 
   return (
     <div>
-      <div className="flex items-center gap-3 mb-6">
-        <Link to="/mcp">
-          <Button variant="ghost" size="icon-sm">
-            <ArrowLeft className="w-4 h-4" />
-          </Button>
-        </Link>
-        <h1 className="text-2xl font-bold">{m.detail_mcp_server({ name })}</h1>
-      </div>
-
       {isLoading ? (
         <div className="space-y-4">
           <Skeleton className="h-8 w-48" />

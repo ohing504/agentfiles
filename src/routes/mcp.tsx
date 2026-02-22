@@ -35,7 +35,6 @@ import {
 } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useCliStatus, useMcpServers } from "@/hooks/use-config"
-import { m } from "@/paraglide/messages"
 import type { Scope } from "@/shared/types"
 
 export const Route = createFileRoute("/mcp")({ component: McpPage })
@@ -357,10 +356,11 @@ function McpPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">{m.nav_mcp_servers()}</h1>
-        {cliAvailable && <AddMcpDialog onSuccess={() => {}} />}
-      </div>
+      {cliAvailable && (
+        <div className="flex items-center justify-end mb-4">
+          <AddMcpDialog onSuccess={() => {}} />
+        </div>
+      )}
 
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

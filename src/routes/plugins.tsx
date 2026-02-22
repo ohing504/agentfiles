@@ -14,7 +14,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useCliStatus, usePlugins } from "@/hooks/use-config"
 import { formatDate } from "@/lib/format"
-import { m } from "@/paraglide/messages"
 import type { Plugin } from "@/shared/types"
 
 export const Route = createFileRoute("/plugins")({ component: PluginsPage })
@@ -126,12 +125,11 @@ function PluginsPage() {
 
   return (
     <div>
-      <div className="flex items-center gap-3 mb-6">
-        <h1 className="text-2xl font-bold">{m.nav_plugins()}</h1>
-        {!query.isLoading && (
-          <Badge variant="secondary">{plugins.length}</Badge>
-        )}
-      </div>
+      {!query.isLoading && plugins.length > 0 && (
+        <div className="flex items-center justify-end mb-4">
+          <Badge variant="secondary">{plugins.length} plugins</Badge>
+        </div>
+      )}
 
       {query.isLoading && <PluginListSkeleton />}
 

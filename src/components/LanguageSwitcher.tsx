@@ -1,29 +1,59 @@
+import { Check, Globe } from "lucide-react"
+
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+} from "@/components/ui/sidebar"
 import { m } from "@/paraglide/messages"
 import { getLocale, locales, setLocale } from "@/paraglide/runtime"
 
-const localeLabels: Record<string, () => string> = {
+type Locale = (typeof locales)[number]
+
+const localeLabels: Record<Locale, () => string> = {
   en: () => m.app_language_en(),
   ko: () => m.app_language_ko(),
 }
 
 export function LanguageSwitcher() {
+  const currentLocale = getLocale()
+  const currentLabel = localeLabels[currentLocale]?.() ?? currentLocale
+
   return (
-    <div className="flex gap-1">
-      {locales.map((locale) => (
-        <button
-          key={locale}
-          type="button"
-          onClick={() => setLocale(locale)}
-          aria-pressed={locale === getLocale()}
-          className={`px-2 py-1 text-xs rounded cursor-pointer transition-colors ${
-            locale === getLocale()
-              ? "bg-primary text-primary-foreground"
-              : "bg-muted hover:bg-muted/80 text-muted-foreground"
-          }`}
-        >
-          {localeLabels[locale]()}
-        </button>
-      ))}
-    </div>
+    <SidebarMenu>
+      <SidebarMenuItem>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <SidebarMenuButton tooltip={currentLabel}>
+              <Globe />
+              <span>{currentLabel}</span>
+            </SidebarMenuButton>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent side="top" align="start" className="w-40">
+            {locales.map((locale) => {
+              const isActive = locale === currentLocale
+              return (
+                <DropdownMenuItem
+                  key={locale}
+                  onClick={() => setLocale(locale)}
+                  aria-current={isActive ? "true" : undefined}
+                >
+                  <span className="flex-1">
+                    {localeLabels[locale]?.() ?? locale}
+                  </span>
+                  {isActive && <Check className="size-4 text-primary" />}
+                </DropdownMenuItem>
+              )
+            })}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </SidebarMenuItem>
+    </SidebarMenu>
   )
 }

@@ -513,10 +513,6 @@ function FilesPage() {
 
   return (
     <div>
-      <div className="flex items-center gap-3 mb-6">
-        <h1 className="text-2xl font-bold">{m.nav_files()}</h1>
-      </div>
-
       <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-6">
         {/* Left: File tree */}
         <div className="space-y-2">
