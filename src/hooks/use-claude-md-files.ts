@@ -13,5 +13,7 @@ export function useClaudeMdFiles() {
       return scanClaudeMdFilesFn({ data: { projectPath: activeProjectPath } })
     },
     enabled: !!activeProjectPath,
+    refetchOnWindowFocus: true,
+    refetchInterval: 30_000,
   })
 }
