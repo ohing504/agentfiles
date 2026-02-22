@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start"
+import { z } from "zod"
 
 export const getPluginsFn = createServerFn({ method: "GET" }).handler(
   async () => {
@@ -8,8 +9,8 @@ export const getPluginsFn = createServerFn({ method: "GET" }).handler(
 )
 
 export const togglePluginFn = createServerFn({ method: "POST" })
-  .inputValidator((data: { id: string; enable: boolean }) => data)
-  .handler(async ({ data }: { data: { id: string; enable: boolean } }) => {
+  .inputValidator(z.object({ id: z.string(), enable: z.boolean() }))
+  .handler(async ({ data }) => {
     const { pluginToggle } = await import("@/services/claude-cli")
     await pluginToggle(data.id, data.enable)
     return { success: true }
