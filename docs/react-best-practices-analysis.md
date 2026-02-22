@@ -7,7 +7,7 @@
 
 ## 요약
 
-전반적으로 코드 품질이 높고 TanStack Start의 Server Function 패턴을 올바르게 활용하고 있습니다. TanStack Query를 통한 데이터 페칭, 스코프별 구분, Skeleton 로딩 UI 등 실용적인 패턴이 잘 구현되어 있습니다. 주요 개선 포인트는 다음과 같습니다: **Error Boundary 미적용**으로 인한 런타임 에러 시 전체 화면 블랙아웃 가능성, `ClaudeMdEditor`의 **로컬 state 기반 비동기 처리**가 TanStack Query로 대체 가능한 부분, `formatDate`/`formatFileSize` 같은 **유틸리티 함수의 중복**, 그리고 접근성(ARIA) 속성이 일부 커스텀 인터랙티브 요소에 누락된 점입니다. 대부분의 개선사항은 실질적인 가치를 제공하는 중간 우선순위 항목이며, 과도한 리팩토링 없이 점진적으로 적용 가능합니다.
+전반적으로 코드 품질이 높고 TanStack Start의 Server Function 패턴을 올바르게 활용하고 있습니다. TanStack Query를 통한 데이터 페칭, 스코프별 구분, Skeleton 로딩 UI 등 실용적인 패턴이 잘 구현되어 있습니다. 주요 개선 포인트는 다음과 같습니다: **Error Boundary 미적용**으로 인한 런타임 에러 시 전체 화면 블랙아웃 가능성, `formatDate`/`formatFileSize` 같은 **유틸리티 함수의 중복**, 그리고 접근성(ARIA) 속성이 일부 커스텀 인터랙티브 요소에 누락된 점입니다. (`ClaudeMdEditor`의 로컬 state 기반 비동기 처리는 PR #2에서 TanStack Query로 통합 완료되었습니다.) 대부분의 개선사항은 실질적인 가치를 제공하는 중간 우선순위 항목이며, 과도한 리팩토링 없이 점진적으로 적용 가능합니다.
 
 ---
 
@@ -87,53 +87,16 @@ export class ErrorBoundary extends Component<{ children: ReactNode; fallback?: R
 
 ---
 
-### 2. `ClaudeMdEditor`의 로컬 state 기반 비동기 처리
+### 2. ~~`ClaudeMdEditor`의 로컬 state 기반 비동기 처리~~ (해결됨)
 
-- **파일**: `src/routes/claude-md.tsx` (38-181행)
+- **상태**: **해결됨** (PR #2 `fix/claude-md-editor-tanstack-query`)
+- **파일**: `src/routes/claude-md.tsx`, `src/hooks/use-config.ts`
 - **카테고리**: 데이터 페칭, 구조
-- **현재**: `isLoading`, `isSaving`, `error`, `content`, `originalContent` 등 6개의 로컬 state와 `useEffect` 내 수동 비동기 처리를 사용합니다. TanStack Query가 이미 프로젝트에 도입되어 있음에도 이 컴포넌트만 독립적으로 처리합니다.
-
-```tsx
-// 현재 패턴 - 수동 state 관리
-const [isLoading, setIsLoading] = useState(true)
-const [isSaving, setIsSaving] = useState(false)
-const [error, setError] = useState<string | null>(null)
-
-useEffect(() => {
-  setIsLoading(true)
-  import("@/server/claude-md")
-    .then(({ readClaudeMdFileFn }) => readClaudeMdFileFn({ data: fileId }))
-    .then((result) => { /* setState 연쇄 */ })
-    .catch(() => setError("Failed to load CLAUDE.md"))
-}, [fileId])
-```
-
-- **개선**: `useQuery`로 읽기를, `useMutation`으로 저장을 처리하면 캐싱, 에러 상태, 로딩 상태가 자동으로 관리됩니다.
-
-```tsx
-// 개선 패턴
-function useClaudeMdFile(fileId: ClaudeMdFileId) {
-  return useQuery({
-    queryKey: ["claude-md-file", fileId],
-    queryFn: async () => {
-      const { readClaudeMdFileFn } = await import("@/server/claude-md")
-      return readClaudeMdFileFn({ data: fileId })
-    },
-  })
-}
-
-function useSaveClaudeMdFile(fileId: ClaudeMdFileId) {
-  const queryClient = useQueryClient()
-  return useMutation({
-    mutationFn: async (content: string) => {
-      const { saveClaudeMdFileFn } = await import("@/server/claude-md")
-      return saveClaudeMdFileFn({ data: { ...fileId, content } })
-    },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["claude-md-file", fileId] }),
-  })
-}
-```
-
+- **적용된 개선**:
+  - 6개의 로컬 state + `useEffect` 수동 비동기 처리를 `useClaudeMdFile` 커스텀 훅(`useQuery` + `useMutation`)으로 통합
+  - `...REFETCH_OPTIONS` 적용으로 일관된 polling 동작
+  - `useRef`로 초기화 가드를 두어 polling refetch 시 편집 내용 보호
+  - `savedContent` 로컬 상태로 `isDirty` 정확도 향상 및 저장 성공 시 즉시 반영
 - **근거**: TanStack Query v5 공식 문서의 [Server State Management](https://tanstack.com/query/latest/docs/framework/react/guides/queries) 원칙. 서버 상태와 UI 상태를 분리하면 코드가 단순해지고, 자동 재시도/캐싱 혜택을 얻을 수 있습니다.
 
 ---
@@ -420,7 +383,7 @@ export function useCliStatus() {
 
 | # | 제목 | 이유 |
 |---|------|------|
-| 2 | ClaudeMdEditor TanStack Query 전환 | 코드 단순화 + 일관된 데이터 레이어 |
+| ~~2~~ | ~~ClaudeMdEditor TanStack Query 전환~~ | ~~해결됨 — PR #2에서 통합 완료~~ |
 | 3 | 유틸리티 함수 중복 제거 | DRY 원칙, 유지보수성 향상 |
 | 5 | AddMcpDialog 폼 상태 통합 | 에러 후 닫기 시 state 잔류 버그 방지 |
 | 6 | ScopeBadge 타입 정리 | TypeScript strict 일관성 |
