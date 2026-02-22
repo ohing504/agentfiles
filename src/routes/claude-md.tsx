@@ -22,6 +22,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { useClaudeMdFiles } from "@/hooks/use-claude-md-files"
 import { useClaudeMdFile, useClaudeMdGlobalMeta } from "@/hooks/use-config"
 import { m } from "@/paraglide/messages"
+import type { ClaudeMdFileId } from "@/shared/types"
 
 export const Route = createFileRoute("/claude-md")({ component: ClaudeMdPage })
 
@@ -35,25 +36,27 @@ function formatDate(iso: string): string {
 }
 
 // Unified editor for any CLAUDE.md file
-function ClaudeMdEditor({
-  fileId,
-}: {
-  fileId: { global: true } | { projectPath: string; relativePath: string }
-}) {
+function ClaudeMdEditor({ fileId }: { fileId: ClaudeMdFileId }) {
   const [content, setContent] = useState("")
   const [savedContent, setSavedContent] = useState("")
-  const initialized = useRef(false)
+  const contentRef = useRef("")
+  const savedContentRef = useRef("")
   const {
     query: { data, isLoading, error },
     mutation,
   } = useClaudeMdFile(fileId)
 
-  // 최초 로드 시에만 content 초기화 (polling refetch 시 편집 내용 보호)
+  // ref를 최신 상태와 동기화
+  contentRef.current = content
+  savedContentRef.current = savedContent
+
+  // 서버 데이터 동기화: 편집 중이 아닐 때만 반영 (polling refetch 시 편집 내용 보호)
+  // NOTE: 이 컴포넌트는 부모에서 key={editorKey}로 리마운트되어 파일 전환 시 상태 초기화됨
   useEffect(() => {
-    if (data !== undefined && !initialized.current) {
+    if (data === undefined) return
+    if (contentRef.current === savedContentRef.current) {
       setContent(data.content)
       setSavedContent(data.content)
-      initialized.current = true
     }
   }, [data])
 

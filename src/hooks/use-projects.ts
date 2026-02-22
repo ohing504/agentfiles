@@ -1,10 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { queryKeys } from "@/lib/query-keys"
 
 export function useProjects() {
   const queryClient = useQueryClient()
 
   const query = useQuery({
-    queryKey: ["projects"],
+    queryKey: queryKeys.projects.all,
     queryFn: async () => {
       const { getProjectsFn } = await import("@/server/projects")
       return getProjectsFn()
@@ -17,7 +18,7 @@ export function useProjects() {
       return addProjectFn({ data: { path: projectPath } })
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["projects"] })
+      queryClient.invalidateQueries({ queryKey: queryKeys.projects.all })
     },
   })
 
@@ -27,7 +28,7 @@ export function useProjects() {
       return removeProjectFn({ data: { path: projectPath } })
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["projects"] })
+      queryClient.invalidateQueries({ queryKey: queryKeys.projects.all })
     },
   })
 
@@ -37,12 +38,12 @@ export function useProjects() {
       return setActiveProjectFn({ data: { path: projectPath } })
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["projects"] })
-      queryClient.invalidateQueries({ queryKey: ["overview"] })
-      queryClient.invalidateQueries({ queryKey: ["claude-md"] })
-      queryClient.invalidateQueries({ queryKey: ["mcp-servers"] })
-      queryClient.invalidateQueries({ queryKey: ["agent-files"] })
-      queryClient.invalidateQueries({ queryKey: ["plugins"] })
+      queryClient.invalidateQueries({ queryKey: queryKeys.projects.all })
+      queryClient.invalidateQueries({ queryKey: queryKeys.overview.all })
+      queryClient.invalidateQueries({ queryKey: queryKeys.claudeMd.all })
+      queryClient.invalidateQueries({ queryKey: queryKeys.mcpServers.all })
+      queryClient.invalidateQueries({ queryKey: queryKeys.agentFiles.all })
+      queryClient.invalidateQueries({ queryKey: queryKeys.plugins.all })
     },
   })
 

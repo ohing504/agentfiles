@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useProjectContext } from "@/components/ProjectContext"
-import type { AgentFile, Scope } from "@/shared/types"
+import { queryKeys } from "@/lib/query-keys"
+import type { AgentFile, ClaudeMdFileId, Scope } from "@/shared/types"
 
 const REFETCH_OPTIONS = {
   refetchOnWindowFocus: true,
@@ -13,7 +14,7 @@ export function useOverview() {
   const { activeProjectPath } = useProjectContext()
 
   return useQuery({
-    queryKey: ["overview", activeProjectPath],
+    queryKey: queryKeys.overview.byProject(activeProjectPath),
     queryFn: async () => {
       const { getOverview } = await import("@/server/overview")
       return getOverview({ data: { projectPath: activeProjectPath } })
@@ -29,7 +30,7 @@ export function useClaudeMd(scope: Scope) {
   const queryClient = useQueryClient()
 
   const query = useQuery({
-    queryKey: ["claude-md", scope, activeProjectPath],
+    queryKey: queryKeys.claudeMd.byScope(scope, activeProjectPath),
     queryFn: async () => {
       const { getClaudeMdFn } = await import("@/server/claude-md")
       return getClaudeMdFn({ data: { scope, projectPath: activeProjectPath } })
@@ -46,9 +47,9 @@ export function useClaudeMd(scope: Scope) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["claude-md", scope, activeProjectPath],
+        queryKey: queryKeys.claudeMd.byScope(scope, activeProjectPath),
       })
-      queryClient.invalidateQueries({ queryKey: ["overview"] })
+      queryClient.invalidateQueries({ queryKey: queryKeys.overview.all })
     },
   })
 
@@ -57,20 +58,18 @@ export function useClaudeMd(scope: Scope) {
 
 // ── CLAUDE.md File (file-level read/write) ───────────────────────────────────
 
-type ClaudeMdFileId =
-  | { global: true }
-  | { projectPath: string; relativePath: string }
+function toFileKey(fileId: ClaudeMdFileId): string {
+  return "global" in fileId
+    ? "global"
+    : `${fileId.projectPath}/${fileId.relativePath}`
+}
 
 export function useClaudeMdFile(fileId: ClaudeMdFileId) {
   const queryClient = useQueryClient()
-
-  const fileKey =
-    "global" in fileId
-      ? "global"
-      : `${fileId.projectPath}/${fileId.relativePath}`
+  const fileKey = toFileKey(fileId)
 
   const query = useQuery({
-    queryKey: ["claude-md", "file", fileKey],
+    queryKey: queryKeys.claudeMd.file(fileKey),
     queryFn: async () => {
       const { readClaudeMdFileFn } = await import("@/server/claude-md")
       return readClaudeMdFileFn({
@@ -101,8 +100,10 @@ export function useClaudeMdFile(fileId: ClaudeMdFileId) {
       })
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["claude-md"] })
-      queryClient.invalidateQueries({ queryKey: ["overview"] })
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.claudeMd.file(fileKey),
+      })
+      queryClient.invalidateQueries({ queryKey: queryKeys.overview.all })
     },
   })
 
@@ -111,12 +112,12 @@ export function useClaudeMdFile(fileId: ClaudeMdFileId) {
 
 export function useClaudeMdGlobalMeta() {
   return useQuery({
-    queryKey: ["claude-md", "file", "global-meta"],
+    queryKey: queryKeys.claudeMd.file("global"),
     queryFn: async () => {
       const { readClaudeMdFileFn } = await import("@/server/claude-md")
-      const result = await readClaudeMdFileFn({ data: { global: true } })
-      return result.size
+      return readClaudeMdFileFn({ data: { global: true } })
     },
+    select: (data) => data.size,
     ...REFETCH_OPTIONS,
   })
 }
@@ -127,7 +128,7 @@ export function usePlugins() {
   const queryClient = useQueryClient()
 
   const query = useQuery({
-    queryKey: ["plugins"],
+    queryKey: queryKeys.plugins.all,
     queryFn: async () => {
       const { getPluginsFn } = await import("@/server/plugins")
       return getPluginsFn()
@@ -141,8 +142,8 @@ export function usePlugins() {
       return togglePluginFn({ data: params })
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["plugins"] })
-      queryClient.invalidateQueries({ queryKey: ["overview"] })
+      queryClient.invalidateQueries({ queryKey: queryKeys.plugins.all })
+      queryClient.invalidateQueries({ queryKey: queryKeys.overview.all })
     },
   })
 
@@ -156,7 +157,7 @@ export function useMcpServers() {
   const queryClient = useQueryClient()
 
   const query = useQuery({
-    queryKey: ["mcp-servers", activeProjectPath],
+    queryKey: queryKeys.mcpServers.byProject(activeProjectPath),
     queryFn: async () => {
       const { getMcpServersFn } = await import("@/server/mcp")
       return getMcpServersFn({ data: { projectPath: activeProjectPath } })
@@ -179,8 +180,8 @@ export function useMcpServers() {
       })
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["mcp-servers"] })
-      queryClient.invalidateQueries({ queryKey: ["overview"] })
+      queryClient.invalidateQueries({ queryKey: queryKeys.mcpServers.all })
+      queryClient.invalidateQueries({ queryKey: queryKeys.overview.all })
     },
   })
 
@@ -192,8 +193,8 @@ export function useMcpServers() {
       })
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["mcp-servers"] })
-      queryClient.invalidateQueries({ queryKey: ["overview"] })
+      queryClient.invalidateQueries({ queryKey: queryKeys.mcpServers.all })
+      queryClient.invalidateQueries({ queryKey: queryKeys.overview.all })
     },
   })
 
@@ -207,7 +208,7 @@ export function useAgentFiles(type: AgentFile["type"]) {
   const queryClient = useQueryClient()
 
   const query = useQuery({
-    queryKey: ["agent-files", type, activeProjectPath],
+    queryKey: queryKeys.agentFiles.byTypeAndProject(type, activeProjectPath),
     queryFn: async () => {
       const { getItemsFn } = await import("@/server/items")
       return getItemsFn({
@@ -229,8 +230,10 @@ export function useAgentFiles(type: AgentFile["type"]) {
       })
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["agent-files", type] })
-      queryClient.invalidateQueries({ queryKey: ["overview"] })
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.agentFiles.byType(type),
+      })
+      queryClient.invalidateQueries({ queryKey: queryKeys.overview.all })
     },
   })
 
@@ -242,8 +245,10 @@ export function useAgentFiles(type: AgentFile["type"]) {
       })
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["agent-files", type] })
-      queryClient.invalidateQueries({ queryKey: ["overview"] })
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.agentFiles.byType(type),
+      })
+      queryClient.invalidateQueries({ queryKey: queryKeys.overview.all })
     },
   })
 
@@ -254,7 +259,7 @@ export function useAgentFiles(type: AgentFile["type"]) {
 
 export function useCliStatus() {
   return useQuery({
-    queryKey: ["cli-status"],
+    queryKey: queryKeys.cliStatus.all,
     queryFn: async () => {
       const { getCliStatusFn } = await import("@/server/cli-status")
       return getCliStatusFn()

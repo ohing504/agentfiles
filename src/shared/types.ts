@@ -1,6 +1,11 @@
 // ── 스코프 ──
 export type Scope = "global" | "project"
 
+// ── CLAUDE.md File ID ──
+export type ClaudeMdFileId =
+  | { global: true }
+  | { projectPath: string; relativePath: string }
+
 // ── CLAUDE.md ──
 export interface ClaudeMd {
   scope: Scope
