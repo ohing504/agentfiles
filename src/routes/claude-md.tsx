@@ -1,4 +1,3 @@
-import { useQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import {
   AlertCircle,
@@ -10,7 +9,7 @@ import {
   HardDrive,
   Save,
 } from "lucide-react"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useProjectContext } from "@/components/ProjectContext"
 import { Button } from "@/components/ui/button"
 import {
@@ -21,7 +20,9 @@ import {
 import { Skeleton } from "@/components/ui/skeleton"
 import { Textarea } from "@/components/ui/textarea"
 import { useClaudeMdFiles } from "@/hooks/use-claude-md-files"
+import { useClaudeMdFile, useClaudeMdGlobalMeta } from "@/hooks/use-config"
 import { m } from "@/paraglide/messages"
+import type { ClaudeMdFileId } from "@/shared/types"
 
 export const Route = createFileRoute("/claude-md")({ component: ClaudeMdPage })
 
@@ -35,81 +36,36 @@ function formatDate(iso: string): string {
 }
 
 // Unified editor for any CLAUDE.md file
-function ClaudeMdEditor({
-  fileId,
-}: {
-  fileId: { global: true } | { projectPath: string; relativePath: string }
-}) {
+function ClaudeMdEditor({ fileId }: { fileId: ClaudeMdFileId }) {
   const [content, setContent] = useState("")
-  const [originalContent, setOriginalContent] = useState("")
-  const [isDirty, setIsDirty] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
-  const [isSaving, setIsSaving] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [fileMeta, setFileMeta] = useState<{
-    path: string
-    size: number
-    lastModified: string
-  } | null>(null)
+  const [savedContent, setSavedContent] = useState("")
+  const contentRef = useRef("")
+  const savedContentRef = useRef("")
+  const {
+    query: { data, isLoading, error },
+    mutation,
+  } = useClaudeMdFile(fileId)
 
+  // ref를 최신 상태와 동기화
+  contentRef.current = content
+  savedContentRef.current = savedContent
+
+  // 서버 데이터 동기화: 편집 중이 아닐 때만 반영 (polling refetch 시 편집 내용 보호)
+  // NOTE: 이 컴포넌트는 부모에서 key={editorKey}로 리마운트되어 파일 전환 시 상태 초기화됨
   useEffect(() => {
-    setIsLoading(true)
-    setError(null)
-    import("@/server/claude-md")
-      .then(({ readClaudeMdFileFn }) =>
-        readClaudeMdFileFn({
-          data:
-            "global" in fileId
-              ? { global: true }
-              : {
-                  projectPath: fileId.projectPath,
-                  relativePath: fileId.relativePath,
-                },
-        }),
-      )
-      .then((result) => {
-        setContent(result.content)
-        setOriginalContent(result.content)
-        setFileMeta({
-          path: result.path,
-          size: result.size,
-          lastModified: result.lastModified,
-        })
-        setIsDirty(false)
-        setIsLoading(false)
-      })
-      .catch(() => {
-        setError("Failed to load CLAUDE.md")
-        setIsLoading(false)
-      })
-  }, [fileId])
-
-  const handleChange = (value: string) => {
-    setContent(value)
-    setIsDirty(value !== originalContent)
-  }
-
-  const handleSave = async () => {
-    setIsSaving(true)
-    try {
-      const { saveClaudeMdFileFn } = await import("@/server/claude-md")
-      await saveClaudeMdFileFn({
-        data:
-          "global" in fileId
-            ? { global: true, content }
-            : {
-                projectPath: fileId.projectPath,
-                relativePath: fileId.relativePath,
-                content,
-              },
-      })
-      setOriginalContent(content)
-      setIsDirty(false)
-    } catch {
-      setError("Failed to save. Please try again.")
-    } finally {
-      setIsSaving(false)
+    if (data === undefined) return
+    if (contentRef.current === savedContentRef.current) {
+      setContent(data.content)
+      setSavedContent(data.content)
     }
+  }, [data])
+
+  const isDirty = content !== savedContent
+
+  const handleSave = () => {
+    mutation.mutate(content, {
+      onSuccess: () => setSavedContent(content),
+    })
   }
 
   if (isLoading) {
@@ -125,39 +81,46 @@ function ClaudeMdEditor({
     return (
       <div className="flex items-center gap-2 text-destructive text-sm py-8">
         <AlertCircle className="w-4 h-4" />
-        <span>{error}</span>
+        <span>Failed to load CLAUDE.md</span>
       </div>
     )
   }
 
   return (
     <div className="space-y-4">
-      {fileMeta?.lastModified && (
+      {data?.lastModified && (
         <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
           <div className="flex items-center gap-1">
             <FileText className="w-3.5 h-3.5" />
-            <span className="font-mono truncate max-w-xs">{fileMeta.path}</span>
+            <span className="font-mono truncate max-w-xs">{data.path}</span>
           </div>
           <div className="flex items-center gap-1">
             <HardDrive className="w-3.5 h-3.5" />
-            <span>{formatFileSize(fileMeta.size)}</span>
+            <span>{formatFileSize(data.size)}</span>
           </div>
           <div className="flex items-center gap-1">
             <Clock className="w-3.5 h-3.5" />
-            <span>{formatDate(fileMeta.lastModified)}</span>
+            <span>{formatDate(data.lastModified)}</span>
           </div>
         </div>
       )}
 
-      {!fileMeta?.lastModified && (
+      {!data?.lastModified && (
         <p className="text-sm text-muted-foreground">
           No file found. Start typing to create one.
         </p>
       )}
 
+      {mutation.isError && (
+        <div className="flex items-center gap-2 text-destructive text-sm">
+          <AlertCircle className="w-4 h-4" />
+          <span>Failed to save. Please try again.</span>
+        </div>
+      )}
+
       <Textarea
         value={content}
-        onChange={(e) => handleChange(e.target.value)}
+        onChange={(e) => setContent(e.target.value)}
         placeholder="# CLAUDE.md\n\nAdd instructions for Claude here..."
         className="font-mono text-sm min-h-[400px] resize-y"
       />
@@ -168,12 +131,12 @@ function ClaudeMdEditor({
         </span>
         <Button
           onClick={handleSave}
-          disabled={!isDirty || isSaving}
+          disabled={!isDirty || mutation.isPending}
           size="sm"
           className="gap-1.5"
         >
           <Save className="w-4 h-4" />
-          {isSaving ? "Saving..." : "Save"}
+          {mutation.isPending ? "Saving..." : "Save"}
         </Button>
       </div>
     </div>
@@ -213,21 +176,10 @@ function ClaudeMdItem({
 // "global" for ~/.claude/CLAUDE.md, or a relative path for project files
 type SelectedFile = "global" | string
 
-function useGlobalFileMeta() {
-  return useQuery({
-    queryKey: ["claude-md-global-meta"],
-    queryFn: async () => {
-      const { readClaudeMdFileFn } = await import("@/server/claude-md")
-      const result = await readClaudeMdFileFn({ data: { global: true } })
-      return result.size
-    },
-  })
-}
-
 function ClaudeMdPage() {
   const { activeProject, activeProjectPath } = useProjectContext()
   const { data: projectFiles, isLoading: filesLoading } = useClaudeMdFiles()
-  const { data: globalSize } = useGlobalFileMeta()
+  const { data: globalSize } = useClaudeMdGlobalMeta()
   const [selected, setSelected] = useState<SelectedFile>("global")
 
   const editorKey =

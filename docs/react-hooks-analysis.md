@@ -2,7 +2,7 @@
 
 ## 요약
 
-전체 코드베이스를 분석한 결과, 전반적으로 TanStack Query 기반의 커스텀 훅 구조가 잘 설계되어 있습니다. 다만 몇 가지 개선 기회가 발견되었습니다. 가장 주목할 만한 사항은 `ClaudeMdEditor` 컴포넌트에서 `useEffect` 기반의 데이터 로딩 패턴이 TanStack Query와 병행 사용되고 있어 일관성이 부족하고, `ProjectContext.tsx`에서 매 렌더링마다 새로운 함수 참조가 생성되고 있으며, agents/commands/skills 상세 페이지에 동일한 파라미터 파싱 로직이 중복되어 있습니다. 폴링 주기(5초)가 모든 쿼리에 일괄 적용되어 실제 변경이 잦지 않은 데이터에 불필요한 요청이 발생하고 있습니다. PluginsPage에서 파생 상태를 `useMemo` 없이 매 렌더링마다 재계산하는 부분도 개선할 수 있습니다.
+전체 코드베이스를 분석한 결과, 전반적으로 TanStack Query 기반의 커스텀 훅 구조가 잘 설계되어 있습니다. `ClaudeMdEditor`의 `useEffect` + `useState` 혼합 패턴은 PR #2에서 TanStack Query로 통합 완료되었습니다. 남은 개선 기회로는 `ProjectContext.tsx`에서 매 렌더링마다 새로운 함수 참조가 생성되고 있으며, agents/commands/skills 상세 페이지에 동일한 파라미터 파싱 로직이 중복되어 있습니다. 폴링 주기(5초)가 모든 쿼리에 일괄 적용되어 실제 변경이 잦지 않은 데이터에 불필요한 요청이 발생하고 있습니다. PluginsPage에서 파생 상태를 `useMemo` 없이 매 렌더링마다 재계산하는 부분도 개선할 수 있습니다.
 
 ---
 
@@ -15,7 +15,7 @@
 | `src/hooks/use-claude-md-files.ts` | `useQuery` | 프로젝트 내 CLAUDE.md 파일 목록 |
 | `src/hooks/use-mobile.ts` | `useState`, `useEffect` | 모바일 브레이크포인트 감지 |
 | `src/components/ProjectContext.tsx` | `createContext`, `useContext` | 프로젝트 컨텍스트 |
-| `src/routes/claude-md.tsx` | `useState`, `useEffect`, `useQuery` | 에디터 상태 관리 (혼합 패턴) |
+| `src/routes/claude-md.tsx` | `useState`, `useEffect`, `useRef` | 에디터 로컬 상태 (`useClaudeMdFile` 훅 사용) |
 | `src/routes/mcp.tsx` | `useState` | 다이얼로그 폼 상태 |
 | `src/components/AddProjectDialog.tsx` | `useState` (커스텀 훅 `useBrowseDir`) | 디렉토리 브라우저 상태 |
 
@@ -23,43 +23,16 @@
 
 ## 개선 제안
 
-### 1. `ClaudeMdEditor` — `useEffect` + `useState` 패턴을 TanStack Query로 통합
+### 1. ~~`ClaudeMdEditor` — `useEffect` + `useState` 패턴을 TanStack Query로 통합~~ (해결됨)
 
-- **파일**: `src/routes/claude-md.tsx` (38~181번째 줄)
-- **현재 패턴**:
-  ```tsx
-  // useEffect로 직접 비동기 로딩 — TanStack Query와 혼합 사용
-  const [content, setContent] = useState("")
-  const [originalContent, setOriginalContent] = useState("")
-  const [isDirty, setIsDirty] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
-  const [isSaving, setIsSaving] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [fileMeta, setFileMeta] = useState<...>(null)
-
-  useEffect(() => {
-    setIsLoading(true)
-    import("@/server/claude-md").then(...).catch(...)
-  }, [fileId])
-  ```
-- **개선 방안**:
-  ```tsx
-  // TanStack Query로 통합 — useEffect 제거
-  const { data, isLoading, error } = useQuery({
-    queryKey: ["claude-md-file", fileId],
-    queryFn: async () => {
-      const { readClaudeMdFileFn } = await import("@/server/claude-md")
-      return readClaudeMdFileFn({ data: ... })
-    },
-  })
-  const [content, setContent] = useState(data?.content ?? "")
-  // useEffect로 data 동기화 1개만 유지
-  useEffect(() => {
-    if (data?.content !== undefined) setContent(data.content)
-  }, [data?.content])
-  const isDirty = content !== (data?.content ?? "")
-  ```
-- **이유**: 현재 6개의 `useState` + 1개의 `useEffect`로 구현된 로딩/에러/저장 상태를 TanStack Query가 이미 제공하는 기능으로 대체할 수 있습니다. `isDirty`는 `content !== data?.content` 비교로 파생될 수 있어 별도 `useState`가 불필요합니다. 특히 `key` prop으로 컴포넌트를 리셋하는 현재 방식(233번째 줄 `editorKey`)도 쿼리 키 변경으로 대체하면 더 일관적입니다.
+- **상태**: **해결됨** (PR #2 `fix/claude-md-editor-tanstack-query`)
+- **파일**: `src/routes/claude-md.tsx`, `src/hooks/use-config.ts`
+- **적용된 개선**:
+  - 6개의 `useState` + `useEffect` 수동 비동기 처리를 `useClaudeMdFile` 커스텀 훅(TanStack Query `useQuery` + `useMutation`)으로 통합
+  - `...REFETCH_OPTIONS` 적용으로 다른 훅과 일관된 polling 동작 유지
+  - `useRef`로 초기화 여부를 추적하여 polling refetch 시 편집 내용 보호
+  - `savedContent` 로컬 상태로 정확한 `isDirty` 계산 및 저장 성공 시 즉시 업데이트
+  - `key={editorKey}`를 통한 컴포넌트 리마운트 방식은 유지 (파일 전환 시 상태 초기화)
 
 ---
 
@@ -260,7 +233,7 @@
 
 | 번호 | 제목 | 이유 |
 |------|------|------|
-| 1 | `ClaudeMdEditor` 패턴 통합 | 6개 `useState` + `useEffect` 혼재 — 버그 가능성, 코드 복잡도 높음 |
+| ~~1~~ | ~~`ClaudeMdEditor` 패턴 통합~~ | ~~해결됨 — PR #2에서 TanStack Query로 통합 완료~~ |
 | 3 | 파라미터 파싱 훅 추출 | 3파일 완전 중복 — DRY 원칙 위반 |
 
 ### 중간
