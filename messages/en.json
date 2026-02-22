@@ -14,6 +14,8 @@
   "scope_user": "user",
   "detail_mcp_server": "MCP Server: {name}",
   "detail_agent": "Agent: {name}",
+  "detail_command": "Command: {name}",
+  "detail_skill": "Skill: {name}",
   "detail_plugin": "Plugin: {name}",
   "app_coming_soon": "Coming in Phase 9",
   "app_language_en": "EN",

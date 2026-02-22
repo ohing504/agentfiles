@@ -14,6 +14,8 @@
   "scope_user": "사용자",
   "detail_mcp_server": "MCP 서버: {name}",
   "detail_agent": "에이전트: {name}",
+  "detail_command": "명령어: {name}",
+  "detail_skill": "스킬: {name}",
   "detail_plugin": "플러그인: {name}",
   "app_coming_soon": "Phase 9에서 구현 예정",
   "app_language_en": "EN",

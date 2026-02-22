@@ -101,39 +101,82 @@ agentfiles/
 │  ├─ routes/                  ← TanStack Start 파일 기반 라우팅
 │  │  ├─ __root.tsx            ← 루트 레이아웃 (사이드바 + 메인)
 │  │  ├─ index.tsx             ← Dashboard (/)
-│  │  ├─ claude-md.tsx         ← CLAUDE.md 편집
+│  │  ├─ claude-md.tsx         ← CLAUDE.md 편집 (스코프 탭 + textarea)
 │  │  ├─ plugins.tsx           ← Plugins 목록
+│  │  ├─ plugins.$id.tsx       ← Plugin 상세
 │  │  ├─ mcp.tsx               ← MCP 서버 목록
+│  │  ├─ mcp.$name.tsx         ← MCP 서버 상세
 │  │  ├─ agents.tsx            ← Agents 목록
+│  │  ├─ agents.$name.tsx      ← Agent 상세
+│  │  ├─ commands.tsx          ← Commands 목록
+│  │  ├─ commands.$name.tsx    ← Command 상세
+│  │  ├─ skills.tsx            ← Skills 목록
+│  │  ├─ skills.$name.tsx      ← Skill 상세 (symlink 배지 포함)
 │  │  └─ api/                  ← API Routes (server.handlers)
 │  │     └─ health.ts          ← GET /api/health
 │  │
 │  ├─ services/                ← 서버 사이드 서비스
 │  │  ├─ config-service.ts     ← 모든 읽기 로직 (md 스캔 + json 파싱)
 │  │  ├─ file-writer.ts        ← 마크다운 파일 직접 편집
-│  │  └─ claude-cli.ts         ← MCP/Plugin CLI 위임 (child_process)
+│  │  ├─ claude-cli.ts         ← MCP/Plugin CLI 위임 (child_process)
+│  │  └─ project-store.ts      ← 프로젝트 목록 읽기/쓰기
 │  │
 │  ├─ server/                  ← Server Functions (createServerFn)
-│  │  └─ overview.ts           ← getOverview()
+│  │  ├─ overview.ts           ← getOverview()
+│  │  ├─ claude-md.ts          ← getClaudeMdFn, saveClaudeMdFn
+│  │  ├─ plugins.ts            ← getPluginsFn, togglePluginFn
+│  │  ├─ mcp.ts                ← getMcpServersFn, addMcpServerFn, removeMcpServerFn
+│  │  ├─ items.ts              ← getItemsFn, getItemFn, saveItemFn, deleteItemFn
+│  │  ├─ projects.ts           ← 프로젝트 CRUD
+│  │  ├─ cli-status.ts         ← getCliStatusFn
+│  │  ├─ config.ts             ← 경로 헬퍼, 토큰, CLI 탐색
+│  │  ├─ validation.ts         ← 입력 검증 (path traversal 방지)
+│  │  └─ middleware/
+│  │     └─ auth.ts            ← Bearer 토큰 인증 미들웨어
 │  │
 │  ├─ components/              ← UI 컴포넌트
 │  │  ├─ ui/                   ← shadcn 컴포넌트
-│  │  ├─ Sidebar.tsx
-│  │  ├─ FileTree.tsx
-│  │  └─ ScopeBadge.tsx        ← 충돌 시 badge 표시 포함
+│  │  ├─ Layout.tsx            ← 사이드바 + 메인 콘텐츠 레이아웃
+│  │  ├─ Sidebar.tsx           ← 네비게이션
+│  │  ├─ ScopeBadge.tsx        ← global/project 스코프 배지
+│  │  ├─ AgentFileDetail.tsx   ← Agent/Command/Skill 상세 공통 컴포넌트
+│  │  ├─ ProjectContext.tsx    ← 프로젝트 컨텍스트 프로바이더
+│  │  ├─ ProjectSwitcher.tsx   ← 프로젝트 전환 UI
+│  │  ├─ AddProjectDialog.tsx  ← 프로젝트 추가 다이얼로그
+│  │  └─ LanguageSwitcher.tsx  ← 언어 전환 (en/ko)
+│  │
+│  ├─ hooks/                   ← React 커스텀 훅
+│  │  ├─ use-config.ts         ← TanStack Query 데이터 훅 (전체)
+│  │  ├─ use-claude-md-files.ts ← CLAUDE.md 파일 목록 훅
+│  │  ├─ use-projects.ts       ← 프로젝트 관리 훅
+│  │  └─ use-mobile.ts         ← 모바일 감지 훅
 │  │
 │  ├─ lib/                     ← 유틸리티
-│  │  └─ utils.ts
+│  │  ├─ utils.ts              ← 공통 유틸리티
+│  │  ├─ auth.ts               ← 토큰 관리 (추출, 저장, 헤더)
+│  │  ├─ query-keys.ts         ← TanStack Query 키 정의
+│  │  ├─ format.ts             ← formatFileSize, formatDate 유틸리티
+│  │  └─ parse-agent-file-param.ts ← URL 파라미터 파싱 (scope:name)
+│  │
+│  ├─ paraglide/               ← i18n 자동 생성 (Paraglide)
 │  │
 │  └─ shared/
 │     └─ types.ts
+│
+├─ messages/                   ← i18n 메시지 파일
+│  ├─ en.json
+│  └─ ko.json
 │
 ├─ bin/
 │  └─ cli.ts                   ← npx agentfiles 진입점 (Chrome 앱 모드로 열기)
 │
 └─ tests/
-   ├─ server/
-   └─ e2e/
+   ├─ services/                ← 서비스 단위 테스트
+   ├─ server/                  ← 서버 함수 테스트
+   ├─ unit/                    ← 유닛 테스트
+   ├─ integration/             ← 통합 테스트
+   ├─ i18n/                    ← i18n 테스트
+   └─ e2e/                     ← E2E 테스트
 ```
 
 ---

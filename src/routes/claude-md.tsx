@@ -21,19 +21,11 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Textarea } from "@/components/ui/textarea"
 import { useClaudeMdFiles } from "@/hooks/use-claude-md-files"
 import { useClaudeMdFile, useClaudeMdGlobalMeta } from "@/hooks/use-config"
+import { formatDate, formatFileSize } from "@/lib/format"
 import { m } from "@/paraglide/messages"
 import type { ClaudeMdFileId } from "@/shared/types"
 
 export const Route = createFileRoute("/claude-md")({ component: ClaudeMdPage })
-
-function formatFileSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`
-  return `${(bytes / 1024).toFixed(1)} KB`
-}
-
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleString()
-}
 
 // Unified editor for any CLAUDE.md file
 function ClaudeMdEditor({ fileId }: { fileId: ClaudeMdFileId }) {
