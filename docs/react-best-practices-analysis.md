@@ -1,5 +1,7 @@
 # React Best Practice 분석 보고서
 
+> **Status**: 4/10 완료 | 마지막 검증: 2026-02-22
+
 > 분석 대상: agentfiles v1 (TanStack Start + React 19 + shadcn/ui)
 > 분석 기준: React 공식 문서, TanStack Query v5 권장 패턴, 접근성(WCAG 2.1), TypeScript strict 모드
 
@@ -376,15 +378,15 @@ export function useCliStatus() {
 
 | # | 제목 | 이유 |
 |---|------|------|
-| 1 | Error Boundary 추가 | 런타임 에러 시 전체 화면 블랭크 방지 — UX 치명적 |
+| ~~1~~ | ~~Error Boundary 추가~~ (완료) | 런타임 에러 시 전체 화면 블랭크 방지 — PR #4에서 완료 |
 | 7 | inputValidator Zod 도입 | 서버 함수 입력 런타임 검증 없음 — 보안 취약 가능성 |
 
 ### 중간 (다음 스프린트 권장)
 
 | # | 제목 | 이유 |
 |---|------|------|
-| ~~2~~ | ~~ClaudeMdEditor TanStack Query 전환~~ | ~~해결됨 — PR #2에서 통합 완료~~ |
-| 3 | 유틸리티 함수 중복 제거 | DRY 원칙, 유지보수성 향상 |
+| ~~2~~ | ~~ClaudeMdEditor TanStack Query 전환~~ (완료) | ~~해결됨 — PR #2에서 통합 완료~~ |
+| ~~3~~ | ~~유틸리티 함수 중복 제거~~ (완료) | DRY 원칙 — src/lib/format.ts로 통합 완료 |
 | 5 | AddMcpDialog 폼 상태 통합 | 에러 후 닫기 시 state 잔류 버그 방지 |
 | 6 | ScopeBadge 타입 정리 | TypeScript strict 일관성 |
 | 10 | useCliStatus 폴링 최적화 | 불필요한 서버 요청 감소 |
@@ -393,6 +395,6 @@ export function useCliStatus() {
 
 | # | 제목 | 이유 |
 |---|------|------|
-| 4 | Detail 페이지 공통 컴포넌트 추출 | 중복 코드 감소, 향후 기능 추가 시 편의성 |
+| ~~4~~ | ~~Detail 페이지 공통 컴포넌트 추출~~ (완료) | PR #3에서 AgentFileDetail.tsx로 추출 완료 |
 | 8 | LanguageSwitcher aria-pressed | 접근성 개선, 사용자 영향 제한적 |
 | 9 | CollapsibleTrigger 아이콘 aria-hidden | 접근성 개선, Radix가 이미 상당 부분 처리 |

@@ -1,5 +1,7 @@
 # React Hook 개선 분석 보고서
 
+> **Status**: 2/7 완료 | 마지막 검증: 2026-02-22
+
 ## 요약
 
 전체 코드베이스를 분석한 결과, 전반적으로 TanStack Query 기반의 커스텀 훅 구조가 잘 설계되어 있습니다. `ClaudeMdEditor`의 `useEffect` + `useState` 혼합 패턴은 PR #2에서 TanStack Query로 통합 완료되었습니다. 남은 개선 기회로는 `ProjectContext.tsx`에서 매 렌더링마다 새로운 함수 참조가 생성되고 있으며, agents/commands/skills 상세 페이지에 동일한 파라미터 파싱 로직이 중복되어 있습니다. 폴링 주기(5초)가 모든 쿼리에 일괄 적용되어 실제 변경이 잦지 않은 데이터에 불필요한 요청이 발생하고 있습니다. PluginsPage에서 파생 상태를 `useMemo` 없이 매 렌더링마다 재계산하는 부분도 개선할 수 있습니다.
@@ -233,8 +235,8 @@
 
 | 번호 | 제목 | 이유 |
 |------|------|------|
-| ~~1~~ | ~~`ClaudeMdEditor` 패턴 통합~~ | ~~해결됨 — PR #2에서 TanStack Query로 통합 완료~~ |
-| 3 | 파라미터 파싱 훅 추출 | 3파일 완전 중복 — DRY 원칙 위반 |
+| ~~1~~ | ~~`ClaudeMdEditor` 패턴 통합~~ (완료) | ~~해결됨 — PR #2에서 TanStack Query로 통합 완료~~ |
+| ~~3~~ | ~~파라미터 파싱 훅 추출~~ (완료) | src/lib/parse-agent-file-param.ts로 추출 완료 |
 
 ### 중간
 
