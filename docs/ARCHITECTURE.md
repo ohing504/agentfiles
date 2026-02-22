@@ -101,17 +101,9 @@ agentfiles/
 │  ├─ routes/                  ← TanStack Start 파일 기반 라우팅
 │  │  ├─ __root.tsx            ← 루트 레이아웃 (사이드바 + 메인)
 │  │  ├─ index.tsx             ← Dashboard (/)
-│  │  ├─ claude-md.tsx         ← CLAUDE.md 편집 (스코프 탭 + textarea)
-│  │  ├─ plugins.tsx           ← Plugins 목록
-│  │  ├─ plugins.$id.tsx       ← Plugin 상세
-│  │  ├─ mcp.tsx               ← MCP 서버 목록
-│  │  ├─ mcp.$name.tsx         ← MCP 서버 상세
-│  │  ├─ agents.tsx            ← Agents 목록
-│  │  ├─ agents.$name.tsx      ← Agent 상세
-│  │  ├─ commands.tsx          ← Commands 목록
-│  │  ├─ commands.$name.tsx    ← Command 상세
-│  │  ├─ skills.tsx            ← Skills 목록
-│  │  ├─ skills.$name.tsx      ← Skill 상세 (symlink 배지 포함)
+│  │  ├─ files.tsx             ← 통합 Files 뷰 (트리 탐색 + 에디터)
+│  │  ├─ plugins.tsx           ← Plugins 목록 (카드 + Enable/Disable)
+│  │  ├─ mcp.tsx               ← MCP 서버 목록 (추가 Dialog)
 │  │  └─ api/                  ← API Routes (server.handlers)
 │  │     └─ health.ts          ← GET /api/health
 │  │
@@ -136,10 +128,9 @@ agentfiles/
 │  │
 │  ├─ components/              ← UI 컴포넌트
 │  │  ├─ ui/                   ← shadcn 컴포넌트
-│  │  ├─ Layout.tsx            ← 사이드바 + 메인 콘텐츠 레이아웃
-│  │  ├─ Sidebar.tsx           ← 네비게이션
+│  │  ├─ Layout.tsx            ← 고정 헤더 + 스크롤 콘텐츠 레이아웃
+│  │  ├─ Sidebar.tsx           ← 네비게이션 (4개 메뉴)
 │  │  ├─ ScopeBadge.tsx        ← global/project 스코프 배지
-│  │  ├─ AgentFileDetail.tsx   ← Agent/Command/Skill 상세 공통 컴포넌트
 │  │  ├─ ProjectContext.tsx    ← 프로젝트 컨텍스트 프로바이더
 │  │  ├─ ProjectSwitcher.tsx   ← 프로젝트 전환 UI
 │  │  ├─ AddProjectDialog.tsx  ← 프로젝트 추가 다이얼로그
@@ -155,8 +146,7 @@ agentfiles/
 │  │  ├─ utils.ts              ← 공통 유틸리티
 │  │  ├─ auth.ts               ← 토큰 관리 (추출, 저장, 헤더)
 │  │  ├─ query-keys.ts         ← TanStack Query 키 정의
-│  │  ├─ format.ts             ← formatFileSize, formatDate 유틸리티
-│  │  └─ parse-agent-file-param.ts ← URL 파라미터 파싱 (scope:name)
+│  │  └─ format.ts             ← formatFileSize, formatDate 유틸리티
 │  │
 │  ├─ paraglide/               ← i18n 자동 생성 (Paraglide)
 │  │
@@ -287,38 +277,30 @@ GET    /api/health                      ← 헬스체크
 ### 라우팅
 
 ```
-/                       → Dashboard
-/claude-md?scope=global → CLAUDE.md 편집 (scope로 글로벌/프로젝트 전환)
-/plugins                → Plugins 목록
-/plugins/:id            → Plugin 상세
-/mcp                    → MCP 목록
-/mcp/:name              → MCP 상세
-/agents                 → Agents 목록 (글로벌+프로젝트 통합, ScopeBadge 구분)
-/agents/:name           → Agent 상세
-/commands               → Commands 목록
-/skills                 → Skills 목록
+/                       → Dashboard (요약 카드 + 바로가기)
+/files                  → 통합 Files 뷰 (트리 탐색 + 인라인 에디터)
+/plugins                → Plugins 목록 (카드 + Enable/Disable)
+/mcp                    → MCP 서버 목록 (추가/삭제 Dialog)
 ```
 
-### 주요 페이지 (3개)
+### 주요 페이지 (4개)
 
-1. **Dashboard** — 전체 요약 (카운트 카드, 충돌 badge 표시)
-2. **Plugin Detail** — 버전, 스코프, 포함된 skills, enable/disable
-3. **MCP Server Detail** — command, args, env, 스코프, 상태
+1. **Dashboard** — 전체 요약 (카운트 카드, Files/Plugins/MCP 바로가기)
+2. **Files** — IDE 스타일 통합 뷰. 좌측 트리(Global/Project 스코프별 CLAUDE.md + Agents/Commands/Skills) + 우측 에디터. namespace 지원 (예: `ys/commit`)
+3. **Plugins** — 카드 레이아웃으로 플러그인 목록, Enable/Disable 토글
+4. **MCP Servers** — MCP 서버 목록, shadcn Select로 타입 선택 후 추가
 
-> 충돌(글로벌 ↔ 프로젝트 동일 이름)은 각 항목 목록에서 ScopeBadge로 표시. 전용 페이지 불필요.
+### 사이드바 (4개 메뉴)
 
-### 사이드바 동작
+- Dashboard, Files, Plugins, MCP Servers
+- 하단: 프로젝트 전환 (ProjectSwitcher), 언어 전환 (LanguageSwitcher)
 
-- 존재하는 카테고리만 표시 (빈 폴더 숨김)
-- 상단 [➕ New] 버튼 → Agent/Command/Skill 생성 (스코프 선택)
-- Plugins와 MCP Servers는 별도 카테고리로 분리
+### 레이아웃 패턴
 
-### 항목 액션 (우클릭/버튼)
-
-- Open / Rename / Delete
-- Copy to Project (글로벌 → 프로젝트)
-- Move to Global (프로젝트 → 글로벌)
-- Copy Path / Reveal in Finder
+- `SidebarProvider`에 `h-svh`로 뷰포트 높이 제한
+- `SidebarInset`에 `overflow-hidden`으로 헤더 고정
+- 콘텐츠 영역에 `overflow-y-auto`로 독립 스크롤
+- macOS overscroll bounce 방지를 위해 `sticky` 대신 flex + overflow 패턴 사용
 
 ---
 
