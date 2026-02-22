@@ -13,14 +13,11 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useCliStatus, usePlugins } from "@/hooks/use-config"
+import { formatDate } from "@/lib/format"
 import { m } from "@/paraglide/messages"
 import type { Plugin } from "@/shared/types"
 
 export const Route = createFileRoute("/plugins")({ component: PluginsPage })
-
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleString()
-}
 
 function PluginCard({
   plugin,

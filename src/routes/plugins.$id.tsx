@@ -17,15 +17,12 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useCliStatus, usePlugins } from "@/hooks/use-config"
+import { formatDate } from "@/lib/format"
 import { m } from "@/paraglide/messages"
 
 export const Route = createFileRoute("/plugins/$id")({
   component: PluginDetailPage,
 })
-
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleString()
-}
 
 function MetaRow({
   icon: Icon,
