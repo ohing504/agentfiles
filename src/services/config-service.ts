@@ -171,12 +171,35 @@ async function scanMdDirWithScope(
 
 // ── settings.json 파싱 헬퍼 ──
 
-async function readSettingsJson(
+export async function readSettingsJson(
   basePath: string,
 ): Promise<Record<string, unknown>> {
   const settingsPath = path.join(basePath, "settings.json")
   try {
     const content = await fs.readFile(settingsPath, "utf-8")
+    return JSON.parse(content) as Record<string, unknown>
+  } catch {
+    return {}
+  }
+}
+
+export async function readClaudeAppJson(): Promise<Record<string, unknown>> {
+  const claudeJsonPath = path.join(os.homedir(), ".claude.json")
+  try {
+    const content = await fs.readFile(claudeJsonPath, "utf-8")
+    return JSON.parse(content) as Record<string, unknown>
+  } catch {
+    return {}
+  }
+}
+
+export async function readProjectLocalSettings(
+  projectPath?: string,
+): Promise<Record<string, unknown>> {
+  const basePath = getProjectConfigPath(projectPath)
+  const localSettingsPath = path.join(basePath, "settings.local.json")
+  try {
+    const content = await fs.readFile(localSettingsPath, "utf-8")
     return JSON.parse(content) as Record<string, unknown>
   } catch {
     return {}

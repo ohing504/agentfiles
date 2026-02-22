@@ -33,3 +33,12 @@ export async function renameFile(
   await fs.mkdir(dir, { recursive: true })
   await fs.rename(oldPath, newPath)
 }
+
+export async function writeSettingsJson(
+  basePath: string,
+  data: Record<string, unknown>,
+): Promise<void> {
+  await fs.mkdir(basePath, { recursive: true })
+  const filePath = path.join(basePath, "settings.json")
+  await fs.writeFile(filePath, `${JSON.stringify(data, null, 2)}\n`, "utf-8")
+}

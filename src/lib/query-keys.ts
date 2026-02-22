@@ -52,4 +52,20 @@ export const queryKeys = {
   projects: {
     all: ["projects"] as const,
   },
+
+  settings: {
+    all: ["settings"] as const,
+    byScope: (scope: Scope, projectPath?: string) =>
+      [...queryKeys.settings.all, scope, projectPath] as const,
+  },
+
+  claudeAppJson: {
+    all: ["claude-app-json"] as const,
+  },
+
+  projectLocalSettings: {
+    all: ["project-local-settings"] as const,
+    byProject: (projectPath?: string) =>
+      [...queryKeys.projectLocalSettings.all, projectPath] as const,
+  },
 }

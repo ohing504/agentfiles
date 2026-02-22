@@ -102,3 +102,41 @@ export interface ProjectsConfig {
   projects: Project[]
   activeProject: string | null // project path or null for Global Only
 }
+
+// ── Settings ──
+export interface GlobalSettings {
+  model?: string
+  alwaysThinkingEnabled?: boolean
+  skipDangerousModePermissionPrompt?: boolean
+  enableAllProjectMcpServers?: boolean
+  env?: Record<string, string>
+  statusLine?: {
+    type?: string
+    command?: string
+  }
+  enabledPlugins?: Record<string, boolean> | string[]
+  mcpServers?: Record<string, unknown>
+  [key: string]: unknown
+}
+
+export interface ProjectSettings {
+  enabledPlugins?: Record<string, boolean> | string[]
+  mcpServers?: Record<string, unknown>
+  [key: string]: unknown
+}
+
+export interface ProjectLocalSettings {
+  permissions?: {
+    allow?: string[]
+    deny?: string[]
+  }
+  [key: string]: unknown
+}
+
+export interface ClaudeAppJson {
+  numStartups?: number
+  installMethod?: string
+  autoUpdates?: boolean
+  cachedStatsigGates?: Record<string, boolean>
+  [key: string]: unknown
+}

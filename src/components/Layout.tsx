@@ -17,7 +17,13 @@ import {
 } from "@/components/ui/sidebar"
 import { m } from "@/paraglide/messages"
 
+const SCOPE_LABELS: Record<string, () => string> = {
+  global: () => m.nav_group_global(),
+  project: () => m.nav_group_project(),
+}
+
 const ROUTE_LABELS: Record<string, () => string> = {
+  settings: () => m.nav_settings(),
   files: () => m.nav_files(),
   plugins: () => m.nav_plugins(),
   mcp: () => m.nav_mcp_servers(),
@@ -32,14 +38,26 @@ function buildBreadcrumbItems(pathname: string) {
     return items
   }
 
-  const labelFn = ROUTE_LABELS[segments[0]]
-  if (!labelFn) return items
+  // /global/... or /project/...
+  const scopeLabel = SCOPE_LABELS[segments[0]]
+  if (!scopeLabel) return items
 
-  if (segments.length === 1) {
-    items.push({ label: labelFn() })
+  const routeLabel = segments[1] ? ROUTE_LABELS[segments[1]] : undefined
+
+  if (!routeLabel) {
+    items.push({ label: scopeLabel() })
+    return items
+  }
+
+  if (segments.length === 2) {
+    // /global/files → "Global > Files"
+    items.push({ label: scopeLabel() })
+    items.push({ label: routeLabel() })
   } else {
-    items.push({ label: labelFn(), href: `/${segments[0]}` })
-    items.push({ label: decodeURIComponent(segments[1]) })
+    // /global/plugins/some-id → "Global > Plugins > some-id"
+    items.push({ label: scopeLabel() })
+    items.push({ label: routeLabel(), href: `/${segments[0]}/${segments[1]}` })
+    items.push({ label: decodeURIComponent(segments[2]) })
   }
 
   return items
