@@ -3,9 +3,14 @@ import { useProjectContext } from "@/components/ProjectContext"
 import { queryKeys } from "@/lib/query-keys"
 import type { AgentFile, ClaudeMdFileId, Scope } from "@/shared/types"
 
-const REFETCH_OPTIONS = {
+const FREQUENT_REFETCH = {
   refetchOnWindowFocus: true,
   refetchInterval: 5000,
+} as const
+
+const INFREQUENT_REFETCH = {
+  refetchOnWindowFocus: true,
+  refetchInterval: 30_000,
 } as const
 
 // ── Overview ──────────────────────────────────────────────────────────────────
@@ -19,7 +24,7 @@ export function useOverview() {
       const { getOverview } = await import("@/server/overview")
       return getOverview({ data: { projectPath: activeProjectPath } })
     },
-    ...REFETCH_OPTIONS,
+    ...FREQUENT_REFETCH,
   })
 }
 
@@ -35,7 +40,7 @@ export function useClaudeMd(scope: Scope) {
       const { getClaudeMdFn } = await import("@/server/claude-md")
       return getClaudeMdFn({ data: { scope, projectPath: activeProjectPath } })
     },
-    ...REFETCH_OPTIONS,
+    ...FREQUENT_REFETCH,
   })
 
   const mutation = useMutation({
@@ -82,7 +87,7 @@ export function useClaudeMdFile(fileId: ClaudeMdFileId) {
               },
       })
     },
-    ...REFETCH_OPTIONS,
+    ...FREQUENT_REFETCH,
   })
 
   const mutation = useMutation({
@@ -118,7 +123,7 @@ export function useClaudeMdGlobalMeta() {
       return readClaudeMdFileFn({ data: { global: true } })
     },
     select: (data) => data.size,
-    ...REFETCH_OPTIONS,
+    ...FREQUENT_REFETCH,
   })
 }
 
@@ -133,7 +138,7 @@ export function usePlugins() {
       const { getPluginsFn } = await import("@/server/plugins")
       return getPluginsFn()
     },
-    ...REFETCH_OPTIONS,
+    ...INFREQUENT_REFETCH,
   })
 
   const mutation = useMutation({
@@ -162,7 +167,7 @@ export function useMcpServers() {
       const { getMcpServersFn } = await import("@/server/mcp")
       return getMcpServersFn({ data: { projectPath: activeProjectPath } })
     },
-    ...REFETCH_OPTIONS,
+    ...INFREQUENT_REFETCH,
   })
 
   const addMutation = useMutation({
@@ -215,7 +220,7 @@ export function useAgentFiles(type: AgentFile["type"]) {
         data: { type, projectPath: activeProjectPath },
       })
     },
-    ...REFETCH_OPTIONS,
+    ...INFREQUENT_REFETCH,
   })
 
   const saveMutation = useMutation({
@@ -264,6 +269,7 @@ export function useCliStatus() {
       const { getCliStatusFn } = await import("@/server/cli-status")
       return getCliStatusFn()
     },
-    ...REFETCH_OPTIONS,
+    staleTime: 60_000,
+    refetchOnWindowFocus: true,
   })
 }

@@ -1,5 +1,11 @@
+import { z } from "zod"
+
+// ── Zod 스키마 ──
+export const scopeSchema = z.enum(["global", "project"])
+export const agentFileTypeSchema = z.enum(["agent", "command", "skill"])
+
 // ── 스코프 ──
-export type Scope = "global" | "project"
+export type Scope = z.infer<typeof scopeSchema>
 
 // ── CLAUDE.md File ID ──
 export type ClaudeMdFileId =
@@ -51,7 +57,7 @@ export interface AgentFile {
   frontmatter?: {
     name?: string
     description?: string
-    [key: string]: unknown
+    [key: string]: string | number | boolean | null | undefined
   }
   size: number
   lastModified: string // ISO 8601
