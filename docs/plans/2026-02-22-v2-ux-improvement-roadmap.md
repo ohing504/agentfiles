@@ -94,3 +94,20 @@
 - 네이티브 기능(시스템 트레이, 글로벌 핫키)이 필수가 되는 경우
 - Chrome 의존성 제거가 필요해지는 경우
 - 이중 배포(npx lite + Tauri full) 전략으로 점진적 도입 가능
+
+---
+
+## Design Note: 멀티 도구 확장성
+
+> 현재는 Claude Code (`~/.claude/`) 타겟팅이지만, 다른 AI 코딩 도구로의 확장 가능성을 열어둘 것.
+
+**알려진 설정 디렉토리:**
+- Claude Code: `~/.claude/`
+- Gemini (Antigravity): `~/.gemini/`
+- Cursor: `~/.cursor/`
+- Codex: `~/.codex/`
+
+**설계 원칙:**
+- 경로, 설정 구조를 특정 도구에 하드코딩하지 않기
+- ConfigService 등에서 도구별 어댑터 패턴 고려
+- 지금 당장 추상화할 필요는 없지만, 종속적 설계는 피할 것
