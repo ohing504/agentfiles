@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import {
   AlertCircle,
@@ -40,76 +40,63 @@ function ClaudeMdEditor({
 }: {
   fileId: { global: true } | { projectPath: string; relativePath: string }
 }) {
+  const queryClient = useQueryClient()
   const [content, setContent] = useState("")
-  const [originalContent, setOriginalContent] = useState("")
-  const [isDirty, setIsDirty] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
-  const [isSaving, setIsSaving] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [fileMeta, setFileMeta] = useState<{
-    path: string
-    size: number
-    lastModified: string
-  } | null>(null)
 
-  useEffect(() => {
-    setIsLoading(true)
-    setError(null)
-    import("@/server/claude-md")
-      .then(({ readClaudeMdFileFn }) =>
-        readClaudeMdFileFn({
-          data:
-            "global" in fileId
-              ? { global: true }
-              : {
-                  projectPath: fileId.projectPath,
-                  relativePath: fileId.relativePath,
-                },
-        }),
-      )
-      .then((result) => {
-        setContent(result.content)
-        setOriginalContent(result.content)
-        setFileMeta({
-          path: result.path,
-          size: result.size,
-          lastModified: result.lastModified,
-        })
-        setIsDirty(false)
-        setIsLoading(false)
-      })
-      .catch(() => {
-        setError("Failed to load CLAUDE.md")
-        setIsLoading(false)
-      })
-  }, [fileId])
+  const queryKey = [
+    "claude-md-file",
+    "global" in fileId
+      ? "global"
+      : `${fileId.projectPath}/${fileId.relativePath}`,
+  ]
 
-  const handleChange = (value: string) => {
-    setContent(value)
-    setIsDirty(value !== originalContent)
-  }
-
-  const handleSave = async () => {
-    setIsSaving(true)
-    try {
-      const { saveClaudeMdFileFn } = await import("@/server/claude-md")
-      await saveClaudeMdFileFn({
+  const { data, isLoading, error } = useQuery({
+    queryKey,
+    queryFn: async () => {
+      const { readClaudeMdFileFn } = await import("@/server/claude-md")
+      return readClaudeMdFileFn({
         data:
           "global" in fileId
-            ? { global: true, content }
+            ? { global: true }
             : {
                 projectPath: fileId.projectPath,
                 relativePath: fileId.relativePath,
-                content,
               },
       })
-      setOriginalContent(content)
-      setIsDirty(false)
-    } catch {
-      setError("Failed to save. Please try again.")
-    } finally {
-      setIsSaving(false)
+    },
+  })
+
+  // 쿼리 데이터가 로드되면 편집 content를 초기화
+  useEffect(() => {
+    if (data !== undefined) {
+      setContent(data.content)
     }
+  }, [data])
+
+  const isDirty = content !== (data?.content ?? "")
+
+  const mutation = useMutation({
+    mutationFn: async (newContent: string) => {
+      const { saveClaudeMdFileFn } = await import("@/server/claude-md")
+      return saveClaudeMdFileFn({
+        data:
+          "global" in fileId
+            ? { global: true, content: newContent }
+            : {
+                projectPath: fileId.projectPath,
+                relativePath: fileId.relativePath,
+                content: newContent,
+              },
+      })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey })
+      queryClient.invalidateQueries({ queryKey: ["claude-md-global-meta"] })
+    },
+  })
+
+  const handleSave = () => {
+    mutation.mutate(content)
   }
 
   if (isLoading) {
@@ -125,39 +112,46 @@ function ClaudeMdEditor({
     return (
       <div className="flex items-center gap-2 text-destructive text-sm py-8">
         <AlertCircle className="w-4 h-4" />
-        <span>{error}</span>
+        <span>Failed to load CLAUDE.md</span>
       </div>
     )
   }
 
   return (
     <div className="space-y-4">
-      {fileMeta?.lastModified && (
+      {data?.lastModified && (
         <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
           <div className="flex items-center gap-1">
             <FileText className="w-3.5 h-3.5" />
-            <span className="font-mono truncate max-w-xs">{fileMeta.path}</span>
+            <span className="font-mono truncate max-w-xs">{data.path}</span>
           </div>
           <div className="flex items-center gap-1">
             <HardDrive className="w-3.5 h-3.5" />
-            <span>{formatFileSize(fileMeta.size)}</span>
+            <span>{formatFileSize(data.size)}</span>
           </div>
           <div className="flex items-center gap-1">
             <Clock className="w-3.5 h-3.5" />
-            <span>{formatDate(fileMeta.lastModified)}</span>
+            <span>{formatDate(data.lastModified)}</span>
           </div>
         </div>
       )}
 
-      {!fileMeta?.lastModified && (
+      {!data?.lastModified && (
         <p className="text-sm text-muted-foreground">
           No file found. Start typing to create one.
         </p>
       )}
 
+      {mutation.isError && (
+        <div className="flex items-center gap-2 text-destructive text-sm">
+          <AlertCircle className="w-4 h-4" />
+          <span>Failed to save. Please try again.</span>
+        </div>
+      )}
+
       <Textarea
         value={content}
-        onChange={(e) => handleChange(e.target.value)}
+        onChange={(e) => setContent(e.target.value)}
         placeholder="# CLAUDE.md\n\nAdd instructions for Claude here..."
         className="font-mono text-sm min-h-[400px] resize-y"
       />
@@ -168,12 +162,12 @@ function ClaudeMdEditor({
         </span>
         <Button
           onClick={handleSave}
-          disabled={!isDirty || isSaving}
+          disabled={!isDirty || mutation.isPending}
           size="sm"
           className="gap-1.5"
         >
           <Save className="w-4 h-4" />
-          {isSaving ? "Saving..." : "Save"}
+          {mutation.isPending ? "Saving..." : "Save"}
         </Button>
       </div>
     </div>
