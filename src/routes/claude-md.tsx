@@ -31,8 +31,10 @@ export const Route = createFileRoute("/claude-md")({ component: ClaudeMdPage })
 function ClaudeMdEditor({ fileId }: { fileId: ClaudeMdFileId }) {
   const [content, setContent] = useState("")
   const [savedContent, setSavedContent] = useState("")
+  const [showSaved, setShowSaved] = useState(false)
   const contentRef = useRef("")
   const savedContentRef = useRef("")
+  const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const {
     query: { data, isLoading, error },
     mutation,
@@ -52,11 +54,23 @@ function ClaudeMdEditor({ fileId }: { fileId: ClaudeMdFileId }) {
     }
   }, [data])
 
+  // showSaved 타이머 클린업
+  useEffect(() => {
+    return () => {
+      if (savedTimerRef.current) clearTimeout(savedTimerRef.current)
+    }
+  }, [])
+
   const isDirty = content !== savedContent
 
   const handleSave = () => {
     mutation.mutate(content, {
-      onSuccess: () => setSavedContent(content),
+      onSuccess: () => {
+        setSavedContent(content)
+        setShowSaved(true)
+        if (savedTimerRef.current) clearTimeout(savedTimerRef.current)
+        savedTimerRef.current = setTimeout(() => setShowSaved(false), 2000)
+      },
     })
   }
 
@@ -73,7 +87,7 @@ function ClaudeMdEditor({ fileId }: { fileId: ClaudeMdFileId }) {
     return (
       <div className="flex items-center gap-2 text-destructive text-sm py-8">
         <AlertCircle className="w-4 h-4" />
-        <span>Failed to load CLAUDE.md</span>
+        <span>{m.editor_load_error()}</span>
       </div>
     )
   }
@@ -98,28 +112,34 @@ function ClaudeMdEditor({ fileId }: { fileId: ClaudeMdFileId }) {
       )}
 
       {!data?.lastModified && (
-        <p className="text-sm text-muted-foreground">
-          No file found. Start typing to create one.
-        </p>
+        <p className="text-sm text-muted-foreground">{m.editor_no_file()}</p>
       )}
 
       {mutation.isError && (
         <div className="flex items-center gap-2 text-destructive text-sm">
           <AlertCircle className="w-4 h-4" />
-          <span>Failed to save. Please try again.</span>
+          <span>{m.editor_save_error()}</span>
         </div>
       )}
 
       <Textarea
         value={content}
         onChange={(e) => setContent(e.target.value)}
-        placeholder="# CLAUDE.md\n\nAdd instructions for Claude here..."
+        placeholder={m.editor_placeholder()}
         className="font-mono text-sm min-h-[400px] resize-y"
       />
 
       <div className="flex items-center justify-between">
         <span className="text-xs text-muted-foreground">
-          {isDirty ? "Unsaved changes" : ""}
+          {showSaved ? (
+            <span className="text-green-600 dark:text-green-400">
+              {m.editor_saved()}
+            </span>
+          ) : isDirty ? (
+            m.editor_unsaved_changes()
+          ) : (
+            ""
+          )}
         </span>
         <Button
           onClick={handleSave}
@@ -128,7 +148,7 @@ function ClaudeMdEditor({ fileId }: { fileId: ClaudeMdFileId }) {
           className="gap-1.5"
         >
           <Save className="w-4 h-4" />
-          {mutation.isPending ? "Saving..." : "Save"}
+          {mutation.isPending ? m.editor_saving() : m.editor_save()}
         </Button>
       </div>
     </div>
