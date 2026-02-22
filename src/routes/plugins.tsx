@@ -31,70 +31,71 @@ function PluginCard({
 }) {
   const { mutation } = usePlugins()
 
-  const handleToggle = (e: React.MouseEvent) => {
-    e.preventDefault()
+  const handleToggle = () => {
     mutation.mutate({ id: plugin.id, enable: !plugin.enabled })
   }
 
   return (
-    <Link to="/plugins/$id" params={{ id: encodeURIComponent(plugin.id) }}>
-      <Card className="hover:bg-muted/50 transition-colors cursor-pointer h-full">
-        <CardHeader className="flex flex-row items-start justify-between gap-3 pb-2">
-          <div className="flex items-center gap-2 min-w-0">
-            <Puzzle className="w-4 h-4 text-muted-foreground shrink-0" />
-            <CardTitle className="text-sm font-medium truncate">
-              {plugin.name}
-            </CardTitle>
-          </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <ScopeBadge scope={plugin.scope} />
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          <div className="flex items-center gap-2">
-            {plugin.enabled ? (
-              <Badge
-                variant="outline"
-                className="text-green-600 border-green-600 gap-1 text-xs"
-              >
-                <CheckCircle2 className="w-3 h-3" />
-                Enabled
-              </Badge>
-            ) : (
-              <Badge
-                variant="outline"
-                className="text-muted-foreground gap-1 text-xs"
-              >
-                <XCircle className="w-3 h-3" />
-                Disabled
-              </Badge>
-            )}
-            <Badge variant="secondary" className="text-xs">
-              v{plugin.version}
-            </Badge>
-          </div>
-          <p className="text-xs text-muted-foreground truncate">
-            <Package className="w-3 h-3 inline mr-1" />
-            {plugin.marketplace}
-          </p>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-              <Clock className="w-3 h-3" />
-              <span>{formatDate(plugin.installedAt)}</span>
-            </div>
-            <Button
-              variant={plugin.enabled ? "default" : "outline"}
-              size="sm"
-              className="h-6 text-xs px-2"
-              disabled={mutation.isPending || !cliAvailable}
-              onClick={handleToggle}
+    <Card className="h-full">
+      <CardHeader className="flex flex-row items-start justify-between gap-3 pb-2">
+        <Link
+          to="/plugins/$id"
+          params={{ id: encodeURIComponent(plugin.id) }}
+          className="flex items-center gap-2 min-w-0 hover:underline"
+        >
+          <Puzzle className="w-4 h-4 text-muted-foreground shrink-0" />
+          <CardTitle className="text-sm font-medium truncate">
+            {plugin.name}
+          </CardTitle>
+        </Link>
+        <div className="flex items-center gap-2 shrink-0">
+          <ScopeBadge scope={plugin.scope} />
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-2">
+        <div className="flex items-center gap-2">
+          {plugin.enabled ? (
+            <Badge
+              variant="outline"
+              className="text-green-600 border-green-600 gap-1 text-xs"
             >
-              {plugin.enabled ? "Disable" : "Enable"}
-            </Button>
+              <CheckCircle2 className="w-3 h-3" />
+              Enabled
+            </Badge>
+          ) : (
+            <Badge
+              variant="outline"
+              className="text-muted-foreground gap-1 text-xs"
+            >
+              <XCircle className="w-3 h-3" />
+              Disabled
+            </Badge>
+          )}
+          <Badge variant="secondary" className="text-xs">
+            v{plugin.version}
+          </Badge>
+        </div>
+        <p className="text-xs text-muted-foreground truncate">
+          <Package className="w-3 h-3 inline mr-1" />
+          {plugin.marketplace}
+        </p>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+            <Clock className="w-3 h-3" />
+            <span>{formatDate(plugin.installedAt)}</span>
           </div>
-        </CardContent>
-      </Card>
-    </Link>
+          <Button
+            variant={plugin.enabled ? "default" : "outline"}
+            size="sm"
+            className="h-6 text-xs px-2"
+            disabled={mutation.isPending || !cliAvailable}
+            onClick={handleToggle}
+          >
+            {plugin.enabled ? "Disable" : "Enable"}
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
   )
 }
 

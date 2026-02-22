@@ -1,13 +1,5 @@
 import { Link } from "@tanstack/react-router"
-import {
-  Bot,
-  FileText,
-  LayoutDashboard,
-  Puzzle,
-  Server,
-  Sparkles,
-  Terminal,
-} from "lucide-react"
+import { FolderOpen, LayoutDashboard, Puzzle, Server } from "lucide-react"
 
 import { LanguageSwitcher } from "@/components/LanguageSwitcher"
 import { ProjectSwitcher } from "@/components/ProjectSwitcher"
@@ -28,12 +20,9 @@ import { m } from "@/paraglide/messages"
 
 const navItems = [
   { to: "/", icon: LayoutDashboard, labelFn: () => m.nav_dashboard() },
-  { to: "/claude-md", icon: FileText, labelFn: () => m.nav_claude_md() },
+  { to: "/files", icon: FolderOpen, labelFn: () => m.nav_files() },
   { to: "/plugins", icon: Puzzle, labelFn: () => m.nav_plugins() },
   { to: "/mcp", icon: Server, labelFn: () => m.nav_mcp_servers() },
-  { to: "/agents", icon: Bot, labelFn: () => m.nav_agents() },
-  { to: "/commands", icon: Terminal, labelFn: () => m.nav_commands() },
-  { to: "/skills", icon: Sparkles, labelFn: () => m.nav_skills() },
 ] as const
 
 export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {

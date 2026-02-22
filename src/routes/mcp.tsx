@@ -26,6 +26,13 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useCliStatus, useMcpServers } from "@/hooks/use-config"
 import { m } from "@/paraglide/messages"
@@ -33,73 +40,91 @@ import type { Scope } from "@/shared/types"
 
 export const Route = createFileRoute("/mcp")({ component: McpPage })
 
+const INITIAL_FORM = {
+  name: "",
+  command: "",
+  args: "",
+  url: "",
+  scope: "global" as Scope,
+  type: "stdio" as "stdio" | "sse" | "streamable-http",
+  error: "",
+}
+
 function AddMcpDialog({ onSuccess }: { onSuccess: () => void }) {
   const [open, setOpen] = useState(false)
-  const [name, setName] = useState("")
-  const [command, setCommand] = useState("")
-  const [args, setArgs] = useState("")
-  const [url, setUrl] = useState("")
-  const [scope, setScope] = useState<Scope>("global")
-  const [type, setType] = useState<"stdio" | "sse" | "streamable-http">("stdio")
-  const [error, setError] = useState("")
+  const [form, setForm] = useState(INITIAL_FORM)
 
   const { addMutation } = useMcpServers()
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    setError("")
+    setForm((prev) => ({ ...prev, error: "" }))
 
-    if (!name.trim()) {
-      setError("Name is required")
+    if (!form.name.trim()) {
+      setForm((prev) => ({ ...prev, error: "Name is required" }))
       return
     }
 
-    if (type === "stdio" && !command.trim()) {
-      setError("Command is required for stdio type")
+    if (form.type === "stdio" && !form.command.trim()) {
+      setForm((prev) => ({
+        ...prev,
+        error: "Command is required for stdio type",
+      }))
       return
     }
 
-    if ((type === "sse" || type === "streamable-http") && !url.trim()) {
-      setError("URL is required for SSE/HTTP type")
+    if (
+      (form.type === "sse" || form.type === "streamable-http") &&
+      !form.url.trim()
+    ) {
+      setForm((prev) => ({
+        ...prev,
+        error: "URL is required for SSE/HTTP type",
+      }))
       return
     }
 
-    const parsedArgs = args
+    const parsedArgs = form.args
       .split(" ")
       .map((a) => a.trim())
       .filter(Boolean)
 
     addMutation.mutate(
       {
-        name: name.trim(),
-        command: type === "stdio" ? command.trim() : undefined,
+        name: form.name.trim(),
+        command: form.type === "stdio" ? form.command.trim() : undefined,
         args:
-          type === "stdio" && parsedArgs.length > 0 ? parsedArgs : undefined,
-        url: type !== "stdio" ? url.trim() : undefined,
-        scope,
+          form.type === "stdio" && parsedArgs.length > 0
+            ? parsedArgs
+            : undefined,
+        url: form.type !== "stdio" ? form.url.trim() : undefined,
+        scope: form.scope,
       },
       {
         onSuccess: () => {
           setOpen(false)
-          setName("")
-          setCommand("")
-          setArgs("")
-          setUrl("")
-          setScope("global")
-          setType("stdio")
+          setForm(INITIAL_FORM)
           onSuccess()
         },
         onError: (err: unknown) => {
-          setError(
-            err instanceof Error ? err.message : "Failed to add MCP server",
-          )
+          setForm((prev) => ({
+            ...prev,
+            error:
+              err instanceof Error ? err.message : "Failed to add MCP server",
+          }))
         },
       },
     )
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog
+      open={open}
+      onOpenChange={(v) => {
+        setOpen(v)
+        if (!v) setForm(INITIAL_FORM)
+      }}
+    >
       <DialogTrigger asChild>
         <Button size="sm" className="gap-1.5">
           <Plus className="w-4 h-4" />
@@ -117,36 +142,48 @@ function AddMcpDialog({ onSuccess }: { onSuccess: () => void }) {
               <Input
                 id="mcp-name"
                 placeholder="my-server"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                value={form.name}
+                onChange={(e) =>
+                  setForm((prev) => ({ ...prev, name: e.target.value }))
+                }
               />
             </div>
 
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="mcp-type">Type</Label>
-              <select
-                id="mcp-type"
-                value={type}
-                onChange={(e) =>
-                  setType(e.target.value as "stdio" | "sse" | "streamable-http")
+              <Select
+                value={form.type}
+                onValueChange={(v) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    type: v as "stdio" | "sse" | "streamable-http",
+                  }))
                 }
-                className="border-input bg-background flex h-8 w-full rounded-lg border px-3 py-1 text-sm"
               >
-                <option value="stdio">stdio</option>
-                <option value="sse">SSE</option>
-                <option value="streamable-http">Streamable HTTP</option>
-              </select>
+                <SelectTrigger id="mcp-type">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="stdio">stdio</SelectItem>
+                  <SelectItem value="sse">SSE</SelectItem>
+                  <SelectItem value="streamable-http">
+                    Streamable HTTP
+                  </SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
-            {type === "stdio" ? (
+            {form.type === "stdio" ? (
               <>
                 <div className="flex flex-col gap-1.5">
                   <Label htmlFor="mcp-command">Command</Label>
                   <Input
                     id="mcp-command"
                     placeholder="npx"
-                    value={command}
-                    onChange={(e) => setCommand(e.target.value)}
+                    value={form.command}
+                    onChange={(e) =>
+                      setForm((prev) => ({ ...prev, command: e.target.value }))
+                    }
                   />
                 </div>
                 <div className="flex flex-col gap-1.5">
@@ -154,8 +191,10 @@ function AddMcpDialog({ onSuccess }: { onSuccess: () => void }) {
                   <Input
                     id="mcp-args"
                     placeholder="-y @modelcontextprotocol/server-filesystem /path"
-                    value={args}
-                    onChange={(e) => setArgs(e.target.value)}
+                    value={form.args}
+                    onChange={(e) =>
+                      setForm((prev) => ({ ...prev, args: e.target.value }))
+                    }
                   />
                 </div>
               </>
@@ -165,26 +204,35 @@ function AddMcpDialog({ onSuccess }: { onSuccess: () => void }) {
                 <Input
                   id="mcp-url"
                   placeholder="https://example.com/mcp"
-                  value={url}
-                  onChange={(e) => setUrl(e.target.value)}
+                  value={form.url}
+                  onChange={(e) =>
+                    setForm((prev) => ({ ...prev, url: e.target.value }))
+                  }
                 />
               </div>
             )}
 
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="mcp-scope">Scope</Label>
-              <select
-                id="mcp-scope"
-                value={scope}
-                onChange={(e) => setScope(e.target.value as Scope)}
-                className="border-input bg-background flex h-8 w-full rounded-lg border px-3 py-1 text-sm"
+              <Select
+                value={form.scope}
+                onValueChange={(v) =>
+                  setForm((prev) => ({ ...prev, scope: v as Scope }))
+                }
               >
-                <option value="global">Global (~/.claude/)</option>
-                <option value="project">Project (.claude/)</option>
-              </select>
+                <SelectTrigger id="mcp-scope">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="global">Global (~/.claude/)</SelectItem>
+                  <SelectItem value="project">Project (.claude/)</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
-            {error && <p className="text-destructive text-sm">{error}</p>}
+            {form.error && (
+              <p className="text-destructive text-sm">{form.error}</p>
+            )}
           </div>
           <DialogFooter showCloseButton>
             <Button type="submit" disabled={addMutation.isPending}>

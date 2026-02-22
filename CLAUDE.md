@@ -55,17 +55,9 @@ src/
   routes/                    ← TanStack Start 파일 기반 라우팅
     __root.tsx               ← 루트 레이아웃
     index.tsx                ← Dashboard (/)
-    claude-md.tsx            ← CLAUDE.md 에디터 (스코프 탭 + textarea)
-    plugins.tsx              ← Plugin 목록 (토글 스위치)
-    plugins.$id.tsx          ← Plugin 상세
+    files.tsx                ← 통합 Files 뷰 (CLAUDE.md + Agents/Commands/Skills 트리 + 에디터)
+    plugins.tsx              ← Plugin 목록 (카드 + Enable/Disable)
     mcp.tsx                  ← MCP 서버 목록 (추가 Dialog)
-    mcp.$name.tsx            ← MCP 서버 상세
-    agents.tsx               ← Agent 목록
-    agents.$name.tsx         ← Agent 상세 (편집)
-    commands.tsx             ← Command 목록
-    commands.$name.tsx       ← Command 상세 (편집)
-    skills.tsx               ← Skill 목록 (symlink 표시)
-    skills.$name.tsx         ← Skill 상세 (편집)
     api/                     ← API Routes (server.handlers)
       health.ts              ← GET /api/health
   services/                  ← 서버 사이드 서비스
@@ -85,9 +77,8 @@ src/
       auth.ts                ← Bearer 토큰 인증 미들웨어
   components/                ← UI 컴포넌트
     Layout.tsx               ← 사이드바 + 메인 콘텐츠 레이아웃
-    Sidebar.tsx              ← 네비게이션 (7개 메뉴)
+    Sidebar.tsx              ← 네비게이션 (4개 메뉴: Dashboard, Files, Plugins, MCP)
     ScopeBadge.tsx           ← global/project/user 스코프 배지
-    AgentFileDetail.tsx      ← Agent/Command/Skill 상세 공통 컴포넌트
     ProjectContext.tsx       ← 프로젝트 컨텍스트 프로바이더
     ProjectSwitcher.tsx      ← 프로젝트 전환 UI
     AddProjectDialog.tsx     ← 프로젝트 추가 다이얼로그
@@ -101,7 +92,6 @@ src/
     auth.ts                  ← 토큰 관리 (추출, 저장, 헤더)
     query-keys.ts            ← TanStack Query 키 정의
     format.ts                ← formatFileSize, formatDate 유틸리티
-    parse-agent-file-param.ts ← URL 파라미터 파싱 (scope:name)
   shared/                    ← 공유 타입
     types.ts
 bin/                         ← CLI 진입점

@@ -52,8 +52,12 @@ function StatCard({
             globalCount !== undefined &&
             projectCount !== undefined && (
               <div className="flex gap-2 text-xs text-muted-foreground">
-                <span>Global: {globalCount}</span>
-                <span>Project: {projectCount}</span>
+                <span>
+                  {m.scope_global()}: {globalCount}
+                </span>
+                <span>
+                  {m.scope_project()}: {projectCount}
+                </span>
               </div>
             )}
         </CardContent>
@@ -69,7 +73,7 @@ function ClaudeMdCard({ isLoading }: { isLoading: boolean }) {
   const projectExists = !!overview?.claudeMd?.project
 
   return (
-    <Link to="/claude-md">
+    <Link to="/files">
       <Card className="hover:bg-muted/50 transition-colors cursor-pointer h-full">
         <CardHeader className="flex flex-row items-center gap-3 pb-2">
           <FileText className="w-5 h-5 text-muted-foreground" />
@@ -86,7 +90,9 @@ function ClaudeMdCard({ isLoading }: { isLoading: boolean }) {
                 ) : (
                   <XCircle className="w-4 h-4 text-muted-foreground" />
                 )}
-                <span className="text-muted-foreground">Global</span>
+                <span className="text-muted-foreground">
+                  {m.scope_global()}
+                </span>
               </div>
               <div className="flex items-center gap-2 text-sm">
                 {projectExists ? (
@@ -94,7 +100,9 @@ function ClaudeMdCard({ isLoading }: { isLoading: boolean }) {
                 ) : (
                   <XCircle className="w-4 h-4 text-muted-foreground" />
                 )}
-                <span className="text-muted-foreground">Project</span>
+                <span className="text-muted-foreground">
+                  {m.scope_project()}
+                </span>
               </div>
             </div>
           )}
@@ -169,7 +177,7 @@ function DashboardPage() {
           isLoading={isLoading}
         />
         <StatCard
-          to="/agents"
+          to="/files"
           icon={Bot}
           label={m.nav_agents()}
           count={overview?.agents?.total ?? 0}
@@ -178,7 +186,7 @@ function DashboardPage() {
           isLoading={isLoading}
         />
         <StatCard
-          to="/commands"
+          to="/files"
           icon={Terminal}
           label={m.nav_commands()}
           count={overview?.commands?.total ?? 0}
@@ -187,7 +195,7 @@ function DashboardPage() {
           isLoading={isLoading}
         />
         <StatCard
-          to="/skills"
+          to="/files"
           icon={Sparkles}
           label={m.nav_skills()}
           count={overview?.skills?.total ?? 0}

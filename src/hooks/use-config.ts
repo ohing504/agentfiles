@@ -3,7 +3,7 @@ import { useProjectContext } from "@/components/ProjectContext"
 import { queryKeys } from "@/lib/query-keys"
 import type { AgentFile, ClaudeMdFileId, Scope } from "@/shared/types"
 
-const FREQUENT_REFETCH = {
+export const FREQUENT_REFETCH = {
   refetchOnWindowFocus: true,
   refetchInterval: 5000,
 } as const
@@ -29,37 +29,6 @@ export function useOverview() {
 }
 
 // ── CLAUDE.md ─────────────────────────────────────────────────────────────────
-
-export function useClaudeMd(scope: Scope) {
-  const { activeProjectPath } = useProjectContext()
-  const queryClient = useQueryClient()
-
-  const query = useQuery({
-    queryKey: queryKeys.claudeMd.byScope(scope, activeProjectPath),
-    queryFn: async () => {
-      const { getClaudeMdFn } = await import("@/server/claude-md")
-      return getClaudeMdFn({ data: { scope, projectPath: activeProjectPath } })
-    },
-    ...FREQUENT_REFETCH,
-  })
-
-  const mutation = useMutation({
-    mutationFn: async (content: string) => {
-      const { saveClaudeMdFn } = await import("@/server/claude-md")
-      return saveClaudeMdFn({
-        data: { scope, content, projectPath: activeProjectPath },
-      })
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.claudeMd.byScope(scope, activeProjectPath),
-      })
-      queryClient.invalidateQueries({ queryKey: queryKeys.overview.all })
-    },
-  })
-
-  return { query, mutation }
-}
 
 // ── CLAUDE.md File (file-level read/write) ───────────────────────────────────
 

@@ -14,6 +14,7 @@ export function LanguageSwitcher() {
           key={locale}
           type="button"
           onClick={() => setLocale(locale)}
+          aria-pressed={locale === getLocale()}
           className={`px-2 py-1 text-xs rounded cursor-pointer transition-colors ${
             locale === getLocale()
               ? "bg-primary text-primary-foreground"

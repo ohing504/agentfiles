@@ -1,6 +1,6 @@
 # React Hook 개선 분석 보고서
 
-> **Status**: 3/7 완료 | 마지막 검증: 2026-02-22
+> **Status**: 5/7 완료 | 마지막 검증: 2026-02-22
 
 ## 요약
 
@@ -236,7 +236,7 @@
 | 번호 | 제목 | 이유 |
 |------|------|------|
 | ~~1~~ | ~~`ClaudeMdEditor` 패턴 통합~~ (완료) | ~~해결됨 — PR #2에서 TanStack Query로 통합 완료~~ |
-| ~~3~~ | ~~파라미터 파싱 훅 추출~~ (완료) | src/lib/parse-agent-file-param.ts로 추출 완료 |
+| ~~3~~ | ~~파라미터 파싱 훅 추출~~ (해결됨) | 통합 Files 뷰로 agents/commands/skills 상세 페이지 삭제 — 더 이상 불필요 |
 
 ### 중간
 
@@ -250,7 +250,7 @@
 | 번호 | 제목 | 이유 |
 |------|------|------|
 | 4 | `PluginsPage` `useMemo` | 현재 플러그인 수가 적어 성능 영향 미미 |
-| 6 | `AddMcpDialog` 폼 상태 통합 | 기능적 문제 없음, 코드 정리 수준 |
+| ~~6~~ | ~~`AddMcpDialog` 폼 상태 통합~~ (완료) | 단일 form 객체 + onOpenChange 리셋 — 통합 Files 뷰 PR에서 완료 |
 | 7 | `useClaudeMdFiles` staleTime | 기능적 문제 없음, 일관성 향상 |
 
 ---

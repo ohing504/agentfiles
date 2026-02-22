@@ -1,6 +1,6 @@
 # React Best Practice 분석 보고서
 
-> **Status**: 5/10 완료 | 마지막 검증: 2026-02-22
+> **Status**: 8/10 완료 | 마지막 검증: 2026-02-22
 
 > 분석 대상: agentfiles v1 (TanStack Start + React 19 + shadcn/ui)
 > 분석 기준: React 공식 문서, TanStack Query v5 권장 패턴, 접근성(WCAG 2.1), TypeScript strict 모드
@@ -387,7 +387,7 @@ export function useCliStatus() {
 |---|------|------|
 | ~~2~~ | ~~ClaudeMdEditor TanStack Query 전환~~ (완료) | ~~해결됨 — PR #2에서 통합 완료~~ |
 | ~~3~~ | ~~유틸리티 함수 중복 제거~~ (완료) | DRY 원칙 — src/lib/format.ts로 통합 완료 |
-| 5 | AddMcpDialog 폼 상태 통합 | 에러 후 닫기 시 state 잔류 버그 방지 |
+| ~~5~~ | ~~AddMcpDialog 폼 상태 통합~~ (완료) | 단일 form 객체 + onOpenChange 리셋 — 통합 Files 뷰 PR에서 완료 |
 | 6 | ScopeBadge 타입 정리 | TypeScript strict 일관성 |
 | ~~10~~ | ~~useCliStatus 폴링 최적화~~ (완료) | staleTime 60s + 폴링 제거 완료 |
 
@@ -396,5 +396,5 @@ export function useCliStatus() {
 | # | 제목 | 이유 |
 |---|------|------|
 | ~~4~~ | ~~Detail 페이지 공통 컴포넌트 추출~~ (완료) | PR #3에서 AgentFileDetail.tsx로 추출 완료 |
-| 8 | LanguageSwitcher aria-pressed | 접근성 개선, 사용자 영향 제한적 |
+| ~~8~~ | ~~LanguageSwitcher aria-pressed~~ (완료) | `aria-pressed` 속성 추가 — 통합 Files 뷰 PR에서 완료 |
 | 9 | CollapsibleTrigger 아이콘 aria-hidden | 접근성 개선, Radix가 이미 상당 부분 처리 |
