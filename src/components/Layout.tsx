@@ -102,7 +102,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <header className="flex h-16 shrink-0 items-center gap-2 bg-background px-4 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
             <HeaderBreadcrumb />
           </header>
-          <div className="flex-1 overflow-y-auto p-4 pt-0">{children}</div>
+          <div className="flex-1 overflow-y-auto p-4">{children}</div>
         </SidebarInset>
       </SidebarProvider>
       <StatusBar />

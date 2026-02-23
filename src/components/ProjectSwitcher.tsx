@@ -55,27 +55,6 @@ export function ProjectSwitcher() {
               side={isMobile ? "bottom" : "right"}
               sideOffset={4}
             >
-              {projects.map((project) => (
-                <DropdownMenuItem
-                  key={project.path}
-                  onClick={() => setActiveProject(project.path)}
-                  className="gap-2 p-2"
-                >
-                  <FolderOpen className="size-4 shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <div className="font-medium truncate">{project.name}</div>
-                    <div className="text-xs text-muted-foreground truncate">
-                      {shortenPath(project.path, homedir)}
-                    </div>
-                  </div>
-                  {activeProject?.path === project.path && (
-                    <Check className="size-4 shrink-0" />
-                  )}
-                </DropdownMenuItem>
-              ))}
-
-              {projects.length > 0 && <DropdownMenuSeparator />}
-
               <DropdownMenuItem
                 onClick={() => setActiveProject(null)}
                 className="gap-2 p-2"
@@ -86,6 +65,29 @@ export function ProjectSwitcher() {
                   <Check className="size-4 ml-auto shrink-0" />
                 )}
               </DropdownMenuItem>
+
+              {projects.length > 0 && <DropdownMenuSeparator />}
+
+              {[...projects]
+                .sort((a, b) => a.name.localeCompare(b.name))
+                .map((project) => (
+                  <DropdownMenuItem
+                    key={project.path}
+                    onClick={() => setActiveProject(project.path)}
+                    className="gap-2 p-2"
+                  >
+                    <FolderOpen className="size-4 shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium truncate">{project.name}</div>
+                      <div className="text-xs text-muted-foreground truncate">
+                        {shortenPath(project.path, homedir)}
+                      </div>
+                    </div>
+                    {activeProject?.path === project.path && (
+                      <Check className="size-4 shrink-0" />
+                    )}
+                  </DropdownMenuItem>
+                ))}
 
               <DropdownMenuSeparator />
 
