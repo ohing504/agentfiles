@@ -3,7 +3,7 @@
 > AI 기반 vibe coding 퀄리티 향상을 위한 Hooks 시스템 구축
 
 **날짜:** 2026-02-23
-**상태:** Phase 1 완료, Phase 2 미착수
+**상태:** Phase 1 완료, Phase 2 진행중
 **접근법:** Dogfooding First — 개발환경 셋업 → 경험 기반 제품 기능 구현
 
 ---
@@ -230,13 +230,25 @@ exit 0
 
 > Phase 1 경험을 바탕으로, agentfiles 사용자들이 GUI로 hooks를 관리할 수 있는 페이지를 추가한다.
 
+### Hook Locations (공식 문서 기준)
+
+| Location | Scope | Shareable | 구현 상태 |
+|----------|-------|-----------|----------|
+| `~/.claude/settings.json` | User (All projects) | No, local to machine | ✅ "Global" 라벨 |
+| `.claude/settings.json` | Project | Yes, committed to repo | ✅ "Project" 라벨 |
+| `.claude/settings.local.json` | Local (Project) | No, gitignored | ✅ "Local" 라벨 |
+| Plugin `hooks/hooks.json` | Plugin | Yes, bundled with plugin | ⬜ Phase 3 |
+| Skill/Agent frontmatter | Component | While active | ⬜ Phase 3 |
+
+> **참고:** 공식 `/hooks` 메뉴에서는 `~/.claude/settings.json`을 `[User]`로 표기. 현재 UI에서는 `Global`로 표시 중. 추후 공식 명칭 정렬 검토.
+
 ### 핵심 기능
 
 #### 1. Hooks 목록 뷰
-- 현재 설정된 hooks를 이벤트별로 그룹핑 (PreToolUse, PostToolUse, Stop 등)
-- 각 hook의 matcher, command, timeout 표시
-- 활성/비활성 토글
-- Global(`~/.claude/settings.json`) vs Project(`.claude/settings.json`) 스코프 배지 (ScopeBadge 재사용)
+- 현재 설정된 hooks를 이벤트별로 그룹핑 (18개 이벤트 지원)
+- 각 hook의 matcher, command/prompt, timeout 표시
+- Global / Project / Local 3개 스코프 섹션으로 구분
+- 검색 기능으로 hook 필터링
 
 #### 2. Hook 추가/편집 Dialog
 - 이벤트 타입 선택 (드롭다운: PreToolUse, PostToolUse, Stop, SessionStart, Notification, UserPromptSubmit)
@@ -382,12 +394,17 @@ export class HooksService {
 |------|------|--------|------|
 | **Phase 1-1** | Hook 스크립트 작성 | `.claude/hooks/*.sh`, `*.py` | ✅ 완료 |
 | **Phase 1-2** | settings.json에 hooks 설정 추가 | `.claude/settings.json` | ✅ 완료 |
-| **Phase 1-3** | Dogfooding 및 피드백 수집 | 경험 노트 | 🔄 진행중 |
-| **Phase 2-1** | HooksService 구현 | `src/services/hooks-service.ts` | ⬜ 미착수 |
-| **Phase 2-2** | Server Functions 구현 | `src/server/hooks.ts` | ⬜ 미착수 |
-| **Phase 2-3** | Hooks 페이지 UI 구현 | `src/routes/hooks.tsx` | ⬜ 미착수 |
-| **Phase 2-4** | 템플릿 갤러리 구현 | 템플릿 데이터 + UI | ⬜ 미착수 |
-| **Phase 2-5** | 사이드바 통합 + 테스트 | 통합 + 테스트 | ⬜ 미착수 |
+| **Phase 1-3** | Dogfooding 및 피드백 수집 | 경험 노트 | ✅ 완료 |
+| **Phase 2-1** | HooksService 구현 | `src/services/hooks-service.ts` | ✅ 완료 |
+| **Phase 2-2** | Server Functions 구현 | `src/server/hooks.ts` | ✅ 완료 |
+| **Phase 2-3** | Hooks 페이지 UI 구현 | `src/routes/hooks.tsx`, `HooksPageContent.tsx` | ✅ 완료 |
+| **Phase 2-4** | 3-scope 지원 (Global/Project/Local) | settings.local.json 지원 | ✅ 완료 |
+| **Phase 2-5** | 사이드바 통합 | 사이드바 메뉴 추가 | ✅ 완료 |
+| **Phase 2-6** | AddHookDialog UX 개선 | TanStack Form + Zod, 2-panel 레이아웃, 이벤트 그룹핑 | ✅ 완료 |
+| **Phase 3-1** | Hooks 비활성화 토글 | `disableAllHooks` 설정 UI | ⬜ 미착수 |
+| **Phase 3-2** | Plugin hooks (read-only) | Plugin `hooks/hooks.json` 읽기 | ⬜ 미착수 |
+| **Phase 3-3** | Skill/Agent frontmatter hooks | 컴포넌트 정의 hooks 읽기 | ⬜ 미착수 |
+| **Phase 3-4** | 필드별 예제/설명 보강 | 공식 문서 기반으로 각 이벤트/필드의 예제, 설명, placeholder 개선 | ⬜ 미착수 |
 
 ---
 
@@ -403,10 +420,45 @@ export class HooksService {
 - [ ] Dogfooding 피드백 수집 및 개선점 정리
 
 ### Phase 2
-- [ ] Hooks 페이지에서 Global/Project hooks를 구분하여 표시
-- [ ] GUI로 hook 추가/편집/삭제 가능
-- [ ] 템플릿으로 원클릭 hook 설정 가능
-- [ ] 기존 테스트 통과 + 새 테스트 추가
+- [x] Hooks 페이지에서 Global/Project/Local hooks를 구분하여 표시
+- [x] GUI로 hook 추가/삭제 가능 (3가지 hook handler 타입: command, prompt, agent)
+- [x] 템플릿으로 원클릭 hook 설정 가능
+- [x] 18개 이벤트 지원, 다국어 이벤트/핸들러 설명 (en/ko)
+- [x] 스크립트 파일 미리보기, 삭제 확인 다이얼로그
+- [x] TanStack Form + Zod 스키마 기반 폼 검증 (`@tanstack/react-form`)
+- [x] 이벤트 라이프사이클 그룹핑 (Session/Tool/Agent/Response/Standalone)
+- [x] 2-panel 다이얼로그 레이아웃 (좌: 공통 필드, 우: 핸들러별 필드)
+- [x] 새 공통 필드: statusMessage, once 지원
+- [x] Timeout 기본값 안내 (cmd 600, prompt 30, agent 60)
+
+### Phase 3
+- [ ] Hooks 비활성화 토글 (`disableAllHooks` 설정)
+- [ ] Plugin hooks 읽기 (read-only, `hooks/hooks.json`)
+- [ ] Skill/Agent frontmatter hooks 읽기 (read-only)
+- [ ] `[User]` 명칭 정렬 검토 (현재 `Global` → 공식 `User`)
+
+---
+
+## Hooks 비활성화 (공식 문서 참고)
+
+> [Disable or remove hooks — Claude Code Docs](https://code.claude.com/docs/en/hooks#disable-or-remove-hooks)
+
+### 비활성화 방법
+
+- **전체 비활성화:** settings 파일에 `"disableAllHooks": true` 설정, 또는 `/hooks` 메뉴에서 토글
+- **개별 hook 제거:** settings JSON에서 해당 항목 삭제, 또는 `/hooks` 메뉴에서 삭제
+- **개별 비활성화는 미지원** — 전체 on/off만 가능
+
+### 동작 특성
+
+- Hooks 설정은 **세션 시작 시 스냅샷**으로 캡처됨 → 세션 중간에 설정을 변경해도 현재 세션에는 반영되지 않음
+- **Managed settings 계층 구조** 적용 — 관리자가 managed settings로 설정한 hooks는 사용자/프로젝트 설정에서 비활성화 불가
+
+### UI 구현 계획 (Phase 3-1)
+
+- 각 scope별 (Global/Project/Local) `disableAllHooks` 토글 스위치 제공
+- 비활성화 시 해당 scope의 모든 hook 카드에 비활성 상태 표시
+- 세션 재시작 필요 안내 메시지 표시
 
 ---
 

@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as ProjectRouteImport } from './routes/project'
 import { Route as PluginsRouteImport } from './routes/plugins'
 import { Route as McpRouteImport } from './routes/mcp'
+import { Route as HooksRouteImport } from './routes/hooks'
 import { Route as GlobalRouteImport } from './routes/global'
 import { Route as FilesRouteImport } from './routes/files'
 import { Route as IndexRouteImport } from './routes/index'
@@ -44,6 +45,11 @@ const PluginsRoute = PluginsRouteImport.update({
 const McpRoute = McpRouteImport.update({
   id: '/mcp',
   path: '/mcp',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HooksRoute = HooksRouteImport.update({
+  id: '/hooks',
+  path: '/hooks',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GlobalRoute = GlobalRouteImport.update({
@@ -141,6 +147,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/files': typeof FilesRoute
   '/global': typeof GlobalRouteWithChildren
+  '/hooks': typeof HooksRoute
   '/mcp': typeof McpRouteWithChildren
   '/plugins': typeof PluginsRouteWithChildren
   '/project': typeof ProjectRouteWithChildren
@@ -164,6 +171,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/files': typeof FilesRoute
   '/global': typeof GlobalRouteWithChildren
+  '/hooks': typeof HooksRoute
   '/mcp': typeof McpRouteWithChildren
   '/plugins': typeof PluginsRouteWithChildren
   '/project': typeof ProjectRouteWithChildren
@@ -188,6 +196,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/files': typeof FilesRoute
   '/global': typeof GlobalRouteWithChildren
+  '/hooks': typeof HooksRoute
   '/mcp': typeof McpRouteWithChildren
   '/plugins': typeof PluginsRouteWithChildren
   '/project': typeof ProjectRouteWithChildren
@@ -213,6 +222,7 @@ export interface FileRouteTypes {
     | '/'
     | '/files'
     | '/global'
+    | '/hooks'
     | '/mcp'
     | '/plugins'
     | '/project'
@@ -236,6 +246,7 @@ export interface FileRouteTypes {
     | '/'
     | '/files'
     | '/global'
+    | '/hooks'
     | '/mcp'
     | '/plugins'
     | '/project'
@@ -259,6 +270,7 @@ export interface FileRouteTypes {
     | '/'
     | '/files'
     | '/global'
+    | '/hooks'
     | '/mcp'
     | '/plugins'
     | '/project'
@@ -283,6 +295,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   FilesRoute: typeof FilesRoute
   GlobalRoute: typeof GlobalRouteWithChildren
+  HooksRoute: typeof HooksRoute
   McpRoute: typeof McpRouteWithChildren
   PluginsRoute: typeof PluginsRouteWithChildren
   ProjectRoute: typeof ProjectRouteWithChildren
@@ -310,6 +323,13 @@ declare module '@tanstack/react-router' {
       path: '/mcp'
       fullPath: '/mcp'
       preLoaderRoute: typeof McpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/hooks': {
+      id: '/hooks'
+      path: '/hooks'
+      fullPath: '/hooks'
+      preLoaderRoute: typeof HooksRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/global': {
@@ -548,6 +568,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   FilesRoute: FilesRoute,
   GlobalRoute: GlobalRouteWithChildren,
+  HooksRoute: HooksRoute,
   McpRoute: McpRouteWithChildren,
   PluginsRoute: PluginsRouteWithChildren,
   ProjectRoute: ProjectRouteWithChildren,

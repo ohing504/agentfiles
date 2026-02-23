@@ -95,7 +95,15 @@ function HeaderBreadcrumb() {
   )
 }
 
+function shouldShowHeader(pathname: string): boolean {
+  const first = pathname.split("/").filter(Boolean)[0]
+  return first !== "hooks"
+}
+
 export function Layout({ children }: { children: React.ReactNode }) {
+  const location = useLocation()
+  const showHeader = shouldShowHeader(location.pathname)
+
   return (
     <div
       className="flex h-svh flex-col overflow-hidden"
@@ -104,10 +112,20 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <SidebarProvider className="flex-1 min-h-0">
         <AppSidebar />
         <SidebarInset className="overflow-hidden">
-          <header className="flex h-16 shrink-0 items-center gap-2 bg-background px-4 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
-            <HeaderBreadcrumb />
-          </header>
-          <div className="flex-1 overflow-y-auto p-4">{children}</div>
+          {showHeader && (
+            <header className="flex h-16 shrink-0 items-center gap-2 bg-background px-4 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
+              <HeaderBreadcrumb />
+            </header>
+          )}
+          <div
+            className={
+              showHeader
+                ? "flex-1 overflow-y-auto p-4"
+                : "flex-1 overflow-hidden"
+            }
+          >
+            {children}
+          </div>
         </SidebarInset>
       </SidebarProvider>
       <StatusBar />

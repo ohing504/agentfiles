@@ -142,6 +142,8 @@ export interface ClaudeAppJson {
 }
 
 // ── Hooks ──
+export type HookScope = "global" | "project" | "local"
+
 export type HookType = "command" | "prompt" | "agent"
 
 export interface HookEntry {
@@ -176,6 +178,7 @@ export type HookEventName =
   | "ConfigChange"
   | "WorktreeCreate"
   | "WorktreeRemove"
+  | "Setup"
   | "PreCompact"
   | "SessionEnd"
 

@@ -9,11 +9,10 @@ import type {
 // ── settings.json 읽기 헬퍼 ──
 
 async function readSettingsJson(
-  basePath: string,
+  settingsFilePath: string,
 ): Promise<Record<string, unknown>> {
-  const settingsPath = path.join(basePath, "settings.json")
   try {
-    const content = await fs.readFile(settingsPath, "utf-8")
+    const content = await fs.readFile(settingsFilePath, "utf-8")
     return JSON.parse(content) as Record<string, unknown>
   } catch {
     return {}
@@ -23,20 +22,23 @@ async function readSettingsJson(
 // ── settings.json 쓰기 헬퍼 ──
 
 async function writeSettingsJson(
-  basePath: string,
+  settingsFilePath: string,
   data: Record<string, unknown>,
 ): Promise<void> {
-  await fs.mkdir(basePath, { recursive: true })
-  const filePath = path.join(basePath, "settings.json")
-  await fs.writeFile(filePath, `${JSON.stringify(data, null, 2)}\n`, "utf-8")
+  await fs.mkdir(path.dirname(settingsFilePath), { recursive: true })
+  await fs.writeFile(
+    settingsFilePath,
+    `${JSON.stringify(data, null, 2)}\n`,
+    "utf-8",
+  )
 }
 
 // ── 1. getHooksFromSettings ──
 
 export async function getHooksFromSettings(
-  basePath: string,
+  settingsFilePath: string,
 ): Promise<HooksSettings> {
-  const settings = await readSettingsJson(basePath)
+  const settings = await readSettingsJson(settingsFilePath)
   if (
     !settings.hooks ||
     typeof settings.hooks !== "object" ||
@@ -50,45 +52,45 @@ export async function getHooksFromSettings(
 // ── 2. saveHooksToSettings ──
 
 export async function saveHooksToSettings(
-  basePath: string,
+  settingsFilePath: string,
   hooks: HooksSettings,
 ): Promise<void> {
-  const settings = await readSettingsJson(basePath)
+  const settings = await readSettingsJson(settingsFilePath)
   if (Object.keys(hooks).length === 0) {
     // 빈 객체면 hooks 키 제거
     const { hooks: _removed, ...rest } = settings
     void _removed
-    await writeSettingsJson(basePath, rest)
+    await writeSettingsJson(settingsFilePath, rest)
   } else {
-    await writeSettingsJson(basePath, { ...settings, hooks })
+    await writeSettingsJson(settingsFilePath, { ...settings, hooks })
   }
 }
 
 // ── 3. addHookToSettings ──
 
 export async function addHookToSettings(
-  basePath: string,
+  settingsFilePath: string,
   event: HookEventName,
   matcherGroup: HookMatcherGroup,
 ): Promise<void> {
-  const hooks = await getHooksFromSettings(basePath)
+  const hooks = await getHooksFromSettings(settingsFilePath)
   const existing = hooks[event] ?? []
   const updated: HooksSettings = {
     ...hooks,
     [event]: [...existing, matcherGroup],
   }
-  await saveHooksToSettings(basePath, updated)
+  await saveHooksToSettings(settingsFilePath, updated)
 }
 
 // ── 4. removeHookFromSettings ──
 
 export async function removeHookFromSettings(
-  basePath: string,
+  settingsFilePath: string,
   event: HookEventName,
   groupIndex: number,
   hookIndex: number,
 ): Promise<void> {
-  const hooks = await getHooksFromSettings(basePath)
+  const hooks = await getHooksFromSettings(settingsFilePath)
   const groups = hooks[event]
   if (!groups) return
 
@@ -106,15 +108,21 @@ export async function removeHookFromSettings(
       // event가 비면 event 삭제
       const { [event]: _removed, ...rest } = hooks
       void _removed
-      await saveHooksToSettings(basePath, rest as HooksSettings)
+      await saveHooksToSettings(settingsFilePath, rest as HooksSettings)
     } else {
-      await saveHooksToSettings(basePath, { ...hooks, [event]: updatedGroups })
+      await saveHooksToSettings(settingsFilePath, {
+        ...hooks,
+        [event]: updatedGroups,
+      })
     }
   } else {
     const updatedGroups = groups.map((g, i) =>
       i === groupIndex ? { ...g, hooks: updatedHooks } : g,
     )
-    await saveHooksToSettings(basePath, { ...hooks, [event]: updatedGroups })
+    await saveHooksToSettings(settingsFilePath, {
+      ...hooks,
+      [event]: updatedGroups,
+    })
   }
 }
 

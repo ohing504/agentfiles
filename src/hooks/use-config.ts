@@ -1,7 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useProjectContext } from "@/components/ProjectContext"
 import { queryKeys } from "@/lib/query-keys"
-import type { AgentFile, ClaudeMdFileId, Scope } from "@/shared/types"
+import type {
+  AgentFile,
+  ClaudeMdFileId,
+  HookScope,
+  Scope,
+} from "@/shared/types"
 
 export const FREQUENT_REFETCH = {
   refetchOnWindowFocus: true,
@@ -298,14 +303,16 @@ export function useClaudeAppJson() {
 
 // ── Hooks ─────────────────────────────────────────────────────────────────────
 
-export function useHooks(scope: Scope) {
+export function useHooks(scope: HookScope) {
   const { activeProjectPath } = useProjectContext()
   const queryClient = useQueryClient()
+
+  const needsProject = scope === "project" || scope === "local"
 
   const query = useQuery({
     queryKey: queryKeys.hooks.byScope(
       scope,
-      scope === "project" ? activeProjectPath : undefined,
+      needsProject ? activeProjectPath : undefined,
     ),
     queryFn: async () => {
       const { getHooksFn } = await import("@/server/hooks")

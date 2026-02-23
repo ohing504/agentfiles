@@ -3,7 +3,7 @@ import { z } from "zod"
 
 // ── Zod 스키마 ──
 
-const scopeSchema = z.enum(["global", "project"])
+const hookScopeSchema = z.enum(["global", "project", "local"])
 
 const hookTypeSchema = z.enum(["command", "prompt", "agent"])
 
@@ -39,57 +39,71 @@ const hookEventNameSchema = z.enum([
   "ConfigChange",
   "WorktreeCreate",
   "WorktreeRemove",
+  "Setup",
   "PreCompact",
   "SessionEnd",
 ])
+
+// ── 경로 resolve 헬퍼 ──
+
+type HookScope = z.infer<typeof hookScopeSchema>
+
+async function resolveSettingsFilePath(
+  scope: HookScope,
+  projectPath?: string,
+): Promise<string> {
+  const path = await import("node:path")
+  const os = await import("node:os")
+
+  switch (scope) {
+    case "global":
+      return path.join(os.homedir(), ".claude", "settings.json")
+    case "project":
+      return path.join(projectPath ?? process.cwd(), ".claude", "settings.json")
+    case "local":
+      return path.join(
+        projectPath ?? process.cwd(),
+        ".claude",
+        "settings.local.json",
+      )
+  }
+}
 
 // ── Server Functions ──
 
 export const getHooksFn = createServerFn({ method: "GET" })
   .inputValidator(
     z.object({
-      scope: scopeSchema,
+      scope: hookScopeSchema,
       projectPath: z.string().optional(),
     }),
   )
   .handler(async ({ data }) => {
-    const { getGlobalConfigPath, getProjectConfigPath } = await import(
-      "@/services/config-service"
-    )
     const { getHooksFromSettings } = await import("@/services/hooks-service")
-    const basePath =
-      data.scope === "global"
-        ? getGlobalConfigPath()
-        : getProjectConfigPath(data.projectPath)
-    return getHooksFromSettings(basePath)
+    const filePath = await resolveSettingsFilePath(data.scope, data.projectPath)
+    return getHooksFromSettings(filePath)
   })
 
 export const addHookFn = createServerFn({ method: "POST" })
   .inputValidator(
     z.object({
-      scope: scopeSchema,
+      scope: hookScopeSchema,
       event: hookEventNameSchema,
       matcherGroup: matcherGroupSchema,
       projectPath: z.string().optional(),
     }),
   )
   .handler(async ({ data }) => {
-    const { getGlobalConfigPath, getProjectConfigPath } = await import(
-      "@/services/config-service"
-    )
     const { addHookToSettings } = await import("@/services/hooks-service")
-    const basePath =
-      data.scope === "global"
-        ? getGlobalConfigPath()
-        : getProjectConfigPath(data.projectPath)
-    await addHookToSettings(basePath, data.event, data.matcherGroup)
+    const filePath = await resolveSettingsFilePath(data.scope, data.projectPath)
+    await addHookToSettings(filePath, data.event, data.matcherGroup)
     return { success: true }
   })
 
 export const removeHookFn = createServerFn({ method: "POST" })
   .inputValidator(
     z.object({
-      scope: scopeSchema,
+      scope: hookScopeSchema,
       event: hookEventNameSchema,
       groupIndex: z.number().int().min(0),
       hookIndex: z.number().int().min(0),
@@ -97,16 +111,10 @@ export const removeHookFn = createServerFn({ method: "POST" })
     }),
   )
   .handler(async ({ data }) => {
-    const { getGlobalConfigPath, getProjectConfigPath } = await import(
-      "@/services/config-service"
-    )
     const { removeHookFromSettings } = await import("@/services/hooks-service")
-    const basePath =
-      data.scope === "global"
-        ? getGlobalConfigPath()
-        : getProjectConfigPath(data.projectPath)
+    const filePath = await resolveSettingsFilePath(data.scope, data.projectPath)
     await removeHookFromSettings(
-      basePath,
+      filePath,
       data.event,
       data.groupIndex,
       data.hookIndex,
