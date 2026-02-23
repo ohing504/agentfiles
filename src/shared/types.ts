@@ -87,6 +87,7 @@ export interface ApiError {
 export interface CliStatus {
   available: boolean
   version?: string
+  latestVersion?: string
   reason?: string
 }
 

@@ -1,4 +1,11 @@
-import { Check, CheckCircle2, FolderOpen, XCircle } from "lucide-react"
+import {
+  ArrowUpCircle,
+  Check,
+  CheckCircle2,
+  FolderOpen,
+  XCircle,
+} from "lucide-react"
+import { toast } from "sonner"
 import { useProjectContext } from "@/components/ProjectContext"
 import {
   DropdownMenu,
@@ -6,6 +13,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import { useCliStatus } from "@/hooks/use-config"
 import { shortenPath } from "@/lib/format"
 import { getLocale, locales, setLocale } from "@/paraglide/runtime"
@@ -52,21 +64,69 @@ function StatusBarLanguage() {
   )
 }
 
+/** Extract semver from "2.1.50 (Claude Code)" → "2.1.50" */
+function extractVersion(raw: string): string {
+  return raw.replace(/\s*\(.*\)$/, "")
+}
+
 function StatusBarCliVersion() {
   const { data: cliStatus, isLoading } = useCliStatus()
 
   if (isLoading || !cliStatus) return null
 
-  return cliStatus.available ? (
-    <div className="flex items-center gap-1 px-2 text-xs">
-      <CheckCircle2 className="size-3 text-green-500" />
-      <span>Claude CLI {cliStatus.version}</span>
-    </div>
-  ) : (
-    <div className="flex items-center gap-1 px-2 text-xs">
-      <XCircle className="size-3 text-destructive" />
-      <span>CLI unavailable</span>
-    </div>
+  if (!cliStatus.available) {
+    return (
+      <div className="flex items-center gap-1 px-2 text-xs">
+        <XCircle className="size-3 text-destructive" />
+        <span>CLI unavailable</span>
+      </div>
+    )
+  }
+
+  const current = extractVersion(cliStatus.version ?? "")
+  const latest = cliStatus.latestVersion
+  const hasUpdate = latest && current !== latest
+
+  const handleClick = () => {
+    if (!hasUpdate) return
+    navigator.clipboard.writeText("claude update")
+    toast.success("Copied 'claude update' to clipboard")
+  }
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <button
+          type="button"
+          onClick={handleClick}
+          className={`flex items-center gap-1 px-2 text-xs ${
+            hasUpdate
+              ? "text-amber-500 hover:bg-accent/50 rounded-sm py-0.5 cursor-pointer"
+              : ""
+          }`}
+          disabled={!hasUpdate}
+        >
+          {hasUpdate ? (
+            <>
+              <ArrowUpCircle className="size-3 text-amber-500" />
+              <span>
+                Claude CLI {current} → {latest}
+              </span>
+            </>
+          ) : (
+            <>
+              <CheckCircle2 className="size-3 text-green-500" />
+              <span>Claude CLI {current || cliStatus.version}</span>
+            </>
+          )}
+        </button>
+      </TooltipTrigger>
+      {(hasUpdate || latest) && (
+        <TooltipContent side="top">
+          {hasUpdate ? "Click to copy update command" : "You're up to date"}
+        </TooltipContent>
+      )}
+    </Tooltip>
   )
 }
 

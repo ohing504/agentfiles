@@ -5,6 +5,7 @@ import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools"
 import { ErrorBoundary } from "@/components/ErrorBoundary"
 import { Layout } from "@/components/Layout"
 import { ProjectProvider } from "@/components/ProjectContext"
+import { Toaster } from "@/components/ui/sonner"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { getLocale } from "@/paraglide/runtime"
 import appCss from "../styles.css?url"
@@ -65,6 +66,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
             ]}
           />
         )}
+        <Toaster />
         <Scripts />
       </body>
     </html>

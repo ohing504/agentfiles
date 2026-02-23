@@ -20,10 +20,26 @@ function execClaude(args: string[]): Promise<string> {
   })
 }
 
+async function fetchLatestVersion(): Promise<string | undefined> {
+  try {
+    const res = await fetch(
+      "https://registry.npmjs.org/@anthropic-ai/claude-code/latest",
+    )
+    if (!res.ok) return undefined
+    const data = (await res.json()) as { version?: string }
+    return data.version
+  } catch {
+    return undefined
+  }
+}
+
 export async function checkCliAvailable(): Promise<CliStatus> {
   try {
-    const stdout = await execClaude(["--version"])
-    return { available: true, version: stdout.trim() }
+    const [stdout, latestVersion] = await Promise.all([
+      execClaude(["--version"]),
+      fetchLatestVersion().catch(() => undefined),
+    ])
+    return { available: true, version: stdout.trim(), latestVersion }
   } catch {
     return {
       available: false,

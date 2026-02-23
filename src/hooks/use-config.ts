@@ -244,6 +244,7 @@ export function useCliStatus() {
       return getCliStatusFn()
     },
     staleTime: 60_000,
+    refetchInterval: 300_000,
     refetchOnWindowFocus: true,
   })
 }
