@@ -6,6 +6,7 @@ import {
   Puzzle,
   Server,
   Settings,
+  Zap,
 } from "lucide-react"
 
 import { useProjectContext } from "@/components/ProjectContext"
@@ -100,6 +101,22 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
                   >
                     <LayoutDashboard />
                     <span>{m.nav_dashboard()}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Hooks */}
+        <SidebarGroup>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild tooltip="Hooks">
+                  <Link to="/hooks" activeProps={{ "data-active": true }}>
+                    <Zap />
+                    <span>Hooks</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
