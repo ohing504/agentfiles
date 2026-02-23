@@ -6,8 +6,6 @@ import {
   FileText,
   HardDrive,
   Save,
-  Sparkles,
-  Terminal,
 } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 import { useProjectContext } from "@/components/ProjectContext"
@@ -463,19 +461,13 @@ export function FilesPageContent({ scope }: FilesPageContentProps) {
     useClaudeMdFiles()
 
   const { query: agentsQuery } = useAgentFiles("agent")
-  const { query: commandsQuery } = useAgentFiles("command")
-  const { query: skillsQuery } = useAgentFiles("skill")
 
   const [selectedFile, setSelectedFile] = useState<SelectedFile>(null)
 
   const allAgents = agentsQuery.data ?? []
-  const allCommands = commandsQuery.data ?? []
-  const allSkills = skillsQuery.data ?? []
 
   if (scope === "global") {
     const globalAgents = allAgents.filter((f) => f.scope === "global")
-    const globalCommands = allCommands.filter((f) => f.scope === "global")
-    const globalSkills = allSkills.filter((f) => f.scope === "global")
 
     return (
       <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-6">
@@ -504,20 +496,6 @@ export function FilesPageContent({ scope }: FilesPageContentProps) {
             selectedFile={selectedFile}
             onSelect={setSelectedFile}
           />
-          <AgentTreeSection
-            label="commands/"
-            icon={Terminal}
-            files={globalCommands}
-            selectedFile={selectedFile}
-            onSelect={setSelectedFile}
-          />
-          <AgentTreeSection
-            label="skills/"
-            icon={Sparkles}
-            files={globalSkills}
-            selectedFile={selectedFile}
-            onSelect={setSelectedFile}
-          />
         </Tree>
 
         {/* Right: Editor */}
@@ -531,8 +509,6 @@ export function FilesPageContent({ scope }: FilesPageContentProps) {
   // scope === "project"
   const hasProject = !!activeProject
   const projectAgents = allAgents.filter((f) => f.scope === "project")
-  const projectCommands = allCommands.filter((f) => f.scope === "project")
-  const projectSkills = allSkills.filter((f) => f.scope === "project")
 
   if (!hasProject) {
     return (
@@ -584,20 +560,6 @@ export function FilesPageContent({ scope }: FilesPageContentProps) {
           label="agents/"
           icon={Bot}
           files={projectAgents}
-          selectedFile={selectedFile}
-          onSelect={setSelectedFile}
-        />
-        <AgentTreeSection
-          label="commands/"
-          icon={Terminal}
-          files={projectCommands}
-          selectedFile={selectedFile}
-          onSelect={setSelectedFile}
-        />
-        <AgentTreeSection
-          label="skills/"
-          icon={Sparkles}
-          files={projectSkills}
           selectedFile={selectedFile}
           onSelect={setSelectedFile}
         />

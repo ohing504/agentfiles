@@ -10,6 +10,7 @@ import type {
   Overview,
   Plugin,
   Scope,
+  SupportingFile,
 } from "@/shared/types"
 
 // ── 경로 헬퍼 ──
@@ -167,6 +168,93 @@ async function scanMdDirWithScope(
 ): Promise<AgentFile[]> {
   const files = await scanMdDir(basePath, type)
   return files.map((f) => ({ ...f, scope }))
+}
+
+// ── Skills 디렉토리 스캔 (SKILL.md 기반 + flat .md) ──
+
+/**
+ * Scan .claude/skills/ directory for both directory-based skills (SKILL.md)
+ * and flat .md files (legacy format)
+ */
+export async function scanSkillsDir(basePath: string): Promise<AgentFile[]> {
+  const results: AgentFile[] = []
+  try {
+    const entries = await fs.readdir(basePath, { withFileTypes: true })
+
+    for (const entry of entries) {
+      const fullPath = path.join(basePath, entry.name)
+
+      if (entry.isDirectory()) {
+        // Check if directory contains SKILL.md
+        const skillMdPath = path.join(fullPath, "SKILL.md")
+        try {
+          const stat = await fs.stat(skillMdPath)
+          const content = await fs.readFile(skillMdPath, "utf-8")
+          const parsed = matter(content)
+
+          // Collect supporting files
+          const supportingFiles: SupportingFile[] = []
+          await collectSupportingFiles(fullPath, fullPath, supportingFiles)
+
+          results.push({
+            name: entry.name,
+            scope: "global", // will be overridden by caller
+            path: skillMdPath,
+            frontmatter:
+              Object.keys(parsed.data).length > 0 ? parsed.data : undefined,
+            size: stat.size,
+            lastModified: stat.mtime.toISOString(),
+            type: "skill",
+            isSkillDir: true,
+            supportingFiles,
+          })
+        } catch {
+          // No SKILL.md, skip
+        }
+      } else if (entry.isFile() && entry.name.endsWith(".md")) {
+        // Flat .md file (legacy or simple skill)
+        try {
+          const stat = await fs.stat(fullPath)
+          const content = await fs.readFile(fullPath, "utf-8")
+          const parsed = matter(content)
+          results.push({
+            name: entry.name.replace(/\.md$/, ""),
+            scope: "global",
+            path: fullPath,
+            frontmatter:
+              Object.keys(parsed.data).length > 0 ? parsed.data : undefined,
+            size: stat.size,
+            lastModified: stat.mtime.toISOString(),
+            type: "skill",
+            isSkillDir: false,
+          })
+        } catch {
+          // Skip unreadable files
+        }
+      }
+    }
+  } catch {
+    // Directory doesn't exist
+  }
+  return results
+}
+
+async function collectSupportingFiles(
+  baseDir: string,
+  currentDir: string,
+  results: SupportingFile[],
+): Promise<void> {
+  const entries = await fs.readdir(currentDir, { withFileTypes: true })
+  for (const entry of entries) {
+    const fullPath = path.join(currentDir, entry.name)
+    const relativePath = path.relative(baseDir, fullPath)
+    if (entry.isFile() && entry.name !== "SKILL.md") {
+      const stat = await fs.stat(fullPath)
+      results.push({ name: entry.name, relativePath, size: stat.size })
+    } else if (entry.isDirectory()) {
+      await collectSupportingFiles(baseDir, fullPath, results)
+    }
+  }
 }
 
 // ── settings.json 파싱 헬퍼 ──
@@ -526,7 +614,36 @@ export async function getAgentFiles(
   const globalBase = getGlobalConfigPath()
   const projectBase = getProjectConfigPath(projectPath)
 
-  const dirName = `${type}s` // 'agent' → 'agents', 'command' → 'commands', 'skill' → 'skills'
+  if (type === "skill") {
+    // Use skills-aware scanner for directory-based skills
+    const globalSkills = await scanSkillsDir(path.join(globalBase, "skills"))
+    for (const f of globalSkills) f.scope = "global"
+
+    // Also include legacy commands
+    const globalCommands = await scanMdDir(
+      path.join(globalBase, "commands"),
+      "command",
+    )
+    for (const f of globalCommands) f.scope = "global"
+
+    const projectSkills = await scanSkillsDir(path.join(projectBase, "skills"))
+    for (const f of projectSkills) f.scope = "project"
+
+    const projectCommands = await scanMdDir(
+      path.join(projectBase, "commands"),
+      "command",
+    )
+    for (const f of projectCommands) f.scope = "project"
+
+    return [
+      ...globalSkills,
+      ...globalCommands,
+      ...projectSkills,
+      ...projectCommands,
+    ]
+  }
+
+  const dirName = `${type}s` // 'agent' → 'agents', 'command' → 'commands'
 
   const [globalFiles, projectFiles] = await Promise.all([
     scanMdDirWithScope(path.join(globalBase, dirName), type, "global"),

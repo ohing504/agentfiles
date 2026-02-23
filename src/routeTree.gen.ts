@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SkillsRouteImport } from './routes/skills'
 import { Route as ProjectRouteImport } from './routes/project'
 import { Route as PluginsRouteImport } from './routes/plugins'
 import { Route as McpRouteImport } from './routes/mcp'
@@ -32,6 +33,11 @@ import { Route as ProjectMcpNameRouteImport } from './routes/project/mcp.$name'
 import { Route as GlobalPluginsIdRouteImport } from './routes/global/plugins.$id'
 import { Route as GlobalMcpNameRouteImport } from './routes/global/mcp.$name'
 
+const SkillsRoute = SkillsRouteImport.update({
+  id: '/skills',
+  path: '/skills',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProjectRoute = ProjectRouteImport.update({
   id: '/project',
   path: '/project',
@@ -151,6 +157,7 @@ export interface FileRoutesByFullPath {
   '/mcp': typeof McpRouteWithChildren
   '/plugins': typeof PluginsRouteWithChildren
   '/project': typeof ProjectRouteWithChildren
+  '/skills': typeof SkillsRoute
   '/api/health': typeof ApiHealthRoute
   '/global/files': typeof GlobalFilesRoute
   '/global/mcp': typeof GlobalMcpRouteWithChildren
@@ -175,6 +182,7 @@ export interface FileRoutesByTo {
   '/mcp': typeof McpRouteWithChildren
   '/plugins': typeof PluginsRouteWithChildren
   '/project': typeof ProjectRouteWithChildren
+  '/skills': typeof SkillsRoute
   '/api/health': typeof ApiHealthRoute
   '/global/files': typeof GlobalFilesRoute
   '/global/mcp': typeof GlobalMcpRouteWithChildren
@@ -200,6 +208,7 @@ export interface FileRoutesById {
   '/mcp': typeof McpRouteWithChildren
   '/plugins': typeof PluginsRouteWithChildren
   '/project': typeof ProjectRouteWithChildren
+  '/skills': typeof SkillsRoute
   '/api/health': typeof ApiHealthRoute
   '/global/files': typeof GlobalFilesRoute
   '/global/mcp': typeof GlobalMcpRouteWithChildren
@@ -226,6 +235,7 @@ export interface FileRouteTypes {
     | '/mcp'
     | '/plugins'
     | '/project'
+    | '/skills'
     | '/api/health'
     | '/global/files'
     | '/global/mcp'
@@ -250,6 +260,7 @@ export interface FileRouteTypes {
     | '/mcp'
     | '/plugins'
     | '/project'
+    | '/skills'
     | '/api/health'
     | '/global/files'
     | '/global/mcp'
@@ -274,6 +285,7 @@ export interface FileRouteTypes {
     | '/mcp'
     | '/plugins'
     | '/project'
+    | '/skills'
     | '/api/health'
     | '/global/files'
     | '/global/mcp'
@@ -299,11 +311,19 @@ export interface RootRouteChildren {
   McpRoute: typeof McpRouteWithChildren
   PluginsRoute: typeof PluginsRouteWithChildren
   ProjectRoute: typeof ProjectRouteWithChildren
+  SkillsRoute: typeof SkillsRoute
   ApiHealthRoute: typeof ApiHealthRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/skills': {
+      id: '/skills'
+      path: '/skills'
+      fullPath: '/skills'
+      preLoaderRoute: typeof SkillsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/project': {
       id: '/project'
       path: '/project'
@@ -572,6 +592,7 @@ const rootRouteChildren: RootRouteChildren = {
   McpRoute: McpRouteWithChildren,
   PluginsRoute: PluginsRouteWithChildren,
   ProjectRoute: ProjectRouteWithChildren,
+  SkillsRoute: SkillsRoute,
   ApiHealthRoute: ApiHealthRoute,
 }
 export const routeTree = rootRouteImport

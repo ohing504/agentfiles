@@ -6,6 +6,7 @@ import {
   Puzzle,
   Server,
   Settings,
+  Sparkles,
   Zap,
 } from "lucide-react"
 
@@ -117,6 +118,22 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
                   <Link to="/hooks" activeProps={{ "data-active": true }}>
                     <Zap />
                     <span>Hooks</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Skills */}
+        <SidebarGroup>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild tooltip={m.nav_skills()}>
+                  <Link to="/skills" activeProps={{ "data-active": true }}>
+                    <Sparkles />
+                    <span>{m.nav_skills()}</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>

@@ -52,6 +52,7 @@ describe("i18n messages", () => {
       "nav",
       "scope",
       "settings",
+      "skills",
     ]
     for (const key of enKeys) {
       const prefix = key.split("_")[0]

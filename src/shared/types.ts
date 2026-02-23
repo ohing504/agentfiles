@@ -64,6 +64,14 @@ export interface AgentFile {
   type: "agent" | "command" | "skill"
   isSymlink?: boolean
   symlinkTarget?: string
+  isSkillDir?: boolean // true if .claude/skills/<name>/SKILL.md format
+  supportingFiles?: SupportingFile[] // other files in the skill directory
+}
+
+export interface SupportingFile {
+  name: string
+  relativePath: string // relative to skill directory
+  size: number
 }
 
 // ── 대시보드 ──

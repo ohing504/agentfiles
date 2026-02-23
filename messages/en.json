@@ -79,5 +79,14 @@
   "claude_hook_scope_project": "Applies to this project. Can be committed to the repo.",
   "claude_hook_scope_local": "Applies to this project. Gitignored and not shared.",
   "action_edit": "Edit",
-  "action_delete": "Delete"
+  "action_delete": "Delete",
+  "skills_empty_title": "No Skill Selected",
+  "skills_empty_desc": "Select a skill from the left panel to view its details.",
+  "skills_add_title": "Add Skill",
+  "skills_add_desc": "Creates a new skill directory with SKILL.md template.",
+  "skills_section_skills": "Skills",
+  "skills_section_commands": "Commands (legacy)",
+  "skills_open_vscode": "Open in VS Code",
+  "skills_open_cursor": "Open in Cursor",
+  "skills_open_folder": "Open Folder"
 }
