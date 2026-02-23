@@ -140,3 +140,43 @@ export interface ClaudeAppJson {
   cachedStatsigGates?: Record<string, boolean>
   [key: string]: unknown
 }
+
+// ── Hooks ──
+export type HookType = "command" | "prompt" | "agent"
+
+export interface HookEntry {
+  type: HookType
+  command?: string
+  prompt?: string
+  model?: string
+  timeout?: number
+  async?: boolean
+  statusMessage?: string
+  once?: boolean
+}
+
+export interface HookMatcherGroup {
+  matcher?: string
+  hooks: HookEntry[]
+}
+
+export type HookEventName =
+  | "SessionStart"
+  | "UserPromptSubmit"
+  | "PreToolUse"
+  | "PermissionRequest"
+  | "PostToolUse"
+  | "PostToolUseFailure"
+  | "Notification"
+  | "SubagentStart"
+  | "SubagentStop"
+  | "Stop"
+  | "TeammateIdle"
+  | "TaskCompleted"
+  | "ConfigChange"
+  | "WorktreeCreate"
+  | "WorktreeRemove"
+  | "PreCompact"
+  | "SessionEnd"
+
+export type HooksSettings = Partial<Record<HookEventName, HookMatcherGroup[]>>
