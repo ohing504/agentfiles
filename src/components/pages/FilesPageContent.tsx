@@ -2,7 +2,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import {
   AlertCircle,
   Bot,
-  ChevronRight,
   Clock,
   FileText,
   HardDrive,
@@ -14,13 +13,9 @@ import { useEffect, useRef, useState } from "react"
 import { useProjectContext } from "@/components/ProjectContext"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Textarea } from "@/components/ui/textarea"
+import { Tree, TreeFile, TreeFolder } from "@/components/ui/tree"
 import { useClaudeMdFiles } from "@/hooks/use-claude-md-files"
 import {
   FREQUENT_REFETCH,
@@ -49,51 +44,36 @@ type SelectedFile =
     }
   | null
 
-// ── Tree item component ──────────────────────────────────────────────────────
+// ── Helper: trailing info for tree files ─────────────────────────────────────
 
-function TreeItem({
-  label,
+function FileTrailing({
   size,
-  selected,
-  onClick,
-  icon: Icon,
   isSymlink,
 }: {
-  label: string
   size?: number
-  selected: boolean
-  onClick: () => void
-  icon: React.ElementType
   isSymlink?: boolean
 }) {
   return (
-    <Button
-      variant={selected ? "secondary" : "ghost"}
-      size="sm"
-      onClick={onClick}
-      className="w-full justify-start gap-2"
-    >
-      <Icon className="w-4 h-4 shrink-0 text-muted-foreground" />
-      <span className="font-mono text-xs truncate">{label}</span>
+    <span className="flex items-center gap-1.5">
       {isSymlink && (
-        <Badge variant="outline" className="text-[10px] px-1 py-0 h-4 shrink-0">
+        <Badge variant="outline" className="h-4 shrink-0 px-1 py-0 text-[10px]">
           symlink
         </Badge>
       )}
       {size != null && (
-        <span className="text-xs text-muted-foreground shrink-0 ml-auto">
+        <span className="text-xs text-muted-foreground">
           {formatFileSize(size)}
         </span>
       )}
-    </Button>
+    </span>
   )
 }
 
-// ── Sub-collapsible for agent/command/skill lists ────────────────────────────
+// ── Agent file tree section ─────────────────────────────────────────────────
 
-function AgentSubSection({
+function AgentTreeSection({
   label,
-  icon: Icon,
+  icon,
   files,
   selectedFile,
   onSelect,
@@ -107,45 +87,37 @@ function AgentSubSection({
   if (files.length === 0) return null
 
   return (
-    <Collapsible defaultOpen>
-      <CollapsibleTrigger className="flex items-center gap-1.5 w-full pl-2 pr-1 py-1 rounded-md hover:bg-muted/50 text-xs font-medium text-muted-foreground [&[data-state=open]>svg:first-child]:rotate-90">
-        <ChevronRight className="size-3 transition-transform shrink-0" />
-        <Icon className="size-3 shrink-0" />
-        <span>{label}</span>
-      </CollapsibleTrigger>
-      <CollapsibleContent className="pl-4">
-        <div className="space-y-0.5">
-          {files.map((file) => {
-            const displayName = file.namespace
-              ? `${file.namespace}/${file.name}`
-              : file.name
-            const isSelected =
-              selectedFile?.kind === "agent-file" &&
-              selectedFile.agentType === file.type &&
-              selectedFile.name === file.name &&
-              selectedFile.scope === file.scope
-            return (
-              <TreeItem
-                key={`${file.scope}-${displayName}`}
-                label={displayName}
-                size={file.size}
-                selected={isSelected}
-                onClick={() =>
-                  onSelect({
-                    kind: "agent-file",
-                    agentType: file.type,
-                    name: file.name,
-                    scope: file.scope,
-                  })
-                }
-                icon={Icon}
-                isSymlink={file.isSymlink}
-              />
-            )
-          })}
-        </div>
-      </CollapsibleContent>
-    </Collapsible>
+    <TreeFolder icon={icon} label={label} count={files.length}>
+      {files.map((file) => {
+        const displayName = file.namespace
+          ? `${file.namespace}/${file.name}`
+          : file.name
+        const isSelected =
+          selectedFile?.kind === "agent-file" &&
+          selectedFile.agentType === file.type &&
+          selectedFile.name === file.name &&
+          selectedFile.scope === file.scope
+        return (
+          <TreeFile
+            key={`${file.scope}-${displayName}`}
+            icon={icon}
+            label={displayName}
+            selected={isSelected}
+            onClick={() =>
+              onSelect({
+                kind: "agent-file",
+                agentType: file.type,
+                name: file.name,
+                scope: file.scope,
+              })
+            }
+            trailing={
+              <FileTrailing size={file.size} isSymlink={file.isSymlink} />
+            }
+          />
+        )
+      })}
+    </TreeFolder>
   )
 }
 
@@ -506,55 +478,51 @@ export function FilesPageContent({ scope }: FilesPageContentProps) {
     const globalSkills = allSkills.filter((f) => f.scope === "global")
 
     return (
-      <div>
-        <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-6">
-          {/* Left: File tree */}
-          <div className="space-y-0.5">
-            {/* Global CLAUDE.md */}
-            <TreeItem
-              label="~/.claude/CLAUDE.md"
-              size={globalSize}
-              selected={
-                selectedFile?.kind === "claude-md" &&
-                "global" in selectedFile.fileId
-              }
-              onClick={() =>
-                setSelectedFile({
-                  kind: "claude-md",
-                  fileId: { global: true },
-                })
-              }
-              icon={FileText}
-            />
+      <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-6">
+        {/* Left: File tree */}
+        <Tree>
+          <TreeFile
+            icon={FileText}
+            label="~/.claude/CLAUDE.md"
+            selected={
+              selectedFile?.kind === "claude-md" &&
+              "global" in selectedFile.fileId
+            }
+            onClick={() =>
+              setSelectedFile({
+                kind: "claude-md",
+                fileId: { global: true },
+              })
+            }
+            trailing={<FileTrailing size={globalSize} />}
+          />
 
-            {/* Global agent files */}
-            <AgentSubSection
-              label="agents/"
-              icon={Bot}
-              files={globalAgents}
-              selectedFile={selectedFile}
-              onSelect={setSelectedFile}
-            />
-            <AgentSubSection
-              label="commands/"
-              icon={Terminal}
-              files={globalCommands}
-              selectedFile={selectedFile}
-              onSelect={setSelectedFile}
-            />
-            <AgentSubSection
-              label="skills/"
-              icon={Sparkles}
-              files={globalSkills}
-              selectedFile={selectedFile}
-              onSelect={setSelectedFile}
-            />
-          </div>
+          <AgentTreeSection
+            label="agents/"
+            icon={Bot}
+            files={globalAgents}
+            selectedFile={selectedFile}
+            onSelect={setSelectedFile}
+          />
+          <AgentTreeSection
+            label="commands/"
+            icon={Terminal}
+            files={globalCommands}
+            selectedFile={selectedFile}
+            onSelect={setSelectedFile}
+          />
+          <AgentTreeSection
+            label="skills/"
+            icon={Sparkles}
+            files={globalSkills}
+            selectedFile={selectedFile}
+            onSelect={setSelectedFile}
+          />
+        </Tree>
 
-          {/* Right: Editor */}
-          <div>
-            <FileEditor selectedFile={selectedFile} />
-          </div>
+        {/* Right: Editor */}
+        <div>
+          <FileEditor selectedFile={selectedFile} />
         </div>
       </div>
     )
@@ -577,71 +545,67 @@ export function FilesPageContent({ scope }: FilesPageContentProps) {
   }
 
   return (
-    <div>
-      <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-6">
-        {/* Left: File tree */}
-        <div className="space-y-0.5">
-          {/* Project CLAUDE.md files */}
-          {projectFilesLoading ? (
-            <div className="space-y-2 py-1">
-              <Skeleton className="h-4 w-36" />
-              <Skeleton className="h-4 w-28" />
-            </div>
-          ) : projectFiles && projectFiles.length > 0 ? (
-            <div className="space-y-0.5">
-              {projectFiles.map((file) => (
-                <TreeItem
-                  key={file.relativePath}
-                  label={file.relativePath}
-                  size={file.size}
-                  selected={
-                    selectedFile?.kind === "claude-md" &&
-                    "projectPath" in selectedFile.fileId &&
-                    selectedFile.fileId.relativePath === file.relativePath
-                  }
-                  onClick={() =>
-                    setSelectedFile({
-                      kind: "claude-md",
-                      fileId: {
-                        projectPath: activeProjectPath ?? "",
-                        relativePath: file.relativePath,
-                      },
-                    })
-                  }
-                  icon={FileText}
-                />
-              ))}
-            </div>
-          ) : null}
+    <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-6">
+      {/* Left: File tree */}
+      <Tree>
+        {/* Project CLAUDE.md files */}
+        {projectFilesLoading ? (
+          <li className="list-none space-y-2 py-1">
+            <Skeleton className="h-4 w-36" />
+            <Skeleton className="h-4 w-28" />
+          </li>
+        ) : projectFiles && projectFiles.length > 0 ? (
+          projectFiles.map((file) => (
+            <TreeFile
+              key={file.relativePath}
+              icon={FileText}
+              label={file.relativePath}
+              selected={
+                selectedFile?.kind === "claude-md" &&
+                "projectPath" in selectedFile.fileId &&
+                selectedFile.fileId.relativePath === file.relativePath
+              }
+              onClick={() =>
+                setSelectedFile({
+                  kind: "claude-md",
+                  fileId: {
+                    projectPath: activeProjectPath ?? "",
+                    relativePath: file.relativePath,
+                  },
+                })
+              }
+              trailing={<FileTrailing size={file.size} />}
+            />
+          ))
+        ) : null}
 
-          {/* Project agent files */}
-          <AgentSubSection
-            label="agents/"
-            icon={Bot}
-            files={projectAgents}
-            selectedFile={selectedFile}
-            onSelect={setSelectedFile}
-          />
-          <AgentSubSection
-            label="commands/"
-            icon={Terminal}
-            files={projectCommands}
-            selectedFile={selectedFile}
-            onSelect={setSelectedFile}
-          />
-          <AgentSubSection
-            label="skills/"
-            icon={Sparkles}
-            files={projectSkills}
-            selectedFile={selectedFile}
-            onSelect={setSelectedFile}
-          />
-        </div>
+        {/* Project agent files */}
+        <AgentTreeSection
+          label="agents/"
+          icon={Bot}
+          files={projectAgents}
+          selectedFile={selectedFile}
+          onSelect={setSelectedFile}
+        />
+        <AgentTreeSection
+          label="commands/"
+          icon={Terminal}
+          files={projectCommands}
+          selectedFile={selectedFile}
+          onSelect={setSelectedFile}
+        />
+        <AgentTreeSection
+          label="skills/"
+          icon={Sparkles}
+          files={projectSkills}
+          selectedFile={selectedFile}
+          onSelect={setSelectedFile}
+        />
+      </Tree>
 
-        {/* Right: Editor */}
-        <div>
-          <FileEditor selectedFile={selectedFile} />
-        </div>
+      {/* Right: Editor */}
+      <div>
+        <FileEditor selectedFile={selectedFile} />
       </div>
     </div>
   )
