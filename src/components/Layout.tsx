@@ -35,6 +35,11 @@ function buildBreadcrumbItems(pathname: string) {
     return items
   }
 
+  // /hooks 는 자체 타이틀이 있으므로 브레드크럼 불필요
+  if (segments[0] === "hooks") {
+    return items
+  }
+
   // /global/... or /project/...
   const scopeLabel = SCOPE_LABELS[segments[0]]
   if (!scopeLabel) return items

@@ -53,6 +53,12 @@ export const queryKeys = {
     all: ["projects"] as const,
   },
 
+  hooks: {
+    all: ["hooks"] as const,
+    byScope: (scope: Scope, projectPath?: string) =>
+      [...queryKeys.hooks.all, scope, projectPath] as const,
+  },
+
   settings: {
     all: ["settings"] as const,
     byScope: (scope: Scope, projectPath?: string) =>
