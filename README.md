@@ -26,6 +26,10 @@ agentfiles는 이 흩어진 설정들을 한 화면에서 보고, 편집하고, 
 - **MCP 서버**: Model Context Protocol 서버 추가/제거
 - **Agent/Command/Skill 관리**: 파일 기반 CRUD 작업
 - **실시간 대시보드**: 충돌 감지 및 설정 상태 모니터링
+- **Hooks 에디터**: Claude Code hooks를 GUI로 추가/편집/삭제. 17개 이벤트, 3가지 hook type (command/prompt/agent), 빌트인 템플릿 지원
+- **Settings 관리**: Global/Project settings.json 편집, ~/.claude.json 읽기 전용 뷰
+- **Status Bar**: CLI 버전 표시 + npm registry 기반 자동 업데이트 체크
+- **다국어 지원**: 영어/한국어 전환 (Paraglide i18n)
 - **타입 안전**: TypeScript strict 모드로 안정성 보장
 
 ## 빠른 시작
@@ -92,22 +96,24 @@ pnpm typecheck     # TypeScript 타입 체크
 
 ## 프로젝트 구조
 
-```
+```text
 src/
-  routes/          # TanStack Start 파일 기반 라우팅
-  services/        # 서버 사이드 서비스 (ConfigService, FileWriter 등)
-  server/          # Server Functions (createServerFn)
-  components/      # UI 컴포넌트
+  routes/          # 파일 기반 라우팅 (hooks, global/*, project/*)
+  services/        # 서버 사이드 서비스 (ConfigService, HooksService 등)
+  server/          # Server Functions (hooks, settings, plugins, mcp 등)
+  components/      # UI 컴포넌트 (pages/, settings/, StatusBar 등)
+  hooks/           # React 커스텀 훅
   lib/             # 유틸리티
   shared/          # 공유 타입
 
+messages/          # i18n 메시지 (en/ko)
 bin/               # CLI 진입점
 tests/             # 테스트
 ```
 
 ## 아키텍처
 
-```
+```text
 Browser (React SSR) → Server Functions → 파일시스템
                                        → Claude CLI (MCP/Plugin)
 ```

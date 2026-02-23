@@ -23,7 +23,7 @@ VS Code Extension 대신 로컬 웹앱을 선택한 이유:
 
 ## 2. 아키텍처
 
-```
+```text
 ┌─────────────────────────────────────────────────────────┐
 │              Browser (React SSR + CSR 하이브리드)          │
 │                                                          │
@@ -82,13 +82,15 @@ Claude Code CLI(`claude mcp`, `claude plugin` 등)는 대화형 TUI를 렌더링
 2. 브라우저에서 읽기 요청 → Server Functions → ConfigService가 파일 직접 파싱
 3. 브라우저에서 마크다운 편집 → Server Functions → FileWriter가 파일 직접 저장
 4. 브라우저에서 MCP/Plugin 조작 → Server Functions → Claude CLI 위임 (`claude mcp add/remove`, `claude plugin enable/disable`)
-5. React Query가 캐시 관리 (`refetchOnWindowFocus` + `refetchInterval`로 최신 상태 유지)
+5. 브라우저에서 Hooks 조작 → `useHooks()` → `getHooksFn / addHookFn / removeHookFn` → HooksService → `settings.json` hooks 섹션
+6. 브라우저에서 Settings 조작 → `useSettings()` → `getSettingsFn / saveSettingsFn` → ConfigService.readSettingsJson / FileWriter.writeSettingsJson
+7. React Query가 캐시 관리 (`refetchOnWindowFocus` + `refetchInterval`로 최신 상태 유지)
 
 ---
 
 ## 3. 프로젝트 구조
 
-```
+```text
 agentfiles/
 ├─ package.json
 ├─ tsconfig.json
@@ -101,16 +103,36 @@ agentfiles/
 │  ├─ routes/                  ← TanStack Start 파일 기반 라우팅
 │  │  ├─ __root.tsx            ← 루트 레이아웃 (사이드바 + 메인)
 │  │  ├─ index.tsx             ← Dashboard (/)
-│  │  ├─ files.tsx             ← 통합 Files 뷰 (트리 탐색 + 에디터)
-│  │  ├─ plugins.tsx           ← Plugins 목록 (카드 + Enable/Disable)
-│  │  ├─ mcp.tsx               ← MCP 서버 목록 (추가 Dialog)
+│  │  ├─ hooks.tsx             ← Hooks 관리 페이지 (/hooks)
+│  │  ├─ files.tsx             ← /global/files 로 redirect
+│  │  ├─ plugins.tsx           ← /global/plugins 로 redirect
+│  │  ├─ plugins.$id.tsx       ← /global/plugins/$id 로 redirect
+│  │  ├─ mcp.tsx               ← /global/mcp 로 redirect
+│  │  ├─ mcp.$name.tsx         ← /global/mcp/$name 로 redirect
+│  │  ├─ global.tsx            ← Global 섹션 레이아웃 (/global)
+│  │  ├─ global/
+│  │  │  ├─ settings.tsx       ← Global Settings (/global/settings)
+│  │  │  ├─ files.tsx          ← Global Files 뷰 (/global/files)
+│  │  │  ├─ plugins.tsx        ← Global Plugins 목록 (/global/plugins)
+│  │  │  ├─ plugins.$id.tsx    ← Global Plugin 상세 (/global/plugins/$id)
+│  │  │  ├─ mcp.tsx            ← Global MCP 목록 (/global/mcp)
+│  │  │  └─ mcp.$name.tsx      ← Global MCP 상세 (/global/mcp/$name)
+│  │  ├─ project.tsx           ← Project 섹션 레이아웃 (/project)
+│  │  ├─ project/
+│  │  │  ├─ settings.tsx       ← Project Settings (/project/settings)
+│  │  │  ├─ files.tsx          ← Project Files 뷰 (/project/files)
+│  │  │  ├─ plugins.tsx        ← Project Plugins 목록 (/project/plugins)
+│  │  │  ├─ plugins.$id.tsx    ← Project Plugin 상세 (/project/plugins/$id)
+│  │  │  ├─ mcp.tsx            ← Project MCP 목록 (/project/mcp)
+│  │  │  └─ mcp.$name.tsx      ← Project MCP 상세 (/project/mcp/$name)
 │  │  └─ api/                  ← API Routes (server.handlers)
 │  │     └─ health.ts          ← GET /api/health
 │  │
 │  ├─ services/                ← 서버 사이드 서비스
 │  │  ├─ config-service.ts     ← 모든 읽기 로직 (md 스캔 + json 파싱)
-│  │  ├─ file-writer.ts        ← 마크다운 파일 직접 편집
+│  │  ├─ file-writer.ts        ← 마크다운/JSON 파일 직접 편집
 │  │  ├─ claude-cli.ts         ← MCP/Plugin CLI 위임 (child_process)
+│  │  ├─ hooks-service.ts      ← settings.json hooks 섹션 CRUD
 │  │  └─ project-store.ts      ← 프로젝트 목록 읽기/쓰기
 │  │
 │  ├─ server/                  ← Server Functions (createServerFn)
@@ -119,7 +141,9 @@ agentfiles/
 │  │  ├─ plugins.ts            ← getPluginsFn, togglePluginFn
 │  │  ├─ mcp.ts                ← getMcpServersFn, addMcpServerFn, removeMcpServerFn
 │  │  ├─ items.ts              ← getItemsFn, getItemFn, saveItemFn, deleteItemFn
-│  │  ├─ projects.ts           ← 프로젝트 CRUD
+│  │  ├─ hooks.ts              ← getHooksFn, addHookFn, removeHookFn, readScriptFn
+│  │  ├─ settings.ts           ← getSettingsFn, saveSettingsFn, getClaudeAppJsonFn, getProjectLocalSettingsFn
+│  │  ├─ projects.ts           ← getProjectsFn, addProjectFn, removeProjectFn, setActiveProjectFn, browseDirFn, scanClaudeMdFilesFn
 │  │  ├─ cli-status.ts         ← getCliStatusFn
 │  │  ├─ config.ts             ← 경로 헬퍼, 토큰, CLI 탐색
 │  │  ├─ validation.ts         ← 입력 검증 (path traversal 방지)
@@ -128,8 +152,24 @@ agentfiles/
 │  │
 │  ├─ components/              ← UI 컴포넌트
 │  │  ├─ ui/                   ← shadcn 컴포넌트
+│  │  │  ├─ tree.tsx           ← 파일 트리 컴포넌트
+│  │  │  ├─ sonner.tsx         ← Toast 알림
+│  │  │  ├─ shiki-code-block.tsx ← Shiki 기반 코드 하이라이터
+│  │  │  └─ (기타 shadcn 컴포넌트...)
+│  │  ├─ pages/                ← 페이지 콘텐츠 컴포넌트 (Global/Project 공통)
+│  │  │  ├─ HooksPageContent.tsx    ← Hooks 관리 UI
+│  │  │  ├─ FilesPageContent.tsx    ← 파일 트리 + 에디터 UI
+│  │  │  ├─ PluginsPageContent.tsx  ← 플러그인 목록 UI
+│  │  │  ├─ PluginDetailContent.tsx ← 플러그인 상세 UI
+│  │  │  ├─ McpPageContent.tsx      ← MCP 서버 목록 UI
+│  │  │  └─ McpDetailContent.tsx    ← MCP 서버 상세 UI
+│  │  ├─ settings/             ← 설정 페이지 컴포넌트
+│  │  │  ├─ GlobalSettingsPage.tsx  ← 글로벌 설정 UI
+│  │  │  └─ ProjectSettingsPage.tsx ← 프로젝트 설정 UI
 │  │  ├─ Layout.tsx            ← 고정 헤더 + 스크롤 콘텐츠 레이아웃
-│  │  ├─ Sidebar.tsx           ← 네비게이션 (4개 메뉴)
+│  │  ├─ Sidebar.tsx           ← 네비게이션 (계층 구조 메뉴)
+│  │  ├─ StatusBar.tsx         ← 하단 상태바 (CLI 버전 + 업데이트 알림)
+│  │  ├─ ErrorBoundary.tsx     ← React 에러 바운더리
 │  │  ├─ ScopeBadge.tsx        ← global/project 스코프 배지
 │  │  ├─ ProjectContext.tsx    ← 프로젝트 컨텍스트 프로바이더
 │  │  ├─ ProjectSwitcher.tsx   ← 프로젝트 전환 UI
@@ -148,7 +188,7 @@ agentfiles/
 │  │  ├─ query-keys.ts         ← TanStack Query 키 정의
 │  │  └─ format.ts             ← formatFileSize, formatDate 유틸리티
 │  │
-│  ├─ paraglide/               ← i18n 자동 생성 (Paraglide)
+│  ├─ paraglide/               ← i18n 자동 생성 (Paraglide JS)
 │  │
 │  └─ shared/
 │     └─ types.ts
@@ -251,23 +291,55 @@ interface Overview {
 
 **Server Functions (타입 안전한 RPC):**
 ```typescript
-getOverview()                           ← 대시보드 전체 데이터
-getClaudeMd({ scope })                  ← CLAUDE.md 메타 + 내용
-saveClaudeMd({ scope, content })        ← CLAUDE.md 저장
-getPlugins()                            ← 전체 플러그인 목록
-togglePlugin({ id })                    ← enable/disable (CLI 위임)
-getMcpServers()                         ← MCP 서버 목록
-addMcpServer({ ... })                   ← MCP 추가 (CLI 위임)
-removeMcpServer({ name })               ← MCP 제거 (CLI 위임)
-getItems({ type })                      ← 목록 (agents|commands|skills)
-getItem({ type, name })                 ← 상세 + 내용
-saveItem({ type, name, content })       ← 생성/수정
-deleteItem({ type, name, scope })       ← 삭제
+// 대시보드
+getOverview()                                    ← 대시보드 전체 데이터
+
+// CLAUDE.md
+getClaudeMd({ scope })                           ← CLAUDE.md 메타 + 내용
+saveClaudeMd({ scope, content })                 ← CLAUDE.md 저장
+
+// Plugins
+getPlugins()                                     ← 전체 플러그인 목록
+togglePlugin({ id })                             ← enable/disable (CLI 위임)
+
+// MCP
+getMcpServers()                                  ← MCP 서버 목록
+addMcpServer({ ... })                            ← MCP 추가 (CLI 위임)
+removeMcpServer({ name })                        ← MCP 제거 (CLI 위임)
+
+// Files (agents | commands | skills)
+getItems({ type })                               ← 목록
+getItem({ type, name })                          ← 상세 + 내용
+saveItem({ type, name, content })                ← 생성/수정
+deleteItem({ type, name, scope })                ← 삭제
+
+// Hooks
+getHooks({ scope })                              ← hooks 목록 조회
+addHook({ scope, event, command })               ← hook 추가
+removeHook({ scope, event, index })              ← hook 삭제
+readScript({ path })                             ← hook 스크립트 파일 읽기
+
+// Settings
+getSettings({ scope })                           ← settings.json 조회
+saveSettings({ scope, data })                    ← settings.json 저장
+getClaudeAppJson()                               ← claude_desktop_config.json 조회
+getProjectLocalSettings({ projectPath })         ← 프로젝트 로컬 설정 조회
+
+// Projects
+getProjects()                                    ← 프로젝트 목록
+addProject({ path })                             ← 프로젝트 추가
+removeProject({ path })                          ← 프로젝트 제거
+setActiveProject({ path })                       ← 활성 프로젝트 변경
+browseDirs({ path })                             ← 디렉토리 탐색
+scanClaudeMdFiles({ projectPath })               ← CLAUDE.md 파일 목록 스캔
+
+// CLI 상태
+getCliStatus()                                   ← Claude CLI 버전 + 업데이트 여부
 ```
 
 **API Routes (REST):**
-```
-GET    /api/health                      ← 헬스체크
+```text
+GET    /api/health                               ← 헬스체크
 ```
 
 ---
@@ -276,24 +348,59 @@ GET    /api/health                      ← 헬스체크
 
 ### 라우팅
 
+```text
+/                         → Dashboard (요약 카드 + 바로가기)
+/hooks                    → Hooks 관리 (Global/Project 탭)
+
+/global                   → Global 섹션 진입 (index redirect)
+/global/settings          → Global Settings (settings.json 편집)
+/global/files             → Global Files 뷰 (트리 탐색 + 에디터)
+/global/plugins           → Global Plugins 목록
+/global/plugins/$id       → Global Plugin 상세
+/global/mcp               → Global MCP 서버 목록
+/global/mcp/$name         → Global MCP 서버 상세
+
+/project                  → Project 섹션 진입 (index redirect)
+/project/settings         → Project Settings (settings.json 편집)
+/project/files            → Project Files 뷰 (트리 탐색 + 에디터)
+/project/plugins          → Project Plugins 목록
+/project/plugins/$id      → Project Plugin 상세
+/project/mcp              → Project MCP 서버 목록
+/project/mcp/$name        → Project MCP 서버 상세
+
+// 하위 호환 redirect
+/files      → /global/files
+/plugins    → /global/plugins
+/mcp        → /global/mcp
 ```
-/                       → Dashboard (요약 카드 + 바로가기)
-/files                  → 통합 Files 뷰 (트리 탐색 + 인라인 에디터)
-/plugins                → Plugins 목록 (카드 + Enable/Disable)
-/mcp                    → MCP 서버 목록 (추가/삭제 Dialog)
+
+### 주요 페이지
+
+1. **Dashboard** — 전체 요약 (카운트 카드, 섹션별 바로가기)
+2. **Hooks** — Global/Project 탭으로 구분된 hooks 관리. 이벤트별 커맨드 목록, 추가/삭제, Shiki로 스크립트 미리보기
+3. **Settings** — Global/Project별 `settings.json` 편집 (env, permissions 등)
+4. **Files** — IDE 스타일 통합 뷰. 좌측 트리(CLAUDE.md + Agents/Commands/Skills) + 우측 에디터. namespace 지원 (예: `ys/commit`)
+5. **Plugins** — 카드 레이아웃으로 플러그인 목록, Enable/Disable 토글, 상세 페이지
+6. **MCP Servers** — MCP 서버 목록, 타입 선택 후 추가/삭제, 상세 페이지
+
+### 사이드바 구조
+
+```text
+Dashboard
+Hooks              ← Global/Project 공통 (탭으로 전환)
+── Global ──
+  Settings
+  Files
+  Plugins
+  MCP
+── Project ──      (프로젝트 선택 시만 활성화)
+  Settings
+  Files
+  Plugins
+  MCP
 ```
 
-### 주요 페이지 (4개)
-
-1. **Dashboard** — 전체 요약 (카운트 카드, Files/Plugins/MCP 바로가기)
-2. **Files** — IDE 스타일 통합 뷰. 좌측 트리(Global/Project 스코프별 CLAUDE.md + Agents/Commands/Skills) + 우측 에디터. namespace 지원 (예: `ys/commit`)
-3. **Plugins** — 카드 레이아웃으로 플러그인 목록, Enable/Disable 토글
-4. **MCP Servers** — MCP 서버 목록, shadcn Select로 타입 선택 후 추가
-
-### 사이드바 (4개 메뉴)
-
-- Dashboard, Files, Plugins, MCP Servers
-- 하단: 프로젝트 전환 (ProjectSwitcher), 언어 전환 (LanguageSwitcher)
+- 하단: 프로젝트 전환 (ProjectSwitcher), 언어 전환 (LanguageSwitcher), StatusBar (CLI 버전 + 업데이트 알림)
 
 ### 레이아웃 패턴
 
@@ -320,6 +427,8 @@ GET    /api/health                      ← 헬스체크
 | 스타일링 | Tailwind CSS v4 |
 | 아이콘 | Lucide React |
 | 마크다운 파싱 | gray-matter |
+| 코드 하이라이팅 | Shiki |
+| i18n | Paraglide JS |
 | 테스트 | Vitest |
 | 린터 | Biome |
 
@@ -359,7 +468,7 @@ GET    /api/health                      ← 헬스체크
 
 설계 근거가 된 실제 파일 구조:
 
-```
+```text
 ~/.claude/
 ├─ CLAUDE.md                          ← 글로벌 설정
 ├─ settings.json                      ← enabledPlugins, env 등

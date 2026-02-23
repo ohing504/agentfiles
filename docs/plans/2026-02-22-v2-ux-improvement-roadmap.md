@@ -28,10 +28,10 @@
 - [ ] 사이드바 active 상태 전환 애니메이션
 
 ### 1.4 Toast Notification System
-- [ ] Toast 컴포넌트 도입 (shadcn/ui sonner 또는 toast)
-- [ ] 성공/실패/경고 알림 표시
-- [ ] CRUD 작업 결과 피드백 (저장 완료, 삭제 완료 등)
-- [ ] 에러 핸들링 통합
+- [x] Toast 컴포넌트 도입 (shadcn/ui sonner 또는 toast)
+- [x] 성공/실패/경고 알림 표시
+- [x] CRUD 작업 결과 피드백 (저장 완료, 삭제 완료 등)
+- [x] 에러 핸들링 통합
 
 ### 1.5 Keyboard Shortcuts
 - [ ] `Cmd+K` 커맨드 팔레트 (Command Palette)
@@ -39,6 +39,14 @@
 - [ ] `Cmd+S` 에디터 저장
 - [ ] `Escape` 다이얼로그 닫기
 - [ ] 단축키 도움말 표시 (`?` 키)
+
+### 1.6 Hooks Enhancement
+- [ ] Hooks 비활성화 토글 (`disableAllHooks` 설정 UI)
+- [ ] Plugin hooks 읽기 (read-only, `hooks/hooks.json`)
+- [ ] Skill/Agent frontmatter hooks 읽기 (read-only)
+- [ ] Shiki 테마 선택 (앱 테마 연동, 사용자 선택)
+- [ ] 필드별 예제/설명 보강 (공식 문서 기반)
+- [ ] `[User]` 명칭 정렬 검토 (현재 `Global` → 공식 `User`)
 
 ---
 
@@ -73,8 +81,8 @@
 - [ ] "앱으로 설치" 안내 배너
 
 ### 3.2 Auto-update System
-- [ ] CLI 시작 시 npm registry 최신 버전 체크
-- [ ] 업데이트 가능 시 UI 배너 표시
+- [x] CLI 시작 시 npm registry 최신 버전 체크
+- [x] 업데이트 가능 시 UI 배너 표시
 - [ ] `npx agentfiles@latest` 안내 또는 자동 실행
 - [ ] 버전 변경 로그 표시
 
