@@ -12,9 +12,11 @@ import {
 import type { HookMatcherGroup, HooksSettings } from "@/shared/types"
 
 let tmpDir: string
+let settingsFile: string
 
 beforeEach(async () => {
   tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "agentfiles-hooks-test-"))
+  settingsFile = path.join(tmpDir, "settings.json")
 })
 
 afterEach(async () => {
@@ -26,11 +28,11 @@ afterEach(async () => {
 describe("getHooksFromSettings", () => {
   it("hooks 섹션이 없는 settings.json → {}", async () => {
     await fs.writeFile(
-      path.join(tmpDir, "settings.json"),
+      settingsFile,
       JSON.stringify({ model: "claude-3-5-sonnet-20241022" }),
       "utf-8",
     )
-    const result = await getHooksFromSettings(tmpDir)
+    const result = await getHooksFromSettings(settingsFile)
     expect(result).toEqual({})
   })
 
@@ -44,16 +46,18 @@ describe("getHooksFromSettings", () => {
       ],
     }
     await fs.writeFile(
-      path.join(tmpDir, "settings.json"),
+      settingsFile,
       JSON.stringify({ model: "claude-opus-4-6", hooks }),
       "utf-8",
     )
-    const result = await getHooksFromSettings(tmpDir)
+    const result = await getHooksFromSettings(settingsFile)
     expect(result).toEqual(hooks)
   })
 
   it("settings.json이 없으면 → {}", async () => {
-    const result = await getHooksFromSettings(tmpDir)
+    const result = await getHooksFromSettings(
+      path.join(tmpDir, "nonexistent.json"),
+    )
     expect(result).toEqual({})
   })
 })
@@ -63,15 +67,15 @@ describe("getHooksFromSettings", () => {
 describe("saveHooksToSettings", () => {
   it("기존 키를 유지하며 hooks 업데이트", async () => {
     await fs.writeFile(
-      path.join(tmpDir, "settings.json"),
+      settingsFile,
       JSON.stringify({ model: "claude-opus-4-6", env: { FOO: "bar" } }),
       "utf-8",
     )
     const hooks: HooksSettings = {
       SessionStart: [{ hooks: [{ type: "command", command: "echo start" }] }],
     }
-    await saveHooksToSettings(tmpDir, hooks)
-    const raw = await fs.readFile(path.join(tmpDir, "settings.json"), "utf-8")
+    await saveHooksToSettings(settingsFile, hooks)
+    const raw = await fs.readFile(settingsFile, "utf-8")
     const parsed = JSON.parse(raw) as Record<string, unknown>
     expect(parsed.model).toBe("claude-opus-4-6")
     expect(parsed.env).toEqual({ FOO: "bar" })
@@ -85,24 +89,21 @@ describe("saveHooksToSettings", () => {
         PreToolUse: [{ hooks: [{ type: "command", command: "echo pre" }] }],
       },
     }
-    await fs.writeFile(
-      path.join(tmpDir, "settings.json"),
-      JSON.stringify(existing),
-      "utf-8",
-    )
-    await saveHooksToSettings(tmpDir, {})
-    const raw = await fs.readFile(path.join(tmpDir, "settings.json"), "utf-8")
+    await fs.writeFile(settingsFile, JSON.stringify(existing), "utf-8")
+    await saveHooksToSettings(settingsFile, {})
+    const raw = await fs.readFile(settingsFile, "utf-8")
     const parsed = JSON.parse(raw) as Record<string, unknown>
     expect(parsed.model).toBe("claude-opus-4-6")
     expect(Object.hasOwn(parsed, "hooks")).toBe(false)
   })
 
   it("settings.json이 없으면 새로 생성", async () => {
+    const newFile = path.join(tmpDir, "sub", "settings.json")
     const hooks: HooksSettings = {
       Stop: [{ hooks: [{ type: "command", command: "echo stop" }] }],
     }
-    await saveHooksToSettings(tmpDir, hooks)
-    const raw = await fs.readFile(path.join(tmpDir, "settings.json"), "utf-8")
+    await saveHooksToSettings(newFile, hooks)
+    const raw = await fs.readFile(newFile, "utf-8")
     const parsed = JSON.parse(raw) as Record<string, unknown>
     expect(parsed.hooks).toEqual(hooks)
   })
@@ -121,7 +122,7 @@ describe("addHookToSettings", () => {
       ],
     }
     await fs.writeFile(
-      path.join(tmpDir, "settings.json"),
+      settingsFile,
       JSON.stringify({ hooks: initial }),
       "utf-8",
     )
@@ -129,23 +130,19 @@ describe("addHookToSettings", () => {
       matcher: "Read",
       hooks: [{ type: "command", command: "echo second" }],
     }
-    await addHookToSettings(tmpDir, "PreToolUse", newGroup)
-    const result = await getHooksFromSettings(tmpDir)
+    await addHookToSettings(settingsFile, "PreToolUse", newGroup)
+    const result = await getHooksFromSettings(settingsFile)
     expect(result.PreToolUse).toHaveLength(2)
     expect(result.PreToolUse?.[1]).toEqual(newGroup)
   })
 
   it("새 이벤트에 matcher group 추가", async () => {
-    await fs.writeFile(
-      path.join(tmpDir, "settings.json"),
-      JSON.stringify({}),
-      "utf-8",
-    )
+    await fs.writeFile(settingsFile, JSON.stringify({}), "utf-8")
     const group: HookMatcherGroup = {
       hooks: [{ type: "command", command: "echo session" }],
     }
-    await addHookToSettings(tmpDir, "SessionStart", group)
-    const result = await getHooksFromSettings(tmpDir)
+    await addHookToSettings(settingsFile, "SessionStart", group)
+    const result = await getHooksFromSettings(settingsFile)
     expect(result.SessionStart).toHaveLength(1)
     expect(result.SessionStart?.[0]).toEqual(group)
   })
@@ -166,13 +163,9 @@ describe("removeHookFromSettings", () => {
         },
       ],
     }
-    await fs.writeFile(
-      path.join(tmpDir, "settings.json"),
-      JSON.stringify({ hooks }),
-      "utf-8",
-    )
-    await removeHookFromSettings(tmpDir, "PreToolUse", 0, 0)
-    const result = await getHooksFromSettings(tmpDir)
+    await fs.writeFile(settingsFile, JSON.stringify({ hooks }), "utf-8")
+    await removeHookFromSettings(settingsFile, "PreToolUse", 0, 0)
+    const result = await getHooksFromSettings(settingsFile)
     expect(result.PreToolUse?.[0].hooks).toHaveLength(1)
     expect(result.PreToolUse?.[0].hooks[0].command).toBe("echo second")
   })
@@ -184,13 +177,9 @@ describe("removeHookFromSettings", () => {
         { matcher: "Read", hooks: [{ type: "command", command: "echo read" }] },
       ],
     }
-    await fs.writeFile(
-      path.join(tmpDir, "settings.json"),
-      JSON.stringify({ hooks }),
-      "utf-8",
-    )
-    await removeHookFromSettings(tmpDir, "PreToolUse", 0, 0)
-    const result = await getHooksFromSettings(tmpDir)
+    await fs.writeFile(settingsFile, JSON.stringify({ hooks }), "utf-8")
+    await removeHookFromSettings(settingsFile, "PreToolUse", 0, 0)
+    const result = await getHooksFromSettings(settingsFile)
     expect(result.PreToolUse).toHaveLength(1)
     expect(result.PreToolUse?.[0].matcher).toBe("Read")
   })
@@ -200,13 +189,9 @@ describe("removeHookFromSettings", () => {
       SessionStart: [{ hooks: [{ type: "command", command: "echo start" }] }],
       Stop: [{ hooks: [{ type: "command", command: "echo stop" }] }],
     }
-    await fs.writeFile(
-      path.join(tmpDir, "settings.json"),
-      JSON.stringify({ hooks }),
-      "utf-8",
-    )
-    await removeHookFromSettings(tmpDir, "SessionStart", 0, 0)
-    const result = await getHooksFromSettings(tmpDir)
+    await fs.writeFile(settingsFile, JSON.stringify({ hooks }), "utf-8")
+    await removeHookFromSettings(settingsFile, "SessionStart", 0, 0)
+    const result = await getHooksFromSettings(settingsFile)
     expect(Object.hasOwn(result, "SessionStart")).toBe(false)
     expect(result.Stop).toHaveLength(1)
   })

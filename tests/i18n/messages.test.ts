@@ -43,12 +43,14 @@ describe("i18n messages", () => {
 
   it("keys should follow naming convention (prefix_name)", () => {
     const validPrefixes = [
+      "action",
       "app",
-      "nav",
-      "scope",
+      "claude",
       "detail",
       "editor",
       "files",
+      "nav",
+      "scope",
       "settings",
     ]
     for (const key of enKeys) {
