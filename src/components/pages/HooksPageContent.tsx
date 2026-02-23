@@ -4,6 +4,7 @@ import {
   ExternalLink,
   FileCode,
   MessageSquare,
+  Pencil,
   Plus,
   Search,
   Trash2,
@@ -22,7 +23,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -32,6 +32,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import {
   Empty,
   EmptyDescription,
@@ -65,6 +72,10 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
+import {
+  detectLangFromPath,
+  ShikiCodeBlock,
+} from "@/components/ui/shiki-code-block"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
@@ -337,6 +348,21 @@ const HOOK_TEMPLATES: Array<{
 
 // ── HookDetailPanel ───────────────────────────────────────────────────────────
 
+function DetailField({
+  label,
+  children,
+}: {
+  label: string
+  children: React.ReactNode
+}) {
+  return (
+    <div className="flex flex-col gap-1">
+      <dt className="text-xs text-muted-foreground">{label}</dt>
+      <dd>{children}</dd>
+    </div>
+  )
+}
+
 function HookDetailPanel({
   selectedHook,
   activeProjectPath,
@@ -368,93 +394,103 @@ function HookDetailPanel({
   })
 
   return (
-    <div className="flex flex-col gap-4">
-      {/* 메타 정보 */}
-      <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm items-center">
-        <span className="text-muted-foreground">Event</span>
-        <Badge variant="outline" className="w-fit">
-          {selectedHook.event}
-        </Badge>
+    <div className="flex flex-col gap-6 h-full min-h-0">
+      {/* 메타 정보 — 가로 그리드, 각 항목은 수직 스택 */}
+      <dl className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-4">
+        <DetailField label="Event">
+          <span className="text-sm font-medium">{selectedHook.event}</span>
+        </DetailField>
 
-        <span className="text-muted-foreground">Type</span>
-        <Badge variant="secondary" className="w-fit">
-          {hook.type}
-        </Badge>
+        <DetailField label="Handler">
+          <span className="text-sm font-medium">{hook.type}</span>
+        </DetailField>
 
         {selectedHook.matcher && (
-          <>
-            <span className="text-muted-foreground">Matcher</span>
-            <code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono">
-              {selectedHook.matcher}
-            </code>
-          </>
+          <DetailField label="Matcher">
+            <span className="text-sm font-medium">{selectedHook.matcher}</span>
+          </DetailField>
         )}
 
         {hook.timeout != null && (
-          <>
-            <span className="text-muted-foreground">Timeout</span>
-            <span>{hook.timeout}s</span>
-          </>
+          <DetailField label="Timeout">
+            <span className="text-sm font-medium">{hook.timeout}s</span>
+          </DetailField>
         )}
 
         {hook.type === "command" && hook.async != null && (
-          <>
-            <span className="text-muted-foreground">Async</span>
-            <span>{hook.async ? "Yes" : "No"}</span>
-          </>
+          <DetailField label="Async">
+            <span className="text-sm font-medium">
+              {hook.async ? "Yes" : "No"}
+            </span>
+          </DetailField>
         )}
-      </div>
+
+        {hook.once && (
+          <DetailField label="Once">
+            <span className="text-sm font-medium">Yes</span>
+          </DetailField>
+        )}
+      </dl>
+
+      {/* Status Message */}
+      {hook.statusMessage && (
+        <DetailField label="Status Message">
+          <span className="text-sm">{hook.statusMessage}</span>
+        </DetailField>
+      )}
+
+      <Separator />
 
       {/* command 타입 */}
       {hook.type === "command" && hook.command && (
-        <div className="flex flex-col gap-2">
-          <span className="text-xs text-muted-foreground font-medium">
-            Command
-          </span>
-          <pre className="bg-muted rounded p-2 text-xs font-mono overflow-x-auto whitespace-pre-wrap break-all">
-            {hook.command}
-          </pre>
+        <>
+          <DetailField label="Command">
+            <ShikiCodeBlock code={hook.command} lang="bash" />
+          </DetailField>
 
           {isFilePath && (
-            <div className="flex flex-col gap-2">
-              <span className="text-xs text-muted-foreground font-medium">
-                Script Preview
-              </span>
-              {scriptQuery.isLoading ? (
-                <Skeleton className="h-20 w-full" />
-              ) : scriptQuery.data?.content ? (
-                <pre className="bg-muted rounded p-2 text-xs font-mono overflow-x-auto max-h-48 overflow-y-auto whitespace-pre">
-                  {scriptQuery.data.content}
-                </pre>
-              ) : (
-                <p className="text-xs text-muted-foreground italic">
-                  File not found or empty
-                </p>
-              )}
+            <div className="flex flex-col gap-1 flex-1 min-h-0">
+              <dt className="text-xs text-muted-foreground">Script Preview</dt>
+              <dd className="flex-1 min-h-0">
+                {scriptQuery.isLoading ? (
+                  <Skeleton className="h-24 w-full rounded-md" />
+                ) : scriptQuery.data?.content ? (
+                  <ShikiCodeBlock
+                    code={scriptQuery.data.content}
+                    lang={detectLangFromPath(hook.command ?? "")}
+                    className="h-full overflow-y-auto [&_pre]:whitespace-pre [&_pre]:text-xs [&_pre]:h-full"
+                  />
+                ) : (
+                  <p className="text-sm text-muted-foreground italic">
+                    File not found or empty
+                  </p>
+                )}
+              </dd>
             </div>
           )}
-        </div>
+        </>
       )}
 
       {/* prompt / agent 타입 */}
       {(hook.type === "prompt" || hook.type === "agent") && hook.prompt && (
-        <div className="flex flex-col gap-2">
-          <span className="text-xs text-muted-foreground font-medium">
-            Prompt
-          </span>
-          <pre className="bg-muted rounded p-2 text-xs font-mono overflow-x-auto max-h-48 overflow-y-auto whitespace-pre-wrap break-all">
-            {hook.prompt}
-          </pre>
+        <>
+          <div className="flex flex-col gap-1 flex-1 min-h-0">
+            <dt className="text-xs text-muted-foreground">Prompt</dt>
+            <dd className="flex-1 min-h-0">
+              <ShikiCodeBlock
+                code={hook.prompt}
+                lang="markdown"
+                className="h-full overflow-y-auto [&_pre]:h-full"
+              />
+            </dd>
+          </div>
 
           {hook.model && (
-            <div className="flex flex-col gap-1">
-              <span className="text-xs text-muted-foreground font-medium">
-                Model
-              </span>
-              <span className="text-sm">{hook.model}</span>
-            </div>
+            <DetailField label="Model">
+              <span className="text-sm font-medium">{hook.model}</span>
+            </DetailField>
           )}
-        </div>
+        </>
       )}
     </div>
   )
@@ -479,23 +515,29 @@ function AddHookDialog({
   scope,
   onClose,
   addMutation,
+  removeMutation,
+  editHook,
 }: {
   scope: HookScope
   onClose: () => void
   addMutation: ReturnType<typeof useHooks>["addMutation"]
+  removeMutation?: ReturnType<typeof useHooks>["removeMutation"]
+  editHook?: SelectedHook | null
 }) {
+  const isEdit = !!editHook
   const form = useForm({
     defaultValues: {
-      event: "PreToolUse" as string,
-      type: "command" as HookType,
-      matcher: "",
-      command: "",
-      prompt: "",
-      model: "",
-      timeout: "",
-      statusMessage: "",
-      async: false,
-      once: false,
+      event: (editHook?.event ?? "PreToolUse") as string,
+      type: (editHook?.hook.type ?? "command") as HookType,
+      matcher: editHook?.matcher ?? "",
+      command: editHook?.hook.command ?? "",
+      prompt: editHook?.hook.prompt ?? "",
+      model: editHook?.hook.model ?? "",
+      timeout:
+        editHook?.hook.timeout != null ? String(editHook.hook.timeout) : "",
+      statusMessage: editHook?.hook.statusMessage ?? "",
+      async: editHook?.hook.async ?? false,
+      once: editHook?.hook.once ?? false,
     },
     validators: {
       onSubmit: hookFormSchema,
@@ -522,10 +564,28 @@ function AddHookDialog({
         hooks: [hookEntry],
         ...(value.matcher ? { matcher: value.matcher } : {}),
       }
-      addMutation.mutate(
-        { event, matcherGroup },
-        { onSuccess: () => onClose() },
-      )
+      if (isEdit && editHook && removeMutation) {
+        removeMutation.mutate(
+          {
+            event: editHook.event,
+            groupIndex: editHook.groupIndex,
+            hookIndex: editHook.hookIndex,
+          },
+          {
+            onSuccess: () => {
+              addMutation.mutate(
+                { event, matcherGroup },
+                { onSuccess: () => onClose() },
+              )
+            },
+          },
+        )
+      } else {
+        addMutation.mutate(
+          { event, matcherGroup },
+          { onSuccess: () => onClose() },
+        )
+      }
     },
   })
 
@@ -565,7 +625,7 @@ function AddHookDialog({
       <DialogContent className="min-w-4xl max-w-5xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            Add{" "}
+            {isEdit ? "Edit" : "Add"}{" "}
             <span className="text-primary">
               {scope.charAt(0).toUpperCase() + scope.slice(1)}
             </span>{" "}
@@ -861,7 +921,13 @@ function AddHookDialog({
               Cancel
             </Button>
             <Button type="submit" disabled={addMutation.isPending}>
-              {addMutation.isPending ? "Adding..." : "Add"}
+              {addMutation.isPending
+                ? isEdit
+                  ? "Saving..."
+                  : "Adding..."
+                : isEdit
+                  ? "Save"
+                  : "Add"}
             </Button>
           </DialogFooter>
         </form>
@@ -1017,6 +1083,7 @@ export function HooksPageContent() {
   const [selectedHook, setSelectedHook] = useState<SelectedHook | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [addDialogScope, setAddDialogScope] = useState<HookScope | null>(null)
+  const [editingHook, setEditingHook] = useState<SelectedHook | null>(null)
   const [pendingDelete, setPendingDelete] = useState<SelectedHook | null>(null)
 
   const {
@@ -1151,26 +1218,35 @@ export function HooksPageContent() {
           <>
             {/* 우측 헤더 */}
             <div className="flex items-center justify-between px-4 h-12 shrink-0">
-              <div className="flex items-center gap-2 min-w-0">
-                <h2 className="text-sm font-semibold truncate">
-                  {getHookDisplayName(selectedHook.hook)}
-                </h2>
-                <Badge variant="secondary" className="shrink-0">
-                  {selectedHook.hook.type}
-                </Badge>
-              </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="shrink-0 text-muted-foreground hover:text-destructive"
-                onClick={() => setPendingDelete(selectedHook)}
-                aria-label="Delete hook"
-              >
-                <Trash2 className="size-4" />
-              </Button>
+              <h2 className="text-sm font-semibold truncate min-w-0">
+                {getHookDisplayName(selectedHook.hook)}
+              </h2>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="shrink-0">
+                    {m.action_edit()}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    onClick={() => setEditingHook(selectedHook)}
+                  >
+                    <Pencil className="size-4" />
+                    {m.action_edit()}
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    variant="destructive"
+                    onClick={() => setPendingDelete(selectedHook)}
+                  >
+                    <Trash2 className="size-4" />
+                    {m.action_delete()}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
             {/* 상세 내용 */}
-            <div className="flex-1 overflow-y-auto p-4">
+            <div className="flex-1 flex flex-col min-h-0 p-4">
               <HookDetailPanel
                 selectedHook={selectedHook}
                 activeProjectPath={activeProjectPath}
@@ -1229,6 +1305,29 @@ export function HooksPageContent() {
           scope={addDialogScope}
           onClose={() => setAddDialogScope(null)}
           addMutation={addMutation}
+        />
+      )}
+
+      {/* Edit Hook Dialog */}
+      {editingHook != null && (
+        <AddHookDialog
+          scope={editingHook.scope}
+          onClose={() => setEditingHook(null)}
+          addMutation={
+            editingHook.scope === "global"
+              ? globalAdd
+              : editingHook.scope === "local"
+                ? localAdd
+                : projectAdd
+          }
+          removeMutation={
+            editingHook.scope === "global"
+              ? globalRemove
+              : editingHook.scope === "local"
+                ? localRemove
+                : projectRemove
+          }
+          editHook={editingHook}
         />
       )}
     </div>

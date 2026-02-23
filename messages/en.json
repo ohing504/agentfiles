@@ -77,5 +77,7 @@
   "claude_hook_handler_agent": "Spawn a subagent with tools like Read, Grep, and Glob",
   "claude_hook_scope_global": "Applies to all projects. Stored in ~/.claude/settings.json",
   "claude_hook_scope_project": "Applies to this project. Can be committed to the repo.",
-  "claude_hook_scope_local": "Applies to this project. Gitignored and not shared."
+  "claude_hook_scope_local": "Applies to this project. Gitignored and not shared.",
+  "action_edit": "Edit",
+  "action_delete": "Delete"
 }

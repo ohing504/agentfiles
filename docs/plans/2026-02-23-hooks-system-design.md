@@ -401,10 +401,13 @@ export class HooksService {
 | **Phase 2-4** | 3-scope 지원 (Global/Project/Local) | settings.local.json 지원 | ✅ 완료 |
 | **Phase 2-5** | 사이드바 통합 | 사이드바 메뉴 추가 | ✅ 완료 |
 | **Phase 2-6** | AddHookDialog UX 개선 | TanStack Form + Zod, 2-panel 레이아웃, 이벤트 그룹핑 | ✅ 완료 |
+| **Phase 2-7** | 디테일 패널 개선 | 수직 스택 레이아웃, Shiki 구문 하이라이트, 편집/삭제 드롭다운 | ✅ 완료 |
+| **Phase 2-8** | Hook 편집 기능 | 편집 다이얼로그 (기존 값 pre-populate, remove + add) | ✅ 완료 |
 | **Phase 3-1** | Hooks 비활성화 토글 | `disableAllHooks` 설정 UI | ⬜ 미착수 |
 | **Phase 3-2** | Plugin hooks (read-only) | Plugin `hooks/hooks.json` 읽기 | ⬜ 미착수 |
 | **Phase 3-3** | Skill/Agent frontmatter hooks | 컴포넌트 정의 hooks 읽기 | ⬜ 미착수 |
 | **Phase 3-4** | 필드별 예제/설명 보강 | 공식 문서 기반으로 각 이벤트/필드의 예제, 설명, placeholder 개선 | ⬜ 미착수 |
+| **Phase 3-5** | Shiki 테마 선택 | 코드 블록 하이라이트 테마 변경 지원 (앱 테마 연동, 사용자 선택) | ⬜ 미착수 |
 
 ---
 
@@ -430,6 +433,12 @@ export class HooksService {
 - [x] 2-panel 다이얼로그 레이아웃 (좌: 공통 필드, 우: 핸들러별 필드)
 - [x] 새 공통 필드: statusMessage, once 지원
 - [x] Timeout 기본값 안내 (cmd 600, prompt 30, agent 60)
+- [x] 디테일 패널 수직 스택 레이아웃 (DetailField: 라벨 위 + 값 아래)
+- [x] Shiki 구문 하이라이트 통합 (`github-dark-default` 테마, 언어 자동 감지)
+- [x] Script Preview 남은 영역 채우기 (flex-1)
+- [x] 편집/삭제 드롭다운 메뉴 (outline 버튼 + DropdownMenu)
+- [x] Hook 편집 다이얼로그 (기존 값 pre-populate, remove + add)
+- [x] i18n: `action_edit`, `action_delete` 메시지 추가
 
 ### Phase 3
 - [ ] Hooks 비활성화 토글 (`disableAllHooks` 설정)
