@@ -6,6 +6,7 @@ interface ProjectContextValue {
   projects: Project[]
   activeProject: Project | null
   activeProjectPath: string | undefined
+  homedir: string
   isLoading: boolean
   setActiveProject: (path: string | null) => void
   addProject: (path: string) => Promise<void>
@@ -20,6 +21,7 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
 
   const projects = query.data?.projects ?? []
   const activeProjectPath = query.data?.activeProject ?? undefined
+  const homedir = query.data?.homedir ?? ""
   const activeProject =
     projects.find((p) => p.path === activeProjectPath) ?? null
 
@@ -27,6 +29,7 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     projects,
     activeProject,
     activeProjectPath,
+    homedir,
     isLoading: query.isLoading,
     setActiveProject: (path) => setActiveMutation.mutate(path),
     addProject: async (path) => {

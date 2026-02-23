@@ -15,9 +15,11 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
+import { shortenPath } from "@/lib/format"
 
 export function ProjectSwitcher() {
-  const { projects, activeProject, setActiveProject } = useProjectContext()
+  const { projects, activeProject, setActiveProject, homedir } =
+    useProjectContext()
   const { isMobile } = useSidebar()
   const [showAddDialog, setShowAddDialog] = useState(false)
 
@@ -39,7 +41,9 @@ export function ProjectSwitcher() {
                     {activeProject?.name ?? "Global Only"}
                   </span>
                   <span className="truncate text-xs text-muted-foreground">
-                    {activeProject?.path ?? "~/.claude"}
+                    {activeProject
+                      ? shortenPath(activeProject.path, homedir)
+                      : "~/.claude"}
                   </span>
                 </div>
                 <ChevronsUpDown className="ml-auto" />
@@ -61,7 +65,7 @@ export function ProjectSwitcher() {
                   <div className="flex-1 min-w-0">
                     <div className="font-medium truncate">{project.name}</div>
                     <div className="text-xs text-muted-foreground truncate">
-                      {project.path}
+                      {shortenPath(project.path, homedir)}
                     </div>
                   </div>
                   {activeProject?.path === project.path && (

@@ -2,6 +2,7 @@ import { Link, useLocation } from "@tanstack/react-router"
 import React from "react"
 
 import { AppSidebar } from "@/components/Sidebar"
+import { StatusBar } from "@/components/StatusBar"
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -10,11 +11,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar"
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import { m } from "@/paraglide/messages"
 
 const SCOPE_LABELS: Record<string, () => string> = {
@@ -95,16 +92,20 @@ function HeaderBreadcrumb() {
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <SidebarProvider className="h-svh">
-      <AppSidebar />
-      <SidebarInset className="overflow-hidden">
-        <header className="flex h-16 shrink-0 items-center gap-2 bg-background px-4 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
-          <SidebarTrigger className="-ml-1" />
-          <div aria-hidden="true" className="h-4 w-px shrink-0 bg-border" />
-          <HeaderBreadcrumb />
-        </header>
-        <div className="flex-1 overflow-y-auto p-4 pt-0">{children}</div>
-      </SidebarInset>
-    </SidebarProvider>
+    <div
+      className="flex h-svh flex-col overflow-hidden"
+      style={{ "--status-bar-height": "1.5rem" } as React.CSSProperties}
+    >
+      <SidebarProvider className="flex-1 min-h-0">
+        <AppSidebar />
+        <SidebarInset className="overflow-hidden">
+          <header className="flex h-16 shrink-0 items-center gap-2 bg-background px-4 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
+            <HeaderBreadcrumb />
+          </header>
+          <div className="flex-1 overflow-y-auto p-4 pt-0">{children}</div>
+        </SidebarInset>
+      </SidebarProvider>
+      <StatusBar />
+    </div>
   )
 }

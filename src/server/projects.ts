@@ -7,12 +7,17 @@ export const getProjectsFn = createServerFn({ method: "GET" }).handler(
 
     const fs = await import("node:fs")
     const path = await import("node:path")
+    const os = await import("node:os")
     const projects = config.projects.map((p) => ({
       ...p,
       hasClaudeDir: fs.existsSync(path.join(p.path, ".claude")),
     }))
 
-    return { projects, activeProject: config.activeProject }
+    return {
+      projects,
+      activeProject: config.activeProject,
+      homedir: os.homedir(),
+    }
   },
 )
 

@@ -13,7 +13,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
-import { useCliStatus, useOverview } from "@/hooks/use-config"
+import { useOverview } from "@/hooks/use-config"
 import { m } from "@/paraglide/messages"
 
 export const Route = createFileRoute("/")({ component: DashboardPage })
@@ -112,31 +112,6 @@ function ClaudeMdCard({ isLoading }: { isLoading: boolean }) {
   )
 }
 
-function CliStatusBadge() {
-  const { data: cliStatus, isLoading } = useCliStatus()
-
-  if (isLoading) {
-    return <Skeleton className="h-5 w-28" />
-  }
-
-  if (!cliStatus) return null
-
-  return cliStatus.available ? (
-    <Badge variant="outline" className="text-green-600 border-green-600 gap-1">
-      <CheckCircle2 className="w-3 h-3" />
-      Claude CLI {cliStatus.version}
-    </Badge>
-  ) : (
-    <Badge
-      variant="outline"
-      className="text-destructive border-destructive gap-1"
-    >
-      <XCircle className="w-3 h-3" />
-      Claude CLI unavailable
-    </Badge>
-  )
-}
-
 function DashboardPage() {
   const { data: overview, isLoading } = useOverview()
 
@@ -144,15 +119,14 @@ function DashboardPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-end gap-3 mb-4">
-        {conflictCount > 0 && (
+      {conflictCount > 0 && (
+        <div className="flex items-center justify-end gap-3 mb-4">
           <Badge variant="destructive" className="gap-1">
             <TriangleAlert className="w-3 h-3" />
             {conflictCount} conflict{conflictCount > 1 ? "s" : ""}
           </Badge>
-        )}
-        <CliStatusBadge />
-      </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
         <StatCard

@@ -2,12 +2,12 @@ import { Link } from "@tanstack/react-router"
 import {
   FolderOpen,
   LayoutDashboard,
+  PanelLeftIcon,
   Puzzle,
   Server,
   Settings,
 } from "lucide-react"
 
-import { LanguageSwitcher } from "@/components/LanguageSwitcher"
 import { useProjectContext } from "@/components/ProjectContext"
 import { ProjectSwitcher } from "@/components/ProjectSwitcher"
 import {
@@ -22,6 +22,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
+  useSidebar,
 } from "@/components/ui/sidebar"
 import { m } from "@/paraglide/messages"
 
@@ -58,6 +59,24 @@ const projectNavItems = [
     labelFn: () => m.nav_mcp_servers(),
   },
 ] as const
+
+function SidebarToggle() {
+  const { toggleSidebar } = useSidebar()
+
+  return (
+    <SidebarMenu>
+      <SidebarMenuItem>
+        <SidebarMenuButton
+          onClick={toggleSidebar}
+          tooltip="Toggle Sidebar"
+          className="w-8"
+        >
+          <PanelLeftIcon />
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+    </SidebarMenu>
+  )
+}
 
 export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
   const { activeProjectPath } = useProjectContext()
@@ -129,7 +148,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
         )}
       </SidebarContent>
       <SidebarFooter>
-        <LanguageSwitcher />
+        <SidebarToggle />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

@@ -122,8 +122,18 @@
     }
   body {
     @apply font-sans bg-background text-foreground;
+    overscroll-behavior: none;
     }
   html {
     @apply font-sans;
+    overscroll-behavior: none;
     }
+}
+
+/* StatusBar: sidebar가 statusbar를 덮지 않도록 높이 조정 */
+[data-slot="sidebar-container"] {
+  top: 0;
+  bottom: var(--status-bar-height, 0px);
+  height: calc(100svh - var(--status-bar-height, 0px));
+  inset-block: unset;
 }
