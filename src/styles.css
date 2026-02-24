@@ -131,6 +131,27 @@
     }
 }
 
+/* Shiki dual theme: .dark 클래스 시 다크 CSS 변수로 전환 */
+.dark .shiki,
+.dark .shiki span {
+  color: var(--shiki-dark) !important;
+  background-color: var(--shiki-dark-bg) !important;
+}
+
+/* Shiki line numbers via CSS counter */
+.shiki-line-numbers {
+  counter-reset: line;
+}
+.shiki-line-numbers .line::before {
+  counter-increment: line;
+  content: counter(line);
+  display: inline-block;
+  width: 2rem;
+  margin-right: 1rem;
+  text-align: right;
+  opacity: 0.35;
+}
+
 /* StatusBar: sidebar가 statusbar를 덮지 않도록 높이 조정 */
 [data-slot="sidebar-container"] {
   top: 0;

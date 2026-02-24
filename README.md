@@ -24,7 +24,8 @@ agentfiles는 이 흩어진 설정들을 한 화면에서 보고, 편집하고, 
 - **CLAUDE.md 에디터**: 글로벌 및 프로젝트 스코프의 Claude 설정 파일 편집
 - **Plugin 관리**: Claude Plugin 활성화/비활성화 토글
 - **MCP 서버**: Model Context Protocol 서버 추가/제거
-- **Agent/Command/Skill 관리**: 파일 기반 CRUD 작업
+- **Skills 관리**: 읽기 전용 뷰로 Skills/Commands 관리. 마크다운 프리뷰/소스 토글, Frontmatter badges, supporting files 지원
+- **구문 하이라이팅**: Shiki 듀얼 테마 (라이트/다크 자동 전환), 코드 파일 라인넘버 표시
 - **실시간 대시보드**: 충돌 감지 및 설정 상태 모니터링
 - **Hooks 에디터**: Claude Code hooks를 GUI로 추가/편집/삭제. 17개 이벤트, 3가지 hook type (command/prompt/agent), 빌트인 템플릿 지원
 - **Settings 관리**: Global/Project settings.json 편집, ~/.claude.json 읽기 전용 뷰
@@ -89,7 +90,8 @@ pnpm typecheck     # TypeScript 타입 체크
 - **프론트엔드**: React 19, TanStack Query, shadcn/ui (Radix Nova), Tailwind CSS v4
 - **백엔드**: Server Functions, Node.js
 - **언어**: TypeScript (strict mode)
-- **마크다운**: gray-matter (frontmatter 파싱)
+- **마크다운**: gray-matter (frontmatter 파싱), react-markdown (렌더링)
+- **구문 하이라이팅**: Shiki (듀얼 테마, transformer 기반)
 - **테스트**: Vitest
 - **린팅**: Biome
 - **패키지 매니저**: pnpm

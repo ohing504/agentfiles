@@ -1,21 +1,21 @@
+import { useForm, useStore } from "@tanstack/react-form"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import {
-  Code,
   ExternalLink,
   FileText,
   FolderOpen,
-  MoreHorizontal,
+  Info,
   Plus,
-  Save,
+  ScrollText,
   Search,
-  Sparkles,
-  Terminal,
-  Trash2,
+  SquareTerminal,
 } from "lucide-react"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { toast } from "sonner"
+import { z } from "zod"
+import { FileViewer } from "@/components/FileViewer"
+import { CursorIcon, VscodeIcon } from "@/components/icons/editor-icons"
 import { useProjectContext } from "@/components/ProjectContext"
-import { ScopeBadge } from "@/components/ScopeBadge"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -50,23 +50,27 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty"
-import { Input } from "@/components/ui/input"
-import { MarkdownPreview } from "@/components/ui/markdown-preview"
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field"
+import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Switch } from "@/components/ui/switch"
-import { Textarea } from "@/components/ui/textarea"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import { Tree, TreeFile, TreeFolder } from "@/components/ui/tree"
 import { useAgentFiles } from "@/hooks/use-config"
-import { formatFileSize } from "@/lib/format"
-import type { AgentFile, Scope } from "@/shared/types"
+import { formatDate } from "@/lib/format"
+import { m } from "@/paraglide/messages"
+import { getLocale } from "@/paraglide/runtime"
+import type { AgentFile, Scope, SupportingFile } from "@/shared/types"
 
 // ── Utilities ─────────────────────────────────────────────────────────────────
 
@@ -75,33 +79,77 @@ function extractBody(content: string): string {
   return match ? match[1].trim() : content
 }
 
-// ── SkillFrontmatterForm ───────────────────────────────────────────────────────
+// ── Schemas ──────────────────────────────────────────────────────────────────
 
-interface SkillFrontmatterValues {
-  description: string
-  model: string
-  context: string
-  agent: string
-  allowedTools: string
-  argumentHint: string
-  disableModelInvocation: boolean
-  userInvocable: boolean
-}
+const addSkillSchema = z.object({
+  name: z
+    .string()
+    .min(1, "Name is required")
+    .max(64, "Name must be 64 characters or less")
+    .regex(/^[a-z0-9-]+$/, "Only lowercase letters, numbers, and hyphens"),
+  description: z.string().min(1, "Description is required"),
+})
 
-function initFormValues(
-  frontmatter: AgentFile["frontmatter"],
-): SkillFrontmatterValues {
-  const fm = frontmatter ?? {}
-  return {
-    description: String(fm.description ?? ""),
-    model: String(fm.model ?? ""),
-    context: String(fm.context ?? ""),
-    agent: String(fm.agent ?? ""),
-    allowedTools: String(fm["allowed-tools"] ?? ""),
-    argumentHint: String(fm["argument-hint"] ?? ""),
-    disableModelInvocation: fm["disable-model-invocation"] === true,
-    userInvocable: fm["user-invocable"] !== false,
-  }
+// ── FrontmatterBadges ─────────────────────────────────────────────────────────
+
+function FrontmatterBadges({
+  frontmatter,
+}: {
+  frontmatter: AgentFile["frontmatter"]
+}) {
+  if (!frontmatter) return null
+
+  const entries: { label: string; value: string }[] = []
+  if (frontmatter.model)
+    entries.push({ label: "model", value: String(frontmatter.model) })
+  if (frontmatter.context)
+    entries.push({ label: "context", value: String(frontmatter.context) })
+  if (frontmatter.agent)
+    entries.push({ label: "agent", value: String(frontmatter.agent) })
+  if (frontmatter["allowed-tools"])
+    entries.push({
+      label: "allowed-tools",
+      value: String(frontmatter["allowed-tools"]),
+    })
+  if (frontmatter["argument-hint"])
+    entries.push({
+      label: "argument-hint",
+      value: String(frontmatter["argument-hint"]),
+    })
+  if (frontmatter["disable-model-invocation"])
+    entries.push({ label: "disable-model-invocation", value: "true" })
+  if (frontmatter["user-invocable"] === false)
+    entries.push({ label: "user-invocable", value: "false" })
+
+  if (entries.length === 0) return null
+
+  return (
+    <div className="mb-3">
+      <div className="flex flex-wrap gap-x-4 gap-y-2">
+        {entries.map((e) => {
+          const values = e.value.includes(",")
+            ? e.value
+                .split(",")
+                .map((v) => v.trim())
+                .filter(Boolean)
+            : [e.value]
+          return (
+            <div key={e.label} className="flex flex-col gap-0.5">
+              <span className="text-xs text-muted-foreground">{e.label}</span>
+              <div className="flex flex-wrap gap-1">
+                {values.map((v) => (
+                  <Badge key={v} variant="secondary">
+                    {v}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+      <Separator className="mt-3" />
+    </div>
+  )
 }
 
 // ── SkillDetailPanel ──────────────────────────────────────────────────────────
@@ -117,7 +165,6 @@ function SkillDetailPanel({
 }) {
   const queryClient = useQueryClient()
   const [pendingDelete, setPendingDelete] = useState(false)
-  const [isSaving, setIsSaving] = useState(false)
 
   // Load full content
   const { data: itemDetail, isLoading: detailLoading } = useQuery({
@@ -137,49 +184,7 @@ function SkillDetailPanel({
     enabled: !!skill,
   })
 
-  // Local form state
-  const [formValues, setFormValues] = useState<SkillFrontmatterValues>(() =>
-    initFormValues(skill.frontmatter),
-  )
-
-  // Reset form when skill changes
-  useEffect(() => {
-    setFormValues(initFormValues(skill.frontmatter))
-  }, [skill.frontmatter])
-
   const body = itemDetail?.content ? extractBody(itemDetail.content) : ""
-
-  async function handleSave() {
-    setIsSaving(true)
-    try {
-      const { saveFrontmatterFn } = await import("@/server/skills")
-
-      // Build frontmatter object (omit empty/default values)
-      const fm: Record<string, unknown> = {}
-      if (formValues.description) fm.description = formValues.description
-      if (formValues.model) fm.model = formValues.model
-      if (formValues.context) fm.context = formValues.context
-      if (formValues.agent) fm.agent = formValues.agent
-      if (formValues.allowedTools) fm["allowed-tools"] = formValues.allowedTools
-      if (formValues.argumentHint) fm["argument-hint"] = formValues.argumentHint
-      if (formValues.disableModelInvocation)
-        fm["disable-model-invocation"] = true
-      if (!formValues.userInvocable) fm["user-invocable"] = false
-
-      await saveFrontmatterFn({
-        data: { filePath: skill.path, frontmatter: fm },
-      })
-      toast.success("Frontmatter saved")
-      await queryClient.invalidateQueries({
-        queryKey: ["skill-detail", skill.path],
-      })
-      await queryClient.invalidateQueries({ queryKey: ["agent-files"] })
-    } catch {
-      toast.error("Failed to save")
-    } finally {
-      setIsSaving(false)
-    }
-  }
 
   async function handleOpenInEditor(editor: "code" | "cursor") {
     try {
@@ -219,40 +224,30 @@ function SkillDetailPanel({
     }
   }
 
-  function setField<K extends keyof SkillFrontmatterValues>(
-    key: K,
-    value: SkillFrontmatterValues[K],
-  ) {
-    setFormValues((prev) => ({ ...prev, [key]: value }))
-  }
-
   return (
     <>
       {/* Header bar */}
-      <div className="flex items-center justify-between px-4 h-12 shrink-0 border-b border-border">
-        <div className="flex items-center gap-2 min-w-0">
-          <h2 className="text-sm font-semibold truncate">{skill.name}</h2>
-          <ScopeBadge scope={skill.scope} />
-        </div>
+      <div className="flex items-center justify-between px-4 h-12 shrink-0">
+        <h2 className="text-sm font-semibold truncate min-w-0">{skill.name}</h2>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="size-8 shrink-0">
-              <MoreHorizontal className="size-4" />
+            <Button variant="outline" size="sm" className="shrink-0">
+              {m.skills_edit()}
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem onClick={() => handleOpenInEditor("code")}>
-              <Code className="size-4" />
-              Open in VS Code
+              <VscodeIcon className="size-4" />
+              {m.skills_open_vscode()}
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => handleOpenInEditor("cursor")}>
-              <Code className="size-4" />
-              Open in Cursor
+              <CursorIcon className="size-4" />
+              {m.skills_open_cursor()}
             </DropdownMenuItem>
             {skill.isSkillDir && (
               <DropdownMenuItem onClick={handleOpenFolder}>
                 <FolderOpen className="size-4" />
-                Open Folder
+                {m.skills_open_folder()}
               </DropdownMenuItem>
             )}
             <DropdownMenuSeparator />
@@ -260,8 +255,7 @@ function SkillDetailPanel({
               variant="destructive"
               onClick={() => setPendingDelete(true)}
             >
-              <Trash2 className="size-4" />
-              Delete
+              {m.skills_delete()}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -269,275 +263,60 @@ function SkillDetailPanel({
 
       {/* Scrollable content area */}
       <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-6 min-h-0">
-        {/* 2a. Frontmatter GUI Form */}
-        <section className="flex flex-col gap-4">
-          <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-            Frontmatter
-          </h3>
-
-          {/* description */}
-          <div className="flex flex-col gap-1.5">
-            <label
-              htmlFor="fm-description"
-              className="text-xs font-medium text-foreground"
-            >
-              description
-            </label>
-            <Textarea
-              id="fm-description"
-              rows={2}
-              value={formValues.description}
-              onChange={(e) => setField("description", e.target.value)}
-              placeholder="Describe what this skill does"
-              className="text-sm resize-none"
-            />
-          </div>
-
-          {/* model */}
-          <div className="flex flex-col gap-1.5">
-            <label
-              htmlFor="fm-model"
-              className="text-xs font-medium text-foreground"
-            >
-              model
-            </label>
-            <Select
-              value={formValues.model || "__none__"}
-              onValueChange={(v) =>
-                setField("model", v === "__none__" ? "" : v)
-              }
-            >
-              <SelectTrigger id="fm-model" className="h-8 text-sm">
-                <SelectValue placeholder="(none)" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="__none__">(none)</SelectItem>
-                <SelectItem value="sonnet">sonnet</SelectItem>
-                <SelectItem value="haiku">haiku</SelectItem>
-                <SelectItem value="opus">opus</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* context */}
-          <div className="flex flex-col gap-1.5">
-            <label
-              htmlFor="fm-context"
-              className="text-xs font-medium text-foreground"
-            >
-              context
-            </label>
-            <Select
-              value={formValues.context || "__none__"}
-              onValueChange={(v) =>
-                setField("context", v === "__none__" ? "" : v)
-              }
-            >
-              <SelectTrigger id="fm-context" className="h-8 text-sm">
-                <SelectValue placeholder="(none)" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="__none__">(none)</SelectItem>
-                <SelectItem value="fork">fork</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* agent */}
-          <div className="flex flex-col gap-1.5">
-            <label
-              htmlFor="fm-agent"
-              className="text-xs font-medium text-foreground"
-            >
-              agent
-            </label>
-            <Input
-              id="fm-agent"
-              value={formValues.agent}
-              onChange={(e) => setField("agent", e.target.value)}
-              placeholder="e.g. Explore, Plan, general-purpose"
-              className="h-8 text-sm"
-            />
-          </div>
-
-          {/* allowed-tools */}
-          <div className="flex flex-col gap-1.5">
-            <label
-              htmlFor="fm-allowed-tools"
-              className="text-xs font-medium text-foreground"
-            >
-              allowed-tools
-            </label>
-            <Input
-              id="fm-allowed-tools"
-              value={formValues.allowedTools}
-              onChange={(e) => setField("allowedTools", e.target.value)}
-              placeholder="e.g. Read,Grep,Bash(git:*)"
-              className="h-8 text-sm"
-            />
-          </div>
-
-          {/* argument-hint */}
-          <div className="flex flex-col gap-1.5">
-            <label
-              htmlFor="fm-argument-hint"
-              className="text-xs font-medium text-foreground"
-            >
-              argument-hint
-            </label>
-            <Input
-              id="fm-argument-hint"
-              value={formValues.argumentHint}
-              onChange={(e) => setField("argumentHint", e.target.value)}
-              placeholder="e.g. [issue-number]"
-              className="h-8 text-sm"
-            />
-          </div>
-
-          {/* disable-model-invocation */}
-          <div className="flex items-center justify-between">
+        {/* Meta info */}
+        <section className="flex flex-col gap-3">
+          <dl className="grid grid-cols-2 gap-x-6 gap-y-1">
             <div className="flex flex-col gap-0.5">
-              <label
-                htmlFor="fm-disable-model"
-                className="text-xs font-medium text-foreground"
-              >
-                disable-model-invocation
-              </label>
-              <p className="text-xs text-muted-foreground">
-                Skip model call when running this skill
-              </p>
+              <dt className="text-xs text-muted-foreground">
+                {m.skills_scope()}
+              </dt>
+              <dd className="text-sm font-medium capitalize">{skill.scope}</dd>
             </div>
-            <Switch
-              id="fm-disable-model"
-              checked={formValues.disableModelInvocation}
-              onCheckedChange={(v) => setField("disableModelInvocation", v)}
-            />
-          </div>
-
-          {/* user-invocable */}
-          <div className="flex items-center justify-between">
             <div className="flex flex-col gap-0.5">
-              <label
-                htmlFor="fm-user-invocable"
-                className="text-xs font-medium text-foreground"
-              >
-                user-invocable
-              </label>
-              <p className="text-xs text-muted-foreground">
-                Allow users to invoke this skill directly
-              </p>
+              <dt className="text-xs text-muted-foreground">
+                {m.skills_last_updated()}
+              </dt>
+              <dd className="text-sm font-medium">
+                {formatDate(skill.lastModified, getLocale())}
+              </dd>
             </div>
-            <Switch
-              id="fm-user-invocable"
-              checked={formValues.userInvocable}
-              onCheckedChange={(v) => setField("userInvocable", v)}
-            />
-          </div>
+          </dl>
 
-          {/* Save button */}
-          <div className="flex justify-end">
-            <Button
-              size="sm"
-              onClick={handleSave}
-              disabled={isSaving}
-              className="gap-1.5"
-            >
-              <Save className="size-3.5" />
-              {isSaving ? "Saving..." : "Save"}
-            </Button>
+          <div className="flex flex-col gap-0.5">
+            <dt className="text-xs text-muted-foreground">
+              {m.skills_description()}
+            </dt>
+            <dd className="text-sm text-foreground">
+              {skill.frontmatter?.description ? (
+                String(skill.frontmatter.description)
+              ) : (
+                <span className="italic text-muted-foreground">
+                  No description
+                </span>
+              )}
+            </dd>
           </div>
         </section>
 
         <Separator />
 
-        {/* 2b. Body Preview */}
-        <section className="flex flex-col gap-3">
-          <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-            Body
-          </h3>
-          {detailLoading ? (
-            <Skeleton className="h-32 w-full" />
-          ) : body ? (
-            <MarkdownPreview content={body} />
-          ) : (
-            <p className="text-sm text-muted-foreground italic">
-              No body content
-            </p>
-          )}
-        </section>
-
-        {/* 2c. Supporting Files (only if isSkillDir && supportingFiles exist) */}
-        {skill.isSkillDir &&
-          skill.supportingFiles &&
-          skill.supportingFiles.length > 0 && (
-            <>
-              <Separator />
-              <section className="flex flex-col gap-3">
-                <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                  Supporting Files
-                </h3>
-                <ul className="flex flex-col gap-1.5">
-                  {skill.supportingFiles.map((sf) => (
-                    <li
-                      key={sf.relativePath}
-                      className="flex items-center gap-2 text-sm"
-                    >
-                      <FileText className="size-3.5 text-muted-foreground shrink-0" />
-                      <span className="flex-1 truncate text-foreground">
-                        {sf.relativePath}
-                      </span>
-                      <span className="text-xs text-muted-foreground shrink-0">
-                        {formatFileSize(sf.size)}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </section>
-            </>
-          )}
-
-        {/* 2d. Action buttons row */}
-        <div className="flex flex-wrap gap-2 pt-2">
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-1.5"
-            onClick={() => handleOpenInEditor("code")}
-          >
-            <Code className="size-3.5" />
-            Open in VS Code
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-1.5"
-            onClick={() => handleOpenInEditor("cursor")}
-          >
-            <Code className="size-3.5" />
-            Open in Cursor
-          </Button>
-          {skill.isSkillDir && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-1.5"
-              onClick={handleOpenFolder}
-            >
-              <FolderOpen className="size-3.5" />
-              Open Folder
-            </Button>
-          )}
-        </div>
+        {/* Markdown card */}
+        <FileViewer
+          content={body}
+          rawContent={itemDetail?.content ?? ""}
+          fileName="SKILL.md"
+          isLoading={detailLoading}
+          header={<FrontmatterBadges frontmatter={skill.frontmatter} />}
+        />
       </div>
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={pendingDelete} onOpenChange={setPendingDelete}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Skill</AlertDialogTitle>
+            <AlertDialogTitle>{m.skills_delete_title()}</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete "{skill.name}"? This action cannot
-              be undone.
+              {m.skills_delete_confirm({ name: skill.name })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -565,7 +344,11 @@ function SkillsScopeSection({
   allFiles,
   searchQuery,
   selectedSkill,
+  selectedSupportingFile,
+  expandedSkillPath,
   onSelectSkill,
+  onSelectSupportingFile,
+  onExpandSkill,
   onAddClick,
 }: {
   label: string
@@ -573,7 +356,11 @@ function SkillsScopeSection({
   allFiles: AgentFile[]
   searchQuery: string
   selectedSkill: AgentFile | null
+  selectedSupportingFile: SupportingFile | null
+  expandedSkillPath: string | null
   onSelectSkill: (skill: AgentFile) => void
+  onSelectSupportingFile: (sf: SupportingFile | null) => void
+  onExpandSkill: (path: string | null) => void
   onAddClick: () => void
 }) {
   const scopeFiles = allFiles.filter((f) => f.scope === scope)
@@ -587,6 +374,75 @@ function SkillsScopeSection({
   const filteredCommands = q
     ? commands.filter((f) => f.name.toLowerCase().includes(q))
     : commands
+
+  // Group commands by namespace
+  const namespacedCommands = new Map<string, AgentFile[]>()
+  const flatCommands: AgentFile[] = []
+  for (const cmd of filteredCommands) {
+    if (cmd.namespace) {
+      const existing = namespacedCommands.get(cmd.namespace)
+      if (existing) {
+        existing.push(cmd)
+      } else {
+        namespacedCommands.set(cmd.namespace, [cmd])
+      }
+    } else {
+      flatCommands.push(cmd)
+    }
+  }
+  // Sort items within each namespace folder
+  for (const cmds of namespacedCommands.values()) {
+    cmds.sort((a, b) => a.name.localeCompare(b.name))
+  }
+
+  // Track skill names for duplicate detection (command with same name → muted)
+  const skillNames = new Set(filteredSkills.map((f) => f.name))
+
+  const duplicateTooltip = (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Info className="size-3 text-muted-foreground" />
+      </TooltipTrigger>
+      <TooltipContent side="right">
+        <p className="text-xs">{m.skills_duplicate_tooltip()}</p>
+      </TooltipContent>
+    </Tooltip>
+  )
+
+  // Build unified sorted tree items
+  type TreeItem =
+    | { kind: "skill"; file: AgentFile; sortKey: string }
+    | { kind: "command"; file: AgentFile; sortKey: string }
+    | {
+        kind: "namespace"
+        name: string
+        commands: AgentFile[]
+        sortKey: string
+      }
+  const treeItems: TreeItem[] = [
+    ...filteredSkills.map((f) => ({
+      kind: "skill" as const,
+      file: f,
+      sortKey: f.name,
+    })),
+    ...flatCommands.map((f) => ({
+      kind: "command" as const,
+      file: f,
+      sortKey: f.name,
+    })),
+    ...[...namespacedCommands.entries()].map(([ns, cmds]) => ({
+      kind: "namespace" as const,
+      name: ns,
+      commands: cmds,
+      sortKey: ns,
+    })),
+  ].sort((a, b) => {
+    const cmp = a.sortKey.localeCompare(b.sortKey)
+    if (cmp !== 0) return cmp
+    // Same name: skills first, then namespace folders, then commands
+    const kindOrder = { skill: 0, namespace: 1, command: 2 }
+    return kindOrder[a.kind] - kindOrder[b.kind]
+  })
 
   const hasAny = filteredSkills.length > 0 || filteredCommands.length > 0
   const hasOriginal = skills.length > 0 || commands.length > 0
@@ -615,47 +471,126 @@ function SkillsScopeSection({
         <p className="text-xs text-muted-foreground px-2 py-1.5">No results</p>
       ) : (
         <Tree>
-          {filteredSkills.length > 0 && (
-            <TreeFolder
-              icon={Sparkles}
-              label="Skills"
-              count={filteredSkills.length}
-              defaultOpen
-            >
-              {filteredSkills.map((f) => (
+          {treeItems.map((item) => {
+            if (item.kind === "skill") {
+              const hasSupportingFiles =
+                item.file.isSkillDir &&
+                item.file.supportingFiles &&
+                item.file.supportingFiles.length > 0
+
+              if (hasSupportingFiles) {
+                const isExpanded = expandedSkillPath === item.file.path
+                return (
+                  <TreeFolder
+                    key={item.file.path}
+                    icon={ScrollText}
+                    label={item.file.name}
+                    selected={
+                      selectedSkill?.path === item.file.path &&
+                      !selectedSupportingFile
+                    }
+                    open={isExpanded}
+                    onOpenChange={(o) =>
+                      onExpandSkill(o ? item.file.path : null)
+                    }
+                    onClick={() => {
+                      onSelectSkill(item.file)
+                      onSelectSupportingFile(null)
+                      onExpandSkill(item.file.path)
+                    }}
+                    hideChevron
+                  >
+                    <TreeFile
+                      icon={FileText}
+                      label="SKILL.md"
+                      selected={
+                        selectedSkill?.path === item.file.path &&
+                        selectedSupportingFile?.relativePath === "SKILL.md"
+                      }
+                      onClick={() => {
+                        onSelectSkill(item.file)
+                        onSelectSupportingFile({
+                          name: "SKILL.md",
+                          relativePath: "SKILL.md",
+                          size: item.file.size,
+                        })
+                      }}
+                    />
+                    {item.file.supportingFiles?.map((sf) => (
+                      <TreeFile
+                        key={sf.relativePath}
+                        icon={FileText}
+                        label={sf.relativePath}
+                        selected={
+                          selectedSkill?.path === item.file.path &&
+                          selectedSupportingFile?.relativePath ===
+                            sf.relativePath
+                        }
+                        onClick={() => {
+                          onSelectSkill(item.file)
+                          onSelectSupportingFile(sf)
+                        }}
+                      />
+                    ))}
+                  </TreeFolder>
+                )
+              }
+
+              return (
                 <TreeFile
-                  key={f.path}
-                  icon={f.isSkillDir ? FolderOpen : FileText}
-                  label={f.name}
-                  selected={selectedSkill?.path === f.path}
-                  onClick={() => onSelectSkill(f)}
-                />
-              ))}
-            </TreeFolder>
-          )}
-          {filteredCommands.length > 0 && (
-            <TreeFolder
-              icon={Terminal}
-              label="Commands (legacy)"
-              count={filteredCommands.length}
-              defaultOpen
-            >
-              {filteredCommands.map((f) => (
-                <TreeFile
-                  key={f.path}
-                  icon={FileText}
-                  label={f.name}
-                  selected={selectedSkill?.path === f.path}
-                  onClick={() => onSelectSkill(f)}
-                  trailing={
-                    <Badge variant="outline" className="text-[10px] h-4 px-1">
-                      legacy
-                    </Badge>
+                  key={item.file.path}
+                  icon={ScrollText}
+                  label={item.file.name}
+                  selected={
+                    selectedSkill?.path === item.file.path &&
+                    !selectedSupportingFile
                   }
+                  onClick={() => {
+                    onSelectSkill(item.file)
+                    onSelectSupportingFile(null)
+                  }}
                 />
-              ))}
-            </TreeFolder>
-          )}
+              )
+            }
+            if (item.kind === "namespace") {
+              return (
+                <TreeFolder
+                  key={item.name}
+                  icon={FolderOpen}
+                  label={`${item.name}/`}
+                  count={item.commands.length}
+                  defaultOpen
+                >
+                  {item.commands.map((f) => {
+                    const isDup = skillNames.has(f.name)
+                    return (
+                      <TreeFile
+                        key={f.path}
+                        icon={SquareTerminal}
+                        label={f.name}
+                        muted={isDup}
+                        trailing={isDup ? duplicateTooltip : undefined}
+                        selected={selectedSkill?.path === f.path}
+                        onClick={() => onSelectSkill(f)}
+                      />
+                    )
+                  })}
+                </TreeFolder>
+              )
+            }
+            const isDup = skillNames.has(item.file.name)
+            return (
+              <TreeFile
+                key={item.file.path}
+                icon={SquareTerminal}
+                label={item.file.name}
+                muted={isDup}
+                trailing={isDup ? duplicateTooltip : undefined}
+                selected={selectedSkill?.path === item.file.path}
+                onClick={() => onSelectSkill(item.file)}
+              />
+            )
+          })}
         </Tree>
       )}
     </div>
@@ -674,47 +609,36 @@ function AddSkillDialog({
   onClose: () => void
 }) {
   const queryClient = useQueryClient()
-  const [name, setName] = useState("")
-  const [description, setDescription] = useState("")
-  const [isCreating, setIsCreating] = useState(false)
-  const [error, setError] = useState("")
 
-  const namePattern = /^[a-z0-9-]+$/
+  const form = useForm({
+    defaultValues: {
+      name: "",
+      description: "",
+    },
+    validators: {
+      onSubmit: addSkillSchema,
+    },
+    onSubmit: async ({ value }) => {
+      try {
+        const { createSkillFn } = await import("@/server/skills")
+        await createSkillFn({
+          data: {
+            name: value.name,
+            scope,
+            description: value.description || undefined,
+            projectPath: activeProjectPath ?? undefined,
+          },
+        })
+        toast.success(`Skill '${value.name}' created`)
+        await queryClient.invalidateQueries({ queryKey: ["agent-files"] })
+        onClose()
+      } catch {
+        toast.error("Failed to create skill")
+      }
+    },
+  })
 
-  async function handleCreate() {
-    if (!name.trim()) {
-      setError("Name is required")
-      return
-    }
-    if (!namePattern.test(name)) {
-      setError("Only lowercase letters, numbers, and hyphens allowed")
-      return
-    }
-    if (name.length > 64) {
-      setError("Name must be 64 characters or less")
-      return
-    }
-
-    setIsCreating(true)
-    try {
-      const { createSkillFn } = await import("@/server/skills")
-      await createSkillFn({
-        data: {
-          name,
-          scope,
-          description: description || undefined,
-          projectPath: activeProjectPath ?? undefined,
-        },
-      })
-      toast.success(`Skill '${name}' created`)
-      await queryClient.invalidateQueries({ queryKey: ["agent-files"] })
-      onClose()
-    } catch {
-      toast.error("Failed to create skill")
-    } finally {
-      setIsCreating(false)
-    }
-  }
+  const isSubmitting = useStore(form.store, (s) => s.isSubmitting)
 
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
@@ -726,51 +650,125 @@ function AddSkillDialog({
             {scope === "global" ? "~/.claude/skills/" : ".claude/skills/"}.
           </DialogDescription>
         </DialogHeader>
-        <div className="flex flex-col gap-4 py-2">
-          {/* Name field */}
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="skill-name" className="text-sm font-medium">
-              Name <span className="text-destructive">*</span>
-            </label>
-            <Input
-              id="skill-name"
-              value={name}
-              onChange={(e) => {
-                setName(e.target.value)
-                setError("")
+        <form
+          onSubmit={(e) => {
+            e.preventDefault()
+            form.handleSubmit()
+          }}
+        >
+          <FieldGroup className="py-2">
+            {/* Name field */}
+            <form.Field name="name">
+              {(field) => {
+                const isInvalid =
+                  field.state.meta.isTouched && !field.state.meta.isValid
+                return (
+                  <Field data-invalid={isInvalid}>
+                    <FieldLabel>
+                      Name <span className="text-destructive">*</span>
+                    </FieldLabel>
+                    <Input
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      placeholder="my-skill"
+                      className="text-sm"
+                    />
+                    {isInvalid && (
+                      <FieldError errors={field.state.meta.errors} />
+                    )}
+                    <FieldDescription>
+                      Lowercase letters, numbers, and hyphens only. Max 64
+                      characters.
+                    </FieldDescription>
+                  </Field>
+                )
               }}
-              placeholder="my-skill"
-              className="text-sm"
-            />
-            {error && <p className="text-xs text-destructive">{error}</p>}
-            <p className="text-xs text-muted-foreground">
-              Lowercase letters, numbers, and hyphens only. Max 64 characters.
-            </p>
-          </div>
-          {/* Description field */}
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="skill-desc" className="text-sm font-medium">
-              Description
-            </label>
-            <Input
-              id="skill-desc"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="What does this skill do?"
-              className="text-sm"
-            />
-          </div>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button onClick={handleCreate} disabled={isCreating}>
-            {isCreating ? "Creating..." : "Create"}
-          </Button>
-        </DialogFooter>
+            </form.Field>
+
+            {/* Description field */}
+            <form.Field name="description">
+              {(field) => {
+                const isInvalid =
+                  field.state.meta.isTouched && !field.state.meta.isValid
+                return (
+                  <Field data-invalid={isInvalid}>
+                    <FieldLabel>
+                      Description <span className="text-destructive">*</span>
+                    </FieldLabel>
+                    <Input
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      placeholder="What does this skill do?"
+                      className="text-sm"
+                    />
+                    {isInvalid && (
+                      <FieldError errors={field.state.meta.errors} />
+                    )}
+                  </Field>
+                )
+              }}
+            </form.Field>
+          </FieldGroup>
+
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Creating..." : "Create"}
+            </Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
+  )
+}
+
+// ── SupportingFilePanel ──────────────────────────────────────────────────────
+
+function SupportingFilePanel({
+  skill,
+  supportingFile,
+}: {
+  skill: AgentFile
+  supportingFile: SupportingFile
+}) {
+  const { data, isLoading } = useQuery({
+    queryKey: ["supporting-file", skill.path, supportingFile.relativePath],
+    queryFn: async () => {
+      const { readSupportingFileFn } = await import("@/server/skills")
+      return readSupportingFileFn({
+        data: {
+          skillPath: skill.path,
+          relativePath: supportingFile.relativePath,
+        },
+      })
+    },
+  })
+
+  const isMarkdown = supportingFile.name.endsWith(".md")
+  const rawContent = data?.content ?? ""
+  const body = isMarkdown ? extractBody(rawContent) : rawContent
+
+  return (
+    <>
+      <div className="flex items-center justify-between px-4 h-12 shrink-0">
+        <h2 className="text-sm font-semibold truncate min-w-0">
+          {supportingFile.relativePath}
+        </h2>
+      </div>
+      <div className="flex-1 overflow-y-auto p-4 flex flex-col min-h-0">
+        <FileViewer
+          content={isMarkdown ? body : undefined}
+          rawContent={rawContent}
+          fileName={supportingFile.relativePath}
+          isMarkdown={isMarkdown}
+          isLoading={isLoading}
+        />
+      </div>
+    </>
   )
 }
 
@@ -779,9 +777,29 @@ function AddSkillDialog({
 export function SkillsPageContent() {
   const { activeProjectPath } = useProjectContext()
   const [selectedSkill, setSelectedSkill] = useState<AgentFile | null>(null)
+  const [selectedSupportingFile, setSelectedSupportingFile] =
+    useState<SupportingFile | null>(null)
+  const [expandedSkillPath, setExpandedSkillPath] = useState<string | null>(
+    null,
+  )
   const [searchQuery, setSearchQuery] = useState("")
   const [addDialogOpen, setAddDialogOpen] = useState(false)
   const [addDialogScope, setAddDialogScope] = useState<Scope>("global")
+
+  // When selecting a skill/command, auto-expand its folder (if it has one) and collapse others
+  function handleSelectSkill(skill: AgentFile) {
+    setSelectedSkill(skill)
+    setSelectedSupportingFile(null)
+    // Collapse expanded folder for non-folder items;
+    // folder items handle expansion via their own onClick
+    const hasSF =
+      skill.isSkillDir &&
+      skill.supportingFiles &&
+      skill.supportingFiles.length > 0
+    if (!hasSF) {
+      setExpandedSkillPath(null)
+    }
+  }
 
   const { query } = useAgentFiles("skill")
 
@@ -844,7 +862,11 @@ export function SkillsPageContent() {
             allFiles={allFiles}
             searchQuery={searchQuery}
             selectedSkill={selectedSkill}
-            onSelectSkill={setSelectedSkill}
+            selectedSupportingFile={selectedSupportingFile}
+            expandedSkillPath={expandedSkillPath}
+            onSelectSkill={handleSelectSkill}
+            onSelectSupportingFile={setSelectedSupportingFile}
+            onExpandSkill={setExpandedSkillPath}
             onAddClick={() => handleAddClick("global")}
           />
 
@@ -856,7 +878,11 @@ export function SkillsPageContent() {
               allFiles={allFiles}
               searchQuery={searchQuery}
               selectedSkill={selectedSkill}
-              onSelectSkill={setSelectedSkill}
+              selectedSupportingFile={selectedSupportingFile}
+              expandedSkillPath={expandedSkillPath}
+              onSelectSkill={handleSelectSkill}
+              onSelectSupportingFile={setSelectedSupportingFile}
+              onExpandSkill={setExpandedSkillPath}
               onAddClick={() => handleAddClick("project")}
             />
           )}
@@ -865,23 +891,31 @@ export function SkillsPageContent() {
 
       {/* 우측 패널 - 상세 또는 빈 상태 */}
       <div className="flex-1 flex flex-col min-w-0">
-        {selectedSkill ? (
+        {selectedSkill && selectedSupportingFile ? (
+          <SupportingFilePanel
+            key={selectedSupportingFile.relativePath}
+            skill={selectedSkill}
+            supportingFile={selectedSupportingFile}
+          />
+        ) : selectedSkill ? (
           <SkillDetailPanel
+            key={selectedSkill.path}
             skill={selectedSkill}
             activeProjectPath={activeProjectPath}
-            onDeleted={() => setSelectedSkill(null)}
+            onDeleted={() => {
+              setSelectedSkill(null)
+              setSelectedSupportingFile(null)
+            }}
           />
         ) : (
           <div className="flex-1 flex items-center justify-center">
             <Empty>
               <EmptyHeader>
                 <EmptyMedia variant="icon">
-                  <Sparkles />
+                  <ScrollText />
                 </EmptyMedia>
-                <EmptyTitle>No Skill Selected</EmptyTitle>
-                <EmptyDescription>
-                  Select a skill from the left panel to view its details.
-                </EmptyDescription>
+                <EmptyTitle>{m.skills_empty_title()}</EmptyTitle>
+                <EmptyDescription>{m.skills_empty_desc()}</EmptyDescription>
               </EmptyHeader>
             </Empty>
           </div>

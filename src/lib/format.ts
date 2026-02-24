@@ -10,6 +10,10 @@ export function shortenPath(absolutePath: string, homedir: string): string {
   return absolutePath
 }
 
-export function formatDate(iso: string): string {
-  return new Date(iso).toLocaleString()
+export function formatDate(iso: string, locale?: string): string {
+  return new Date(iso).toLocaleDateString(locale, {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  })
 }

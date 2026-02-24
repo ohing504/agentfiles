@@ -4,9 +4,9 @@ import {
   LayoutDashboard,
   PanelLeftIcon,
   Puzzle,
+  ScrollText,
   Server,
   Settings,
-  Sparkles,
   Zap,
 } from "lucide-react"
 
@@ -89,7 +89,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
         <ProjectSwitcher />
       </SidebarHeader>
       <SidebarContent>
-        {/* Dashboard */}
+        {/* Dashboard, Skills, Hooks */}
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
@@ -105,35 +105,19 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        {/* Hooks */}
-        <SidebarGroup>
-          <SidebarGroupContent>
-            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild tooltip={m.nav_skills()}>
+                  <Link to="/skills" activeProps={{ "data-active": true }}>
+                    <ScrollText />
+                    <span>{m.nav_skills()}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild tooltip="Hooks">
                   <Link to="/hooks" activeProps={{ "data-active": true }}>
                     <Zap />
                     <span>Hooks</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        {/* Skills */}
-        <SidebarGroup>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild tooltip={m.nav_skills()}>
-                  <Link to="/skills" activeProps={{ "data-active": true }}>
-                    <Sparkles />
-                    <span>{m.nav_skills()}</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>

@@ -307,6 +307,39 @@ Paraglide 기반 영어/한국어 전환 지원.
 - **적용 범위**: 이벤트 설명, UI 라벨, 메뉴 텍스트 등 전체 인터페이스
 - 런타임 전환 가능, 선택한 언어는 세션 간 유지
 
+### Skills 페이지 리디자인
+
+Skills/Commands를 읽기 전용 뷰로 관리하는 페이지.
+
+**레이아웃:**
+
+- 2-panel: 좌측 트리(Global/Project 스코프별 skills + commands) + 우측 상세 패널
+- 트리에서 skill 폴더 확장 시 SKILL.md + supporting files 표시
+- chevron 클릭으로 폴더 접기, 라벨 클릭으로 선택 (분리된 동작)
+
+**상세 패널:**
+
+- 메타 정보: 스코프, 마지막 업데이트, 설명
+- FileViewer 카드: 프리뷰/소스 토글 + 복사 버튼, 고정 높이 헤더
+- Frontmatter badges: flex-wrap 가로 나열, 콤마 구분 값 개별 Badge 분리
+- Supporting files: 코드/스크립트 파일은 라인넘버 포함 Shiki 하이라이팅
+
+**편집:**
+
+- 드롭다운 메뉴로 VS Code / Cursor / 폴더 열기 / 삭제
+- Add Skill 다이얼로그로 새 스킬 생성
+
+### Shiki 구문 하이라이팅
+
+Shiki 기반 듀얼 테마 구문 하이라이팅. 라이트/다크 모드 자동 전환.
+
+- **듀얼 테마**: `github-light-default` + `github-dark-default`, `.dark` 클래스 기반 CSS 변수 전환
+- **마크다운 프리뷰**: react-markdown `components` prop으로 코드 블록에 ShikiCodeBlock 연결
+- **코드/스크립트 파일**: 라인넘버 표시 (CSS counter 기반)
+- **마크다운 소스 뷰**: 라인넘버 없음
+- **Transformer**: `removePreBackground` (Tailwind bg-muted 적용), `addLineNumbers` (CSS counter)
+- **적용 범위**: Skills 프리뷰, FileViewer 소스 뷰, Hooks 스크립트 미리보기
+
 ### Toast 알림
 
 sonner 기반의 피드백 알림 시스템.

@@ -3,7 +3,30 @@ import { Fragment, useEffect, useState } from "react"
 import { jsx, jsxs } from "react/jsx-runtime"
 
 import { toJsxRuntime } from "hast-util-to-jsx-runtime"
+import type { ShikiTransformer } from "shiki"
 import { codeToHast } from "shiki/bundle/web"
+
+import { SHIKI_DEFAULT_COLOR, SHIKI_THEMES } from "@/lib/shiki-config"
+
+/** Remove inline background-color from <pre> so Tailwind bg-muted applies */
+const removePreBackground: ShikiTransformer = {
+  pre(node) {
+    if (node.properties?.style) {
+      node.properties.style = (node.properties.style as string).replace(
+        /background-color:[^;]+;?/,
+        "",
+      )
+    }
+  },
+}
+
+/** Add .shiki-line-numbers class to <code> for CSS counter-based line numbers */
+const addLineNumbers: ShikiTransformer = {
+  code(node) {
+    const cls = (node.properties.class as string) || ""
+    node.properties.class = `${cls} shiki-line-numbers`.trim()
+  },
+}
 
 const EXT_TO_LANG: Record<string, string> = {
   sh: "bash",
@@ -26,21 +49,32 @@ interface ShikiCodeBlockProps {
   code: string
   lang?: string
   className?: string
+  /** When true, pre has no bg/rounded/padding — for use inside card containers */
+  embedded?: boolean
+  /** Show line numbers (default: true) */
+  lineNumbers?: boolean
 }
 
 export function ShikiCodeBlock({
   code,
   lang = "bash",
   className,
+  embedded = false,
+  lineNumbers = true,
 }: ShikiCodeBlockProps) {
   const [rendered, setRendered] = useState<JSX.Element | null>(null)
 
   useEffect(() => {
     let cancelled = false
 
+    const transformers = [removePreBackground]
+    if (lineNumbers) transformers.push(addLineNumbers)
+
     codeToHast(code, {
       lang,
-      theme: "github-dark-default",
+      themes: SHIKI_THEMES,
+      defaultColor: SHIKI_DEFAULT_COLOR,
+      transformers,
     }).then((hast) => {
       if (cancelled) return
       const element = toJsxRuntime(hast, {
@@ -56,22 +90,13 @@ export function ShikiCodeBlock({
     }
   }, [code, lang])
 
-  // 하이라이트 전 fallback
-  if (!rendered) {
-    return (
-      <pre
-        className={`bg-muted rounded-md px-3 py-2.5 text-sm font-mono overflow-x-auto whitespace-pre-wrap break-all ${className ?? ""}`}
-      >
-        {code}
-      </pre>
-    )
-  }
+  if (!rendered) return null
+
+  const baseClasses = embedded
+    ? "[&_pre]:text-sm [&_pre]:overflow-x-auto"
+    : "[&_pre]:rounded-md [&_pre]:px-3 [&_pre]:py-2.5 [&_pre]:text-sm [&_pre]:overflow-x-auto [&_pre]:bg-muted"
 
   return (
-    <div
-      className={`[&_pre]:rounded-md [&_pre]:px-3 [&_pre]:py-2.5 [&_pre]:text-sm [&_pre]:overflow-x-auto ${className ?? ""}`}
-    >
-      {rendered}
-    </div>
+    <div className={`${baseClasses} ${className ?? ""}`}>{rendered}</div>
   )
 }
