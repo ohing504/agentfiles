@@ -12,6 +12,7 @@ import {
 } from "lucide-react"
 import { useMemo, useState } from "react"
 import { z } from "zod"
+import { FileViewer } from "@/components/FileViewer"
 import { useProjectContext } from "@/components/ProjectContext"
 import {
   AlertDialog,
@@ -72,10 +73,6 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
-import {
-  detectLangFromPath,
-  ShikiCodeBlock,
-} from "@/components/ui/shiki-code-block"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
@@ -445,7 +442,12 @@ function HookDetailPanel({
       {hook.type === "command" && hook.command && (
         <>
           <DetailField label="Command">
-            <ShikiCodeBlock code={hook.command} lang="bash" />
+            <FileViewer
+              rawContent={hook.command}
+              isMarkdown={false}
+              lang="bash"
+              lineNumbers={false}
+            />
           </DetailField>
 
           {isFilePath && (
@@ -455,10 +457,11 @@ function HookDetailPanel({
                 {scriptQuery.isLoading ? (
                   <Skeleton className="h-24 w-full rounded-md" />
                 ) : scriptQuery.data?.content ? (
-                  <ShikiCodeBlock
-                    code={scriptQuery.data.content}
-                    lang={detectLangFromPath(hook.command ?? "")}
-                    className="h-full overflow-y-auto [&_pre]:whitespace-pre [&_pre]:text-xs [&_pre]:h-full"
+                  <FileViewer
+                    rawContent={scriptQuery.data.content}
+                    fileName={hook.command ?? ""}
+                    isMarkdown={false}
+                    className="flex-1"
                   />
                 ) : (
                   <p className="text-sm text-muted-foreground italic">
@@ -474,16 +477,12 @@ function HookDetailPanel({
       {/* prompt / agent 타입 */}
       {(hook.type === "prompt" || hook.type === "agent") && hook.prompt && (
         <>
-          <div className="flex flex-col gap-1 flex-1 min-h-0">
-            <dt className="text-xs text-muted-foreground">Prompt</dt>
-            <dd className="flex-1 min-h-0">
-              <ShikiCodeBlock
-                code={hook.prompt}
-                lang="markdown"
-                className="h-full overflow-y-auto [&_pre]:h-full"
-              />
-            </dd>
-          </div>
+          <FileViewer
+            rawContent={hook.prompt}
+            isMarkdown={true}
+            lineNumbers={false}
+            className="flex-1"
+          />
 
           {hook.model && (
             <DetailField label="Model">

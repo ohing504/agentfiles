@@ -307,6 +307,7 @@ function SkillDetailPanel({
           fileName="SKILL.md"
           isLoading={detailLoading}
           header={<FrontmatterBadges frontmatter={skill.frontmatter} />}
+          className="flex-1"
         />
       </div>
 
@@ -766,6 +767,7 @@ function SupportingFilePanel({
           fileName={supportingFile.relativePath}
           isMarkdown={isMarkdown}
           isLoading={isLoading}
+          className="flex-1"
         />
       </div>
     </>

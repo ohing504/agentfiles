@@ -16,9 +16,12 @@ export function FileViewer({
   content,
   rawContent,
   fileName,
+  lang: langProp,
   isMarkdown = true,
   isLoading,
   header,
+  lineNumbers,
+  className,
 }: {
   /** Body to render in preview mode (markdown-rendered). Falls back to rawContent if omitted. */
   content?: string
@@ -26,20 +29,30 @@ export function FileViewer({
   rawContent: string
   /** File name for syntax highlighting language detection (e.g. "helper.ts"). */
   fileName?: string
+  /** Override language for syntax highlighting (e.g. "bash", "typescript"). */
+  lang?: string
   /** Whether to show preview/source toggle. Defaults to true. */
   isMarkdown?: boolean
   isLoading?: boolean
   /** Optional node rendered above content in preview mode (e.g. FrontmatterBadges). */
   header?: ReactNode
+  /** Whether to show line numbers in source view. Defaults to !isMarkdown. */
+  lineNumbers?: boolean
+  /** Additional CSS classes for the outer container. */
+  className?: string
 }) {
   const [viewMode, setViewMode] = useState<"preview" | "source">("preview")
   const previewContent = content ?? rawContent
 
   const showPreview = isMarkdown && viewMode === "preview"
-  const lang = fileName ? detectLangFromPath(fileName) : "markdown"
+  const lang =
+    langProp ?? (fileName ? detectLangFromPath(fileName) : "markdown")
+  const showLineNumbers = lineNumbers ?? !isMarkdown
 
   return (
-    <section className="rounded-lg border bg-muted/30 overflow-hidden flex-1 flex flex-col min-h-0">
+    <section
+      className={`rounded-lg border bg-muted/30 overflow-hidden flex flex-col min-h-0 ${className ?? ""}`}
+    >
       <div className="flex items-center justify-end gap-1 px-2 h-11">
         {isMarkdown && (
           <Tabs
@@ -82,7 +95,7 @@ export function FileViewer({
             code={rawContent}
             lang={lang}
             embedded
-            lineNumbers={!isMarkdown}
+            lineNumbers={showLineNumbers}
             className="[&_pre]:whitespace-pre-wrap [&_pre]:break-all"
           />
         )}
