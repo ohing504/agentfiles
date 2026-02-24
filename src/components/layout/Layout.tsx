@@ -1,8 +1,8 @@
 import { Link, useLocation } from "@tanstack/react-router"
 import React from "react"
 
-import { AppSidebar } from "@/components/Sidebar"
-import { StatusBar } from "@/components/StatusBar"
+import { AppSidebar } from "@/components/layout/Sidebar"
+import { StatusBar } from "@/components/layout/StatusBar"
 import {
   Breadcrumb,
   BreadcrumbItem,
