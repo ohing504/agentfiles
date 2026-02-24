@@ -53,85 +53,84 @@ pnpm typecheck    # TypeScript 타입 체크 (tsc --noEmit)
 
 ```text
 src/
-  routes/                    ← TanStack Start 파일 기반 라우팅
+  routes/                    ← TanStack Router directory-based 라우팅
     __root.tsx               ← 루트 레이아웃 (TooltipProvider, Toaster)
     index.tsx                ← Dashboard (/)
-    hooks.tsx                ← Hooks 에디터 (/hooks)
-    files.tsx                ← 리다이렉트 → /global/files
-    plugins.tsx              ← 리다이렉트 → /global/plugins
-    mcp.tsx                  ← 리다이렉트 → /global/mcp
-    global.tsx               ← Global 레이아웃
+    hooks/route.tsx          ← Hooks 에디터 (/hooks)
+    skills/route.tsx         ← Skills 에디터 (/skills)
+    files/route.tsx          ← 리다이렉트 → /global/files
+    plugins/
+      index.tsx              ← 리다이렉트 → /global/plugins
+      $id/route.tsx          ← 리다이렉트
+    mcp/
+      index.tsx              ← 리다이렉트 → /global/mcp
+      $name/route.tsx        ← 리다이렉트
     global/
-      settings.tsx           ← Global Settings (/global/settings)
-      files.tsx              ← Global Files (/global/files)
-      plugins.tsx            ← Global Plugins (/global/plugins)
-      plugins.$id.tsx        ← Plugin 상세
-      mcp.tsx                ← Global MCP (/global/mcp)
-      mcp.$name.tsx          ← MCP 상세
-    project.tsx              ← Project 레이아웃
+      route.tsx              ← Global 레이아웃
+      settings/route.tsx     ← Global Settings
+      files/route.tsx        ← Global Files
+      plugins/
+        index.tsx            ← Global Plugins 목록
+        $id/route.tsx        ← Plugin 상세
+      mcp/
+        index.tsx            ← Global MCP 목록
+        $name/route.tsx      ← MCP 상세
     project/
-      settings.tsx           ← Project Settings (/project/settings)
-      files.tsx              ← Project Files (/project/files)
-      plugins.tsx            ← Project Plugins (/project/plugins)
-      plugins.$id.tsx        ← Plugin 상세
-      mcp.tsx                ← Project MCP (/project/mcp)
-      mcp.$name.tsx          ← MCP 상세
+      route.tsx              ← Project 레이아웃
+      settings/route.tsx     ← Project Settings
+      files/route.tsx        ← Project Files
+      plugins/
+        index.tsx            ← Project Plugins 목록
+        $id/route.tsx        ← Plugin 상세
+      mcp/
+        index.tsx            ← Project MCP 목록
+        $name/route.tsx      ← MCP 상세
     api/
       health.ts              ← GET /api/health
+  features/                  ← Feature-based 모듈 (도메인별 콜로케이션)
+    hooks-editor/
+      components/            ← HooksPageContent, HookDetailPanel, HooksScopeSection, AddHookDialog
+      api/                   ← hooks.functions.ts (server fns), hooks.queries.ts (React Query)
+      constants.ts           ← HOOK_EVENT_META, HOOK_TEMPLATES, hookFormSchema
+    skills-editor/
+      components/            ← SkillsPageContent, SkillDetailPanel, SkillsScopeSection, AddSkillDialog, SupportingFilePanel
+      api/                   ← skills.functions.ts (server fns)
+      constants.tsx          ← FrontmatterBadges, addSkillSchema
+  components/                ← 공유 UI 컴포넌트 (2곳 이상에서 사용)
+    layout/                  ← Layout, Sidebar, StatusBar
+    pages/                   ← FilesPageContent, PluginsPageContent, McpPageContent (추후 feature로 이동 예정)
+    settings/                ← GlobalSettingsPage, ProjectSettingsPage
+    ui/                      ← shadcn 컴포넌트
+    icons/                   ← 아이콘 컴포넌트
+    DetailField.tsx          ← 공유 위젯
+    FileViewer.tsx           ← 파일 뷰어
+    ScopeBadge.tsx           ← 스코프 배지
+    ErrorBoundary.tsx        ← 에러 바운더리
+    ProjectContext.tsx       ← 프로젝트 컨텍스트 프로바이더
+    ProjectSwitcher.tsx      ← 프로젝트 전환 UI
+    AddProjectDialog.tsx     ← 프로젝트 추가 다이얼로그
+    LanguageSwitcher.tsx     ← 언어 전환 (en/ko)
   services/                  ← 서버 사이드 서비스
     config-service.ts        ← 파일 읽기 (md 스캔 + json 파싱 + settings 읽기)
     file-writer.ts           ← 마크다운/JSON 쓰기
     claude-cli.ts            ← CLI 위임 + npm registry 최신 버전 조회
     hooks-service.ts         ← settings.json hooks 섹션 CRUD
     project-store.ts         ← 프로젝트 목록 읽기/쓰기
-  server/                    ← Server Functions (createServerFn)
-    overview.ts              ← getOverview()
-    claude-md.ts             ← getClaudeMdFn, saveClaudeMdFn
-    plugins.ts               ← getPluginsFn, togglePluginFn
-    mcp.ts                   ← getMcpServersFn, addMcpServerFn, removeMcpServerFn
-    items.ts                 ← getItemsFn, getItemFn, saveItemFn, deleteItemFn
-    hooks.ts                 ← getHooksFn, addHookFn, removeHookFn, readScriptFn
-    settings.ts              ← getSettingsFn, saveSettingsFn, getClaudeAppJsonFn
-    projects.ts              ← 프로젝트 CRUD Server Functions
-    cli-status.ts            ← getCliStatusFn
+  server/                    ← 공유 Server Functions (createServerFn)
+    overview.ts, claude-md.ts, plugins.ts, mcp.ts, items.ts
+    settings.ts, projects.ts, cli-status.ts
     config.ts                ← 경로 헬퍼, 토큰, CLI 탐색
     validation.ts            ← 입력 검증 (path traversal 방지)
-    middleware/
-      auth.ts                ← Bearer 토큰 인증 미들웨어
-  components/                ← UI 컴포넌트
-    Layout.tsx               ← 사이드바 + 메인 콘텐츠 레이아웃
-    Sidebar.tsx              ← 네비게이션 (Global/Project 그룹)
-    StatusBar.tsx            ← 하단 상태바 (프로젝트 경로 + CLI 버전 + 업데이트 체커)
-    ErrorBoundary.tsx        ← 에러 바운더리
-    ScopeBadge.tsx           ← global/project/user 스코프 배지
-    ProjectContext.tsx       ← 프로젝트 컨텍스트 프로바이더
-    ProjectSwitcher.tsx      ← 프로젝트 전환 UI
-    AddProjectDialog.tsx     ← 프로젝트 추가 다이얼로그
-    LanguageSwitcher.tsx     ← 언어 전환 (en/ko)
-    pages/                   ← 페이지 컴포넌트
-      HooksPageContent.tsx   ← Hooks 에디터 (트리 + 상세 + AddHookDialog)
-      FilesPageContent.tsx   ← 스코프별 Files 페이지
-      PluginsPageContent.tsx ← 스코프별 Plugins 페이지
-      McpPageContent.tsx     ← 스코프별 MCP 페이지
-    settings/                ← 설정 페이지 컴포넌트
-      GlobalSettingsPage.tsx ← Global 설정 편집
-      ProjectSettingsPage.tsx ← Project 설정 편집
-    ui/                      ← shadcn 컴포넌트
-  hooks/                     ← React 커스텀 훅
-    use-config.ts            ← TanStack Query 데이터 훅 (전체)
+    middleware/auth.ts       ← Bearer 토큰 인증 미들웨어
+  hooks/                     ← 공유 React 커스텀 훅
+    use-config.ts            ← TanStack Query 데이터 훅 (useAgentFiles 등)
     use-claude-md-files.ts   ← CLAUDE.md 파일 목록 훅
     use-projects.ts          ← 프로젝트 관리 훅
   lib/                       ← 유틸리티
-    auth.ts                  ← 토큰 관리 (추출, 저장, 헤더)
-    query-keys.ts            ← TanStack Query 키 정의
-    format.ts                ← formatFileSize, formatDate 유틸리티
-  shared/                    ← 공유 타입
-    types.ts
-messages/                    ← i18n 메시지
-  en.json                    ← 영어
-  ko.json                    ← 한국어
-bin/                         ← CLI 진입점
-  cli.ts
+    auth.ts, query-keys.ts, format.ts
+  shared/types.ts            ← 공유 타입
+messages/                    ← i18n 메시지 (en.json, ko.json)
+bin/cli.ts                   ← CLI 진입점
 tests/                       ← 테스트
 ```
 
