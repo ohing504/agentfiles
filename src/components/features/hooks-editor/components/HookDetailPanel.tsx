@@ -1,25 +1,9 @@
 import { useQuery } from "@tanstack/react-query"
+import { DetailField } from "@/components/DetailField"
 import { FileViewer } from "@/components/FileViewer"
 import { Separator } from "@/components/ui/separator"
 import { Skeleton } from "@/components/ui/skeleton"
 import type { SelectedHook } from "../constants"
-
-// ── DetailField ──────────────────────────────────────────────────────────────
-
-function DetailField({
-  label,
-  children,
-}: {
-  label: string
-  children: React.ReactNode
-}) {
-  return (
-    <div className="flex flex-col gap-1">
-      <dt className="text-xs text-muted-foreground">{label}</dt>
-      <dd>{children}</dd>
-    </div>
-  )
-}
 
 // ── HookDetailPanel ──────────────────────────────────────────────────────────
 
