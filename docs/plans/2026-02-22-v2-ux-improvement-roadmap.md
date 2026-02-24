@@ -44,7 +44,8 @@
 - [ ] Hooks 비활성화 토글 (`disableAllHooks` 설정 UI)
 - [ ] Plugin hooks 읽기 (read-only, `hooks/hooks.json`)
 - [ ] Skill/Agent frontmatter hooks 읽기 (read-only)
-- [ ] Shiki 테마 선택 (앱 테마 연동, 사용자 선택)
+- [x] Shiki 듀얼 테마 적용 (github-light-default + github-dark-default, 앱 테마 연동)
+- [x] Hook 디테일 패널 FileViewer 통합 (Command/Script/Prompt 일관된 카드 UI)
 - [ ] 필드별 예제/설명 보강 (공식 문서 기반)
 - [ ] `[User]` 명칭 정렬 검토 (현재 `Global` → 공식 `User`)
 
