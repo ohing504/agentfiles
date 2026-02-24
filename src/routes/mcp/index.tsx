@@ -1,8 +1,8 @@
 import { createFileRoute, redirect } from "@tanstack/react-router"
 
-export const Route = createFileRoute("/plugins")({
+export const Route = createFileRoute("/mcp/")({
   beforeLoad: () => {
-    throw redirect({ to: "/global/plugins" })
+    throw redirect({ to: "/global/mcp" })
   },
   component: () => null,
 })
