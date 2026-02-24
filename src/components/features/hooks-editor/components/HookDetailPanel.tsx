@@ -42,7 +42,7 @@ export function HookDetailPanel({
   const scriptQuery = useQuery({
     queryKey: ["hook-script", hook.command, activeProjectPath],
     queryFn: async () => {
-      const { readScriptFn } = await import("@/server/hooks")
+      const { readScriptFn } = await import("../api/hooks.functions")
       return readScriptFn({
         data: {
           filePath: hook.command ?? "",

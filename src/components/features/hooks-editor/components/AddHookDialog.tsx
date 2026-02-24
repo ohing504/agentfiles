@@ -36,7 +36,6 @@ import {
 import { Separator } from "@/components/ui/separator"
 import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
-import type { useHooks } from "@/hooks/use-config"
 import type {
   HookEntry,
   HookEventName,
@@ -44,6 +43,7 @@ import type {
   HookScope,
   HookType,
 } from "@/shared/types"
+import type { useHooks } from "../api/hooks.queries"
 import {
   EVENT_GROUPS,
   HOOK_EVENT_META,
