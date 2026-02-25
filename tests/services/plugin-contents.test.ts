@@ -177,6 +177,30 @@ describe("scanPluginComponents", () => {
     expect(result.hooks.PostToolUse).toHaveLength(1)
   })
 
+  it("hooks/hooks.json이 { hooks: {...} } 래퍼 형태여도 정상 파싱", async () => {
+    const installPath = path.join(tmpGlobal, "plugins", "wrapped-hooks")
+    // 실제 superpowers 플러그인과 같은 형태
+    const hooksData = {
+      hooks: {
+        SessionStart: [
+          {
+            matcher: "startup|resume",
+            hooks: [{ type: "command", command: "run-hook.cmd session-start" }],
+          },
+        ],
+      },
+    }
+    await writeJson(path.join(installPath, "hooks", "hooks.json"), hooksData)
+
+    const result = await scanPluginComponents(installPath)
+
+    expect(result.hooks.SessionStart).toHaveLength(1)
+    expect(result.hooks.SessionStart?.[0].matcher).toBe("startup|resume")
+    expect(result.hooks.SessionStart?.[0].hooks[0].command).toBe(
+      "run-hook.cmd session-start",
+    )
+  })
+
   it(".mcp.json에서 MCP 서버 설정 읽기", async () => {
     const installPath = path.join(tmpGlobal, "plugins", "test-plugin")
     const mcpData = {

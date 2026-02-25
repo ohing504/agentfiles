@@ -1,6 +1,6 @@
 import { useMemo } from "react"
 import { ListItem } from "@/components/ui/list-item"
-import type { PluginComponents } from "@/shared/types"
+import type { AgentFile, PluginComponents } from "@/shared/types"
 import { PLUGIN_COMPONENT_META } from "../constants"
 import type { PluginComponentType } from "../types"
 
@@ -11,51 +11,26 @@ export interface ComponentItem {
   tooltip?: string
 }
 
+function agentFileToItem(f: AgentFile): ComponentItem {
+  return {
+    id: f.path ?? f.name,
+    label: f.name,
+    tooltip: f.frontmatter?.description
+      ? String(f.frontmatter.description)
+      : undefined,
+  }
+}
+
 export function getComponentItems(
   contents: PluginComponents,
   componentType: PluginComponentType,
 ): ComponentItem[] {
   switch (componentType) {
-    case "commands": {
-      const files = contents.commands
-      return files.map((f) => ({
-        id: f.path ?? f.name,
-        label: f.name,
-        tooltip: f.frontmatter?.description
-          ? String(f.frontmatter.description)
-          : undefined,
-      }))
-    }
-    case "skills": {
-      const files = contents.skills
-      return files.map((f) => ({
-        id: f.path ?? f.name,
-        label: f.name,
-        tooltip: f.frontmatter?.description
-          ? String(f.frontmatter.description)
-          : undefined,
-      }))
-    }
-    case "agents": {
-      const files = contents.agents
-      return files.map((f) => ({
-        id: f.path ?? f.name,
-        label: f.name,
-        tooltip: f.frontmatter?.description
-          ? String(f.frontmatter.description)
-          : undefined,
-      }))
-    }
-    case "outputStyles": {
-      const files = contents.outputStyles
-      return files.map((f) => ({
-        id: f.path ?? f.name,
-        label: f.name,
-        tooltip: f.frontmatter?.description
-          ? String(f.frontmatter.description)
-          : undefined,
-      }))
-    }
+    case "commands":
+    case "skills":
+    case "agents":
+    case "outputStyles":
+      return contents[componentType].map(agentFileToItem)
     case "hooks": {
       const hooks = contents.hooks
       const items: ComponentItem[] = []
@@ -65,10 +40,19 @@ export function getComponentItems(
           const group = groups[gi]
           for (let hi = 0; hi < group.hooks.length; hi++) {
             const hook = group.hooks[hi]
+            const tooltipLines = [
+              `Event: ${event}`,
+              group.matcher ? `Matcher: ${group.matcher}` : null,
+              hook.command
+                ? `Command: ${hook.command}`
+                : hook.prompt
+                  ? `Prompt: ${hook.prompt.slice(0, 80)}`
+                  : null,
+            ].filter(Boolean)
             items.push({
               id: `${event}-${gi}-${hi}`,
-              label: hook.command ?? hook.prompt?.slice(0, 40) ?? event,
-              tooltip: group.matcher ? `${event} [${group.matcher}]` : event,
+              label: event,
+              tooltip: tooltipLines.join("\n"),
             })
           }
         }

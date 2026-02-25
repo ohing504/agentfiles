@@ -319,19 +319,37 @@ export async function getPlugins(projectPath?: string): Promise<Plugin[]> {
     throw err
   }
 
-  // settings.json에서 enabledPlugins 읽기
-  const settings = await readSettingsJson(globalBase)
-  const enabledPlugins = settings.enabledPlugins
+  // settings.json에서 enabledPlugins 읽기 (global + project 병합, project 우선)
+  const [globalSettings, projectSettings] = await Promise.all([
+    readSettingsJson(globalBase),
+    projectPath
+      ? readSettingsJson(getProjectConfigPath(projectPath))
+      : Promise.resolve({} as Record<string, unknown>),
+  ])
+  function toEnabledMap(raw: unknown): Record<string, boolean> {
+    if (Array.isArray(raw)) {
+      return Object.fromEntries(
+        raw
+          .filter((id): id is string => typeof id === "string")
+          .map((id) => [id, true]),
+      )
+    }
+    if (raw && typeof raw === "object" && !Array.isArray(raw)) {
+      return Object.fromEntries(
+        Object.entries(raw as Record<string, unknown>).filter(
+          (entry): entry is [string, boolean] => typeof entry[1] === "boolean",
+        ),
+      )
+    }
+    return {}
+  }
+  const enabledPlugins: Record<string, boolean> = {
+    ...toEnabledMap(globalSettings.enabledPlugins),
+    ...toEnabledMap(projectSettings.enabledPlugins),
+  }
 
-  // enabledPlugins는 객체(id→boolean) 또는 배열(id[]) 형태 모두 지원
   function isEnabled(id: string): boolean {
-    if (Array.isArray(enabledPlugins)) {
-      return (enabledPlugins as string[]).includes(id)
-    }
-    if (enabledPlugins && typeof enabledPlugins === "object") {
-      return (enabledPlugins as Record<string, boolean>)[id] === true
-    }
-    return false
+    return enabledPlugins[id] === true
   }
 
   // version 2: { version: 2, plugins: { "id@marketplace": [{ scope, installPath, ... }] } }
@@ -403,19 +421,23 @@ export async function getPlugins(projectPath?: string): Promise<Plugin[]> {
   const enrichedPlugins = await Promise.all(
     filteredPlugins.map(async (plugin) => {
       if (!plugin.installPath) return plugin
-      const [manifest, contents] = await Promise.all([
-        readPluginManifest(plugin.installPath),
-        scanPluginComponents(plugin.installPath),
-      ])
-      return {
-        ...plugin,
-        description: manifest?.description ?? plugin.description,
-        author: manifest?.author,
-        homepage: manifest?.homepage,
-        repository: manifest?.repository,
-        license: manifest?.license,
-        keywords: manifest?.keywords,
-        contents,
+      try {
+        const [manifest, contents] = await Promise.all([
+          readPluginManifest(plugin.installPath),
+          scanPluginComponents(plugin.installPath),
+        ])
+        return {
+          ...plugin,
+          description: manifest?.description ?? plugin.description,
+          author: manifest?.author,
+          homepage: manifest?.homepage,
+          repository: manifest?.repository,
+          license: manifest?.license,
+          keywords: manifest?.keywords,
+          contents,
+        }
+      } catch {
+        return plugin
       }
     }),
   )
@@ -491,7 +513,10 @@ async function readJsonFile<T>(filePath: string, fallback: T): Promise<T> {
 }
 
 async function readHooksJson(filePath: string): Promise<HooksSettings> {
-  return readJsonFile<HooksSettings>(filePath, {})
+  const raw = await readJsonFile<Record<string, unknown>>(filePath, {})
+  // hooks.json은 직접 형태({ PreToolUse: [...] })와 래퍼 형태({ hooks: { PreToolUse: [...] } }) 모두 지원
+  const hooks = raw.hooks ?? raw
+  return hooks as HooksSettings
 }
 
 async function readMcpJson(filePath: string): Promise<McpServer[]> {
@@ -634,7 +659,7 @@ export async function getOverview(projectPath?: string): Promise<Overview> {
   ] = await Promise.all([
     getClaudeMd("global"),
     getClaudeMd("project", projectPath),
-    getPlugins(),
+    getPlugins(projectPath),
     getMcpServers(projectPath),
     scanMdDirWithScope(path.join(globalBase, "agents"), "agent", "global"),
     scanMdDirWithScope(path.join(projectBase, "agents"), "agent", "project"),

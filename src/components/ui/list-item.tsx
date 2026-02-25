@@ -83,7 +83,7 @@ export function ListItem({
             <TooltipTrigger asChild>
               <CollapsibleTrigger asChild>{item}</CollapsibleTrigger>
             </TooltipTrigger>
-            <TooltipContent side="right">{tooltip}</TooltipContent>
+            <TooltipContent side="right" className="whitespace-pre-line max-w-xs">{tooltip}</TooltipContent>
           </Tooltip>
         ) : (
           <CollapsibleTrigger asChild>{item}</CollapsibleTrigger>
@@ -102,7 +102,9 @@ export function ListItem({
     return (
       <Tooltip>
         <TooltipTrigger asChild>{item}</TooltipTrigger>
-        <TooltipContent side="right">{tooltip}</TooltipContent>
+        <TooltipContent side="right" className="whitespace-pre-line max-w-xs">
+          {tooltip}
+        </TooltipContent>
       </Tooltip>
     )
   }
