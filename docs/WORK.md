@@ -6,20 +6,17 @@
 
 ## Next Up
 
-### config-service.ts 분리 리팩토링
-- [ ] `config-service.ts` (800+ lines) → 목적별 모듈로 분리:
-  - `services/plugin-service.ts` — `getPlugins`, `readPluginManifest`, `scanPluginComponents`, `getMarketplaces`
-  - `services/mcp-service.ts` — `getMcpServers`, `parseMcpServers`
-  - `services/agent-file-service.ts` — `scanMdDir`, `scanSkillsDir`, `getAgentFiles`
-  - `services/overview-service.ts` — `getOverview`
-  - `services/settings-service.ts` — `readSettingsJson`, `readClaudeAppJson`, `readProjectLocalSettings`
-  - `services/config-service.ts` — 경로 헬퍼 (`getGlobalConfigPath`, `getProjectConfigPath`), `getClaudeMd`
-- [ ] 분리 시 테스트도 함께 co-locate: `services/plugin-service.test.ts` 등
+### config-service.ts 분리 리팩토링 (계속)
+- [x] `services/plugin-service.ts` — `getPlugins`, `readPluginManifest`, `scanPluginComponents`, `getMarketplaces` + 헬퍼
+- [ ] `services/mcp-service.ts` — `getMcpServers`, `parseMcpServers`
+- [ ] `services/agent-file-service.ts` — `scanMdDir`, `scanSkillsDir`, `getAgentFiles`
+- [ ] `services/overview-service.ts` — `getOverview`
+- [ ] `services/settings-service.ts` — `readSettingsJson`, `readClaudeAppJson`, `readProjectLocalSettings`
+- [ ] `services/config-service.ts` — 경로 헬퍼, `getClaudeMd` (최종 정리)
 
-### 테스트 co-location
-- [ ] 유닛 테스트를 `tests/` 에서 소스 파일 옆으로 이동 (예: `src/lib/format.test.ts`)
-- [ ] `tests/services/config-service.test.ts` → config-service 분리 후 각 서비스 옆에 배치
-- [ ] `tests/services/plugin-contents.test.ts` → `services/plugin-service.test.ts`
+### 테스트 co-location (계속)
+- [x] `plugin-contents.test.ts` + `config-service.test.ts` plugin 부분 → `src/services/plugin-service.test.ts`
+- [ ] 나머지 유닛 테스트를 `tests/` 에서 소스 파일 옆으로 이동
 - [ ] vitest config에서 include 경로 확인 (src/**/*.test.ts 포함)
 
 ### hooks/skills editor 개선
@@ -32,3 +29,8 @@
 - plugins, skills 등을 마켓플레이스에서 검색/설치할 수 있도록
 
 ## Shipped
+
+### plugin-service 분리 (2026-02-25)
+- config-service.ts (839줄) → plugin-service.ts (335줄) + config-service.ts (558줄)
+- 테스트 co-locate: src/services/plugin-service.test.ts (34개 테스트)
+- 완료된 plan 파일 3개 정리
