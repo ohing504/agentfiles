@@ -44,15 +44,16 @@ function getItems(
     case "outputStyles":
       return agentFilesToItems(contents.outputStyles)
     case "hooks":
-      return Object.entries(contents.hooks).map(([eventName, groups]) => {
-        const matchers = Array.isArray(groups)
-          ? groups.map((g: { matcher?: string }) => g.matcher).filter(Boolean)
-          : []
+      return Object.entries(contents.hooks).flatMap(([eventName, groups]) => {
+        if (!Array.isArray(groups) || groups.length === 0) return []
+        const matchers = groups
+          .map((g: { matcher?: string }) => g.matcher)
+          .filter(Boolean)
         const name =
           matchers.length > 0
             ? `${eventName}: ${matchers.join("|")}`
             : eventName
-        return { id: eventName, name }
+        return [{ id: `${eventName}-0-0`, name }]
       })
     case "mcpServers":
       return contents.mcpServers.map((s) => ({ id: s.name, name: s.name }))

@@ -1,24 +1,22 @@
 import { createServerFn } from "@tanstack/react-start"
 import { z } from "zod"
+import { validateProjectPath } from "@/server/validation"
 import {
   pluginToggle,
   pluginUninstall,
   pluginUpdate,
 } from "@/services/claude-cli"
-import { getPlugins, scanPluginComponents } from "@/services/plugin-service"
+import { getPlugins } from "@/services/plugin-service"
 
 const pluginScopeSchema = z.enum(["user", "project", "local", "managed"])
 
 export const getPluginsFn = createServerFn({ method: "GET" })
   .inputValidator(z.object({ projectPath: z.string().optional() }))
   .handler(async ({ data }) => {
-    return getPlugins(data.projectPath)
-  })
-
-export const getPluginComponentsFn = createServerFn({ method: "GET" })
-  .inputValidator(z.object({ installPath: z.string().min(1) }))
-  .handler(async ({ data }) => {
-    return scanPluginComponents(data.installPath)
+    const projectPath = data.projectPath
+      ? validateProjectPath(data.projectPath)
+      : undefined
+    return getPlugins(projectPath)
   })
 
 export const togglePluginFn = createServerFn({ method: "POST" })

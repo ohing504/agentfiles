@@ -13,8 +13,6 @@ const pluginKeys = {
   all: ["plugins"] as const,
   list: (projectPath?: string) =>
     [...pluginKeys.all, "list", projectPath] as const,
-  contents: (installPath: string) =>
-    [...pluginKeys.all, "contents", installPath] as const,
 }
 
 export function usePluginsQuery(projectPath?: string) {
