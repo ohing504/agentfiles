@@ -5,7 +5,7 @@ import {
   pluginUninstall,
   pluginUpdate,
 } from "@/services/claude-cli"
-import { getPlugins, scanPluginComponents } from "@/services/config-service"
+import { getPlugins, scanPluginComponents } from "@/services/plugin-service"
 
 const pluginScopeSchema = z.enum(["user", "project", "local", "managed"])
 

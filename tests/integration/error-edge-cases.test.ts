@@ -6,10 +6,10 @@ import { validateItemName } from "@/server/validation"
 import {
   getClaudeMd,
   getMcpServers,
-  getPlugins,
   scanMdDir,
 } from "@/services/config-service"
 import { writeMarkdown } from "@/services/file-writer"
+import { getPlugins } from "@/services/plugin-service"
 
 // ── tmp 디렉토리 헬퍼 ──
 
