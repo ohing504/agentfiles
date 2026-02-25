@@ -2,6 +2,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
 } from "react"
@@ -75,6 +76,19 @@ export function PluginsProvider({
     () => plugins?.find((p) => p.id === selectedPluginId) ?? null,
     [plugins, selectedPluginId],
   )
+
+  // Auto-clear selection when selected plugin disappears from data (e.g., after uninstall)
+  useEffect(() => {
+    if (
+      selectedPluginId &&
+      plugins &&
+      !plugins.some((p) => p.id === selectedPluginId)
+    ) {
+      setSelectedPluginId(null)
+      setSelectedComponentType(null)
+      setSelectedItemId(null)
+    }
+  }, [plugins, selectedPluginId])
 
   const groupedByScope = useMemo(() => {
     if (!plugins) return new Map<string, Plugin[]>()

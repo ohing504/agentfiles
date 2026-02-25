@@ -73,11 +73,17 @@ export function PluginActionBar({
           <Switch
             checked={plugin.enabled}
             onCheckedChange={(checked) =>
-              toggleMutation.mutate({
-                id: plugin.id,
-                enable: checked,
-                scope: plugin.scope,
-              })
+              toggleMutation.mutate(
+                {
+                  id: plugin.id,
+                  enable: checked,
+                  scope: plugin.scope,
+                },
+                {
+                  onError: (e) =>
+                    toast.error(e.message || m.plugin_update_error()),
+                },
+              )
             }
             disabled={toggleMutation.isPending}
           />
@@ -133,8 +139,9 @@ export function PluginActionBar({
                       setPendingUninstall(false)
                       onUninstalled?.()
                     },
-                    onError: () => {
+                    onError: (e) => {
                       setPendingUninstall(false)
+                      toast.error(e.message || m.plugin_update_error())
                     },
                   },
                 )

@@ -1,5 +1,6 @@
-import { ExternalLink, Plug2Icon, Search } from "lucide-react"
+import { AlertTriangle, ExternalLink, Plug2Icon, Search } from "lucide-react"
 import { useState } from "react"
+import { ErrorBoundary } from "@/components/ErrorBoundary"
 import { useProjectContext } from "@/components/ProjectContext"
 import {
   Empty,
@@ -169,11 +170,25 @@ function PluginsPageInner() {
   )
 }
 
+function PluginsErrorFallback() {
+  return (
+    <div className="flex-1 flex items-center justify-center">
+      <div className="text-center space-y-2">
+        <AlertTriangle className="size-8 text-muted-foreground mx-auto" />
+        <p className="text-sm font-medium">Failed to render plugins</p>
+        <p className="text-xs text-muted-foreground">Try reloading the page.</p>
+      </div>
+    </div>
+  )
+}
+
 export function PluginsPage() {
   const { setOpen: setSidebarOpen } = useSidebar()
   return (
-    <PluginsProvider onSelect={() => setSidebarOpen(false)}>
-      <PluginsPageInner />
-    </PluginsProvider>
+    <ErrorBoundary fallback={<PluginsErrorFallback />}>
+      <PluginsProvider onSelect={() => setSidebarOpen(false)}>
+        <PluginsPageInner />
+      </PluginsProvider>
+    </ErrorBoundary>
   )
 }
