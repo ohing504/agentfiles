@@ -1,12 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useProjectContext } from "@/components/ProjectContext"
+import { FREQUENT_REFETCH } from "@/hooks/use-config"
 import { queryKeys } from "@/lib/query-keys"
 import type { HookScope } from "@/shared/types"
-
-const FREQUENT_REFETCH = {
-  refetchOnWindowFocus: true,
-  refetchInterval: 5000,
-} as const
 
 export function useHooks(scope: HookScope) {
   const { activeProjectPath } = useProjectContext()

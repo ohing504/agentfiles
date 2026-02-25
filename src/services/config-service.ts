@@ -6,9 +6,13 @@ import matter from "gray-matter"
 import type {
   AgentFile,
   ClaudeMd,
+  HooksSettings,
+  LspServer,
   McpServer,
   Overview,
   Plugin,
+  PluginAuthor,
+  PluginComponents,
   Scope,
   SupportingFile,
 } from "@/shared/types"
@@ -296,7 +300,7 @@ export async function readProjectLocalSettings(
 
 // ── Plugin 목록 ──
 
-export async function getPlugins(): Promise<Plugin[]> {
+export async function getPlugins(projectPath?: string): Promise<Plugin[]> {
   const globalBase = getGlobalConfigPath()
   const pluginsJsonPath = path.join(
     globalBase,
@@ -347,9 +351,11 @@ export async function getPlugins(): Promise<Plugin[]> {
         if (typeof entry !== "object" || entry === null) continue
 
         const e = entry as Record<string, unknown>
-        const [name, marketplace] = pluginId.includes("@")
-          ? pluginId.split("@")
-          : [pluginId, ""]
+        const lastAtIdx = pluginId.lastIndexOf("@")
+        const [name, marketplace] =
+          lastAtIdx > 0
+            ? [pluginId.slice(0, lastAtIdx), pluginId.slice(lastAtIdx + 1)]
+            : [pluginId, ""]
 
         plugins.push({
           id: pluginId,
@@ -387,7 +393,161 @@ export async function getPlugins(): Promise<Plugin[]> {
     }
   }
 
-  return plugins
+  // 프로젝트 경로가 주어진 경우 project 스코프 플러그인을 해당 경로로 필터링
+  const filteredPlugins = projectPath
+    ? plugins.filter(
+        (p) => p.scope !== "project" || p.projectPath === projectPath,
+      )
+    : plugins
+
+  const enrichedPlugins = await Promise.all(
+    filteredPlugins.map(async (plugin) => {
+      if (!plugin.installPath) return plugin
+      const [manifest, contents] = await Promise.all([
+        readPluginManifest(plugin.installPath),
+        scanPluginComponents(plugin.installPath),
+      ])
+      return {
+        ...plugin,
+        description: manifest?.description ?? plugin.description,
+        author: manifest?.author,
+        homepage: manifest?.homepage,
+        repository: manifest?.repository,
+        license: manifest?.license,
+        keywords: manifest?.keywords,
+        contents,
+      }
+    }),
+  )
+  return enrichedPlugins
+}
+
+// ── Marketplace 목록 ──
+
+interface Marketplace {
+  name: string
+  owner: { name: string; email?: string }
+  metadata?: { description?: string; version?: string; pluginRoot?: string }
+  plugins: unknown[]
+  autoUpdate?: boolean
+}
+
+export async function getMarketplaces(): Promise<Marketplace[]> {
+  const cachePath = path.join(getGlobalConfigPath(), "plugins", "cache")
+  const marketplaces: Marketplace[] = []
+
+  let entries: Dirent[]
+  try {
+    entries = await fs.readdir(cachePath, { withFileTypes: true })
+  } catch {
+    return []
+  }
+
+  for (const entry of entries) {
+    if (!entry.isDirectory()) continue
+    const marketplacePath = path.join(cachePath, entry.name, "marketplace.json")
+    try {
+      const content = await fs.readFile(marketplacePath, "utf-8")
+      const data = JSON.parse(content) as Marketplace
+      marketplaces.push(data)
+    } catch {
+      // No marketplace.json or invalid — skip
+    }
+  }
+
+  return marketplaces
+}
+
+// ── Plugin Manifest 읽기 ──
+
+export async function readPluginManifest(installPath: string): Promise<{
+  name?: string
+  description?: string
+  author?: PluginAuthor
+  homepage?: string
+  repository?: string
+  license?: string
+  keywords?: string[]
+  version?: string
+} | null> {
+  const manifestPath = path.join(installPath, ".claude-plugin", "plugin.json")
+  try {
+    const content = await fs.readFile(manifestPath, "utf-8")
+    return JSON.parse(content)
+  } catch {
+    return null
+  }
+}
+
+// ── Plugin Contents 스캔 ──
+
+async function readJsonFile<T>(filePath: string, fallback: T): Promise<T> {
+  try {
+    const content = await fs.readFile(filePath, "utf-8")
+    return JSON.parse(content) as T
+  } catch {
+    return fallback
+  }
+}
+
+async function readHooksJson(filePath: string): Promise<HooksSettings> {
+  return readJsonFile<HooksSettings>(filePath, {})
+}
+
+async function readMcpJson(filePath: string): Promise<McpServer[]> {
+  const raw = await readJsonFile<Record<string, unknown>>(filePath, {})
+  const mcpServersRaw = raw.mcpServers ?? raw
+  if (typeof mcpServersRaw !== "object" || mcpServersRaw === null) return []
+  return parseMcpServers(mcpServersRaw as Record<string, unknown>, "global")
+}
+
+async function readLspJson(filePath: string): Promise<LspServer[]> {
+  const raw = await readJsonFile<Record<string, unknown>>(filePath, {})
+  const servers: LspServer[] = []
+  for (const [name, config] of Object.entries(raw)) {
+    if (typeof config !== "object" || config === null) continue
+    const c = config as Record<string, unknown>
+    servers.push({
+      name,
+      command: (c.command as string) ?? "",
+      args: c.args as string[] | undefined,
+      transport: c.transport as "stdio" | "socket" | undefined,
+      extensionToLanguage:
+        (c.extensionToLanguage as Record<string, string>) ?? {},
+    })
+  }
+  return servers
+}
+
+export async function scanPluginComponents(
+  installPath: string,
+): Promise<PluginComponents> {
+  const [
+    commands,
+    skills,
+    agents,
+    hooks,
+    mcpServers,
+    lspServers,
+    outputStyles,
+  ] = await Promise.all([
+    scanMdDir(path.join(installPath, "commands"), "command").catch(() => []),
+    scanSkillsDir(path.join(installPath, "skills")).catch(() => []),
+    scanMdDir(path.join(installPath, "agents"), "agent").catch(() => []),
+    readHooksJson(path.join(installPath, "hooks", "hooks.json")),
+    readMcpJson(path.join(installPath, ".mcp.json")),
+    readLspJson(path.join(installPath, ".lsp.json")),
+    scanMdDir(path.join(installPath, "outputStyles"), "skill").catch(() => []),
+  ])
+  return {
+    commands,
+    skills,
+    agents,
+    hooks,
+    mcpServers,
+    lspServers,
+    outputStyles,
+  }
 }
 
 // ── MCP 서버 목록 ──

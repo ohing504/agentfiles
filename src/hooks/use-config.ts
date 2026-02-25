@@ -96,34 +96,6 @@ export function useClaudeMdGlobalMeta() {
   })
 }
 
-// ── Plugins ───────────────────────────────────────────────────────────────────
-
-export function usePlugins() {
-  const queryClient = useQueryClient()
-
-  const query = useQuery({
-    queryKey: queryKeys.plugins.all,
-    queryFn: async () => {
-      const { getPluginsFn } = await import("@/server/plugins")
-      return getPluginsFn()
-    },
-    ...INFREQUENT_REFETCH,
-  })
-
-  const mutation = useMutation({
-    mutationFn: async (params: { id: string; enable: boolean }) => {
-      const { togglePluginFn } = await import("@/server/plugins")
-      return togglePluginFn({ data: params })
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.plugins.all })
-      queryClient.invalidateQueries({ queryKey: queryKeys.overview.all })
-    },
-  })
-
-  return { query, mutation }
-}
-
 // ── MCP Servers ───────────────────────────────────────────────────────────────
 
 export function useMcpServers() {

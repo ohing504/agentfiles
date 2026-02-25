@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
 import { FileViewer } from "@/components/FileViewer"
+import { queryKeys } from "@/lib/query-keys"
 import type { AgentFile, SupportingFile } from "@/shared/types"
 import { extractBody } from "../constants"
 
@@ -11,7 +12,10 @@ export function SupportingFilePanel({
   supportingFile: SupportingFile
 }) {
   const { data, isLoading } = useQuery({
-    queryKey: ["supporting-file", skill.path, supportingFile.relativePath],
+    queryKey: queryKeys.agentFiles.supportingFile(
+      skill.path,
+      supportingFile.relativePath,
+    ),
     queryFn: async () => {
       const { readSupportingFileFn } = await import("../api/skills.functions")
       return readSupportingFileFn({

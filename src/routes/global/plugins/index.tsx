@@ -1,6 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router"
-import { PluginsPageContent } from "@/components/pages/PluginsPageContent"
+import { createFileRoute, redirect } from "@tanstack/react-router"
 
 export const Route = createFileRoute("/global/plugins/")({
-  component: () => <PluginsPageContent scope="user" />,
+  beforeLoad: () => {
+    throw redirect({ to: "/plugins" })
+  },
+  component: () => null,
 })

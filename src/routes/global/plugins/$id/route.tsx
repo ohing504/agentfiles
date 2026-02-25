@@ -1,11 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router"
-import { PluginDetailContent } from "@/components/pages/PluginDetailContent"
+import { createFileRoute, redirect } from "@tanstack/react-router"
 
 export const Route = createFileRoute("/global/plugins/$id")({
-  component: GlobalPluginDetail,
+  beforeLoad: () => {
+    throw redirect({ to: "/plugins" })
+  },
+  component: () => null,
 })
-
-function GlobalPluginDetail() {
-  const { id } = Route.useParams()
-  return <PluginDetailContent id={id} scope="user" />
-}

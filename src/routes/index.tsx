@@ -3,7 +3,7 @@ import {
   Bot,
   CheckCircle2,
   FileText,
-  Puzzle,
+  Plug2Icon,
   Server,
   Sparkles,
   Terminal,
@@ -131,7 +131,7 @@ function DashboardPage() {
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
         <StatCard
           to="/plugins"
-          icon={Puzzle}
+          icon={Plug2Icon}
           label={m.nav_plugins()}
           count={overview?.plugins?.total ?? 0}
           globalCount={overview?.plugins?.user ?? 0}

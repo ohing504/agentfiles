@@ -3,7 +3,7 @@ import {
   FolderOpen,
   LayoutDashboard,
   PanelLeftIcon,
-  Puzzle,
+  Plug2Icon,
   ScrollText,
   Server,
   Settings,
@@ -35,7 +35,6 @@ const globalNavItems = [
     labelFn: () => m.nav_settings(),
   },
   { to: "/global/files", icon: FolderOpen, labelFn: () => m.nav_files() },
-  { to: "/global/plugins", icon: Puzzle, labelFn: () => m.nav_plugins() },
   {
     to: "/global/mcp",
     icon: Server,
@@ -50,11 +49,6 @@ const projectNavItems = [
     labelFn: () => m.nav_settings(),
   },
   { to: "/project/files", icon: FolderOpen, labelFn: () => m.nav_files() },
-  {
-    to: "/project/plugins",
-    icon: Puzzle,
-    labelFn: () => m.nav_plugins(),
-  },
   {
     to: "/project/mcp",
     icon: Server,
@@ -118,6 +112,14 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
                   <Link to="/hooks" activeProps={{ "data-active": true }}>
                     <Zap />
                     <span>Hooks</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild tooltip={m.nav_plugins()}>
+                  <Link to="/plugins" activeProps={{ "data-active": true }}>
+                    <Plug2Icon />
+                    <span>{m.nav_plugins()}</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>

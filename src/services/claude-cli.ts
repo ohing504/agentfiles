@@ -1,5 +1,5 @@
 import { execFile as execFileCb } from "node:child_process"
-import type { CliStatus, McpServer, Scope } from "@/shared/types"
+import type { CliStatus, McpServer, PluginScope, Scope } from "@/shared/types"
 
 const TIMEOUT_MS = 30_000
 
@@ -80,7 +80,43 @@ export async function mcpRemove(name: string, scope: Scope): Promise<void> {
   await execClaude(["mcp", "remove", name, "-s", cliScope])
 }
 
-export async function pluginToggle(id: string, enable: boolean): Promise<void> {
+export async function pluginToggle(
+  id: string,
+  enable: boolean,
+  scope?: PluginScope,
+): Promise<void> {
   const action = enable ? "enable" : "disable"
-  await execClaude(["plugin", action, id])
+  const args = ["plugin", action, id]
+  if (scope) args.push("-s", scope)
+  await execClaude(args)
+}
+
+export async function pluginInstall(
+  name: string,
+  scope: PluginScope = "user",
+): Promise<void> {
+  await execClaude(["plugin", "install", name, "-s", scope])
+}
+
+export async function pluginUninstall(
+  name: string,
+  scope: PluginScope = "user",
+): Promise<void> {
+  await execClaude(["plugin", "uninstall", name, "-s", scope])
+}
+
+export async function pluginUpdate(name: string): Promise<void> {
+  await execClaude(["plugin", "update", name])
+}
+
+export async function marketplaceAdd(source: string): Promise<void> {
+  await execClaude(["plugin", "marketplace", "add", source])
+}
+
+export async function marketplaceRemove(name: string): Promise<void> {
+  await execClaude(["plugin", "marketplace", "remove", name])
+}
+
+export async function marketplaceUpdate(name: string): Promise<void> {
+  await execClaude(["plugin", "marketplace", "update", name])
 }

@@ -3,6 +3,7 @@ import { DetailField } from "@/components/DetailField"
 import { FileViewer } from "@/components/FileViewer"
 import { Separator } from "@/components/ui/separator"
 import { Skeleton } from "@/components/ui/skeleton"
+import { queryKeys } from "@/lib/query-keys"
 import type { SelectedHook } from "../constants"
 
 // ── HookDetailPanel ──────────────────────────────────────────────────────────
@@ -24,7 +25,10 @@ export function HookDetailPanel({
       : false
 
   const scriptQuery = useQuery({
-    queryKey: ["hook-script", hook.command, activeProjectPath],
+    queryKey: queryKeys.hooks.script(
+      hook.command ?? "",
+      activeProjectPath ?? undefined,
+    ),
     queryFn: async () => {
       const { readScriptFn } = await import("../api/hooks.functions")
       return readScriptFn({

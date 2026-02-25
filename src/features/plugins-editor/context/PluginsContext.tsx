@@ -1,0 +1,159 @@
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+} from "react"
+import { useProjectContext } from "@/components/ProjectContext"
+import type { Plugin, PluginScope } from "@/shared/types"
+import { usePluginMutations, usePluginsQuery } from "../api/plugins.queries"
+import type { PluginComponentType } from "../types"
+
+export const SCOPE_ORDER: PluginScope[] = [
+  "user",
+  "project",
+  "local",
+  "managed",
+]
+export const SCOPE_LABELS: Record<PluginScope, string> = {
+  user: "User",
+  project: "Project",
+  local: "Local",
+  managed: "Managed",
+}
+
+export interface PluginsContextValue {
+  selectedPlugin: Plugin | null
+  selectedPluginId: string | null
+  setSelectedPluginId: (id: string | null) => void
+  selectedComponentType: PluginComponentType | null
+  setSelectedComponentType: (c: PluginComponentType | null) => void
+  selectedItemId: string | null
+  setSelectedItemId: (id: string | null) => void
+  handleSelectPlugin: (plugin: Plugin) => void
+  handleSelectComponentType: (
+    plugin: Plugin,
+    componentType: PluginComponentType,
+  ) => void
+  groupedByScope: Map<string, Plugin[]>
+  duplicateNames: Set<string>
+  plugins: Plugin[] | undefined
+  toggleMutation: ReturnType<typeof usePluginMutations>["toggleMutation"]
+  updateMutation: ReturnType<typeof usePluginMutations>["updateMutation"]
+  uninstallMutation: ReturnType<typeof usePluginMutations>["uninstallMutation"]
+}
+
+const PluginsContext = createContext<PluginsContextValue | null>(null)
+
+export function usePluginsSelection(): PluginsContextValue {
+  const ctx = useContext(PluginsContext)
+  if (!ctx) {
+    throw new Error("usePluginsSelection must be used within PluginsProvider")
+  }
+  return ctx
+}
+
+export function PluginsProvider({
+  children,
+  onSelect,
+}: {
+  children: React.ReactNode
+  onSelect?: () => void
+}) {
+  const { activeProjectPath } = useProjectContext()
+  const [selectedPluginId, setSelectedPluginId] = useState<string | null>(null)
+  const [selectedComponentType, setSelectedComponentType] =
+    useState<PluginComponentType | null>(null)
+  const [selectedItemId, setSelectedItemId] = useState<string | null>(null)
+
+  const { data: plugins } = usePluginsQuery(activeProjectPath ?? undefined)
+  const { toggleMutation, uninstallMutation, updateMutation } =
+    usePluginMutations()
+
+  const selectedPlugin = useMemo(
+    () => plugins?.find((p) => p.id === selectedPluginId) ?? null,
+    [plugins, selectedPluginId],
+  )
+
+  const groupedByScope = useMemo(() => {
+    if (!plugins) return new Map<string, Plugin[]>()
+    const map = new Map<string, Plugin[]>()
+    for (const scope of SCOPE_ORDER) {
+      const group = plugins.filter((p) => p.scope === scope)
+      if (group.length > 0) {
+        map.set(SCOPE_LABELS[scope], group)
+      }
+    }
+    return map
+  }, [plugins])
+
+  const duplicateNames = useMemo(() => {
+    if (!plugins) return new Set<string>()
+    const counts = new Map<string, number>()
+    for (const p of plugins) {
+      counts.set(p.name, (counts.get(p.name) ?? 0) + 1)
+    }
+    return new Set(
+      [...counts.entries()].filter(([, c]) => c > 1).map(([n]) => n),
+    )
+  }, [plugins])
+
+  const handleSelectPlugin = useCallback(
+    (plugin: Plugin) => {
+      setSelectedPluginId(plugin.id)
+      setSelectedComponentType(null)
+      setSelectedItemId(null)
+      onSelect?.()
+    },
+    [onSelect],
+  )
+
+  const handleSelectComponentType = useCallback(
+    (plugin: Plugin, componentType: PluginComponentType) => {
+      setSelectedPluginId(plugin.id)
+      setSelectedComponentType(componentType)
+      setSelectedItemId(null)
+      onSelect?.()
+    },
+    [onSelect],
+  )
+
+  const value = useMemo(
+    () => ({
+      selectedPlugin,
+      selectedPluginId,
+      setSelectedPluginId,
+      selectedComponentType,
+      setSelectedComponentType,
+      selectedItemId,
+      setSelectedItemId,
+      handleSelectPlugin,
+      handleSelectComponentType,
+      groupedByScope,
+      duplicateNames,
+      plugins,
+      toggleMutation,
+      updateMutation,
+      uninstallMutation,
+    }),
+    [
+      selectedPlugin,
+      selectedPluginId,
+      selectedComponentType,
+      selectedItemId,
+      handleSelectPlugin,
+      handleSelectComponentType,
+      groupedByScope,
+      duplicateNames,
+      plugins,
+      toggleMutation,
+      updateMutation,
+      uninstallMutation,
+    ],
+  )
+
+  return (
+    <PluginsContext.Provider value={value}>{children}</PluginsContext.Provider>
+  )
+}

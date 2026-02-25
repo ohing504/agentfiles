@@ -1,0 +1,54 @@
+import { createServerFn } from "@tanstack/react-start"
+import { z } from "zod"
+import {
+  pluginToggle,
+  pluginUninstall,
+  pluginUpdate,
+} from "@/services/claude-cli"
+import { getPlugins, scanPluginComponents } from "@/services/config-service"
+
+const pluginScopeSchema = z.enum(["user", "project", "local", "managed"])
+
+export const getPluginsFn = createServerFn({ method: "GET" })
+  .inputValidator(z.object({ projectPath: z.string().optional() }))
+  .handler(async ({ data }) => {
+    return getPlugins(data.projectPath)
+  })
+
+export const getPluginComponentsFn = createServerFn({ method: "GET" })
+  .inputValidator(z.object({ installPath: z.string().min(1) }))
+  .handler(async ({ data }) => {
+    return scanPluginComponents(data.installPath)
+  })
+
+export const togglePluginFn = createServerFn({ method: "POST" })
+  .inputValidator(
+    z.object({
+      id: z.string(),
+      enable: z.boolean(),
+      scope: pluginScopeSchema.optional(),
+    }),
+  )
+  .handler(async ({ data }) => {
+    await pluginToggle(data.id, data.enable, data.scope)
+    return { success: true }
+  })
+
+export const uninstallPluginFn = createServerFn({ method: "POST" })
+  .inputValidator(
+    z.object({
+      id: z.string().min(1),
+      scope: pluginScopeSchema.optional(),
+    }),
+  )
+  .handler(async ({ data }) => {
+    await pluginUninstall(data.id, data.scope)
+    return { success: true }
+  })
+
+export const updatePluginFn = createServerFn({ method: "POST" })
+  .inputValidator(z.object({ id: z.string().min(1) }))
+  .handler(async ({ data }) => {
+    await pluginUpdate(data.id)
+    return { success: true }
+  })

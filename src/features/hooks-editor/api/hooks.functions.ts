@@ -131,6 +131,7 @@ export const readScriptFn = createServerFn({ method: "GET" })
   )
   .handler(async ({ data }) => {
     const path = await import("node:path")
+    const os = await import("node:os")
     const { readScriptFile } = await import("@/services/hooks-service")
 
     let resolvedPath = data.filePath
@@ -147,6 +148,17 @@ export const readScriptFn = createServerFn({ method: "GET" })
       resolvedPath = path.join(data.projectPath, resolvedPath)
     }
 
-    const content = await readScriptFile(resolvedPath)
+    // path traversal 방지: 홈 디렉토리 또는 프로젝트 내부만 허용
+    const normalized = path.resolve(resolvedPath)
+    const homeDir = os.homedir()
+    const allowedRoots = [homeDir]
+    if (data.projectPath) {
+      allowedRoots.push(path.resolve(data.projectPath))
+    }
+    if (!allowedRoots.some((root) => normalized.startsWith(root))) {
+      throw new Error("Access denied: path outside allowed directories")
+    }
+
+    const content = await readScriptFile(normalized)
     return { content }
   })

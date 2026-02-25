@@ -27,10 +27,6 @@ export const queryKeys = {
       [...queryKeys.claudeMdFiles.all, projectPath] as const,
   },
 
-  plugins: {
-    all: ["plugins"] as const,
-  },
-
   mcpServers: {
     all: ["mcp-servers"] as const,
     byProject: (projectPath?: string) =>
@@ -43,6 +39,15 @@ export const queryKeys = {
       [...queryKeys.agentFiles.all, type] as const,
     byTypeAndProject: (type: AgentFile["type"], projectPath?: string) =>
       [...queryKeys.agentFiles.all, type, projectPath] as const,
+    detail: (path: string) =>
+      [...queryKeys.agentFiles.all, "detail", path] as const,
+    supportingFile: (skillPath: string, relativePath: string) =>
+      [
+        ...queryKeys.agentFiles.all,
+        "supporting-file",
+        skillPath,
+        relativePath,
+      ] as const,
   },
 
   cliStatus: {
@@ -57,6 +62,8 @@ export const queryKeys = {
     all: ["hooks"] as const,
     byScope: (scope: HookScope, projectPath?: string) =>
       [...queryKeys.hooks.all, scope, projectPath] as const,
+    script: (command: string, projectPath?: string) =>
+      [...queryKeys.hooks.all, "script", command, projectPath] as const,
   },
 
   settings: {

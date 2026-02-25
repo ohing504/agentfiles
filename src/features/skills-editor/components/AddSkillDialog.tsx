@@ -18,6 +18,7 @@ import {
   FieldLabel,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import { queryKeys } from "@/lib/query-keys"
 import type { Scope } from "@/shared/types"
 import { addSkillSchema } from "../constants"
 
@@ -52,7 +53,9 @@ export function AddSkillDialog({
           },
         })
         toast.success(`Skill '${value.name}' created`)
-        await queryClient.invalidateQueries({ queryKey: ["agent-files"] })
+        await queryClient.invalidateQueries({
+          queryKey: queryKeys.agentFiles.all,
+        })
         onClose()
       } catch {
         toast.error("Failed to create skill")
