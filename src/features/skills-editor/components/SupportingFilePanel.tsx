@@ -1,31 +1,18 @@
-import { useQuery } from "@tanstack/react-query"
 import { FileViewer } from "@/components/FileViewer"
-import { queryKeys } from "@/lib/query-keys"
-import type { AgentFile, SupportingFile } from "@/shared/types"
+import { useSupportingFileQuery } from "../api/skills.queries"
 import { extractBody } from "../constants"
+import { useSkillsSelection } from "../context/SkillsContext"
 
-export function SupportingFilePanel({
-  skill,
-  supportingFile,
-}: {
-  skill: AgentFile
-  supportingFile: SupportingFile
-}) {
-  const { data, isLoading } = useQuery({
-    queryKey: queryKeys.agentFiles.supportingFile(
-      skill.path,
-      supportingFile.relativePath,
-    ),
-    queryFn: async () => {
-      const { readSupportingFileFn } = await import("../api/skills.functions")
-      return readSupportingFileFn({
-        data: {
-          skillPath: skill.path,
-          relativePath: supportingFile.relativePath,
-        },
-      })
-    },
-  })
+export function SupportingFilePanel() {
+  const { selectedSkill: skill, selectedSupportingFile: supportingFile } =
+    useSkillsSelection()
+
+  const { data, isLoading } = useSupportingFileQuery(
+    skill?.path,
+    supportingFile?.relativePath,
+  )
+
+  if (!skill || !supportingFile) return null
 
   const isMarkdown = supportingFile.name.endsWith(".md")
   const rawContent = data?.content ?? ""

@@ -20,12 +20,11 @@
 - [ ] vitest config에서 include 경로 확인 (src/**/*.test.ts 포함)
 
 ### skills-editor 리팩토링 (plugins-editor 패턴으로 통일)
-- [ ] skills-editor를 plugins-editor 구조에 맞춰 리팩토링 (context, api, components 분리)
+- [x] skills-editor를 plugins-editor 구조에 맞춰 리팩토링 (context, api, components 분리)
+- [x] queryFn 파라미터화 — queryKey에 의존성 포함 (plugins-editor 패턴 참고)
 - [ ] 공유 상세 컴포넌트 추출 — `AgentFileDetail`, `HookDetail`, `McpServerDetail`, `LspServerDetail` 등
   - plugins의 `PluginComponentDetail` 에서 공유 컴포넌트를 재사용하도록 개선 (#16)
-- [ ] **주의**: server function handler 내 `@/services/*` import는 반드시 dynamic import 유지 (Node.js 전용 모듈이 클라이언트 번들에 포함되면 깨짐)
-- [ ] UI 컴포넌트에서만 dynamic → static import 전환 가능 (`SkillDetailPanel.tsx`, `AddSkillDialog.tsx`, `SupportingFilePanel.tsx`)
-- [ ] queryFn 파라미터화 — queryKey에 의존성 포함 (plugins-editor 패턴 참고)
+- **주의**: server function handler 내 `@/services/*` import는 반드시 dynamic import 유지 (Node.js 전용 모듈이 클라이언트 번들에 포함되면 깨짐) — `docs/EDITOR-GUIDE.md` 참조
 
 ### hooks-editor 리팩토링
 - [ ] **주의**: `hooks.functions.ts` handler 내 dynamic import 유지 필수 (static으로 바꾸면 클라이언트 번들 깨짐)
@@ -40,6 +39,16 @@
 - plugins, skills 등을 마켓플레이스에서 검색/설치할 수 있도록
 
 ## Shipped
+
+### skills-editor 리팩토링 (2026-02-26)
+- plugins-editor 패턴에 맞춰 구조 통일 (EDITOR-GUIDE.md 기반)
+- 신규 파일: `types.ts`, `skills.queries.ts`, `context/SkillsContext.tsx`, `SkillActionBar.tsx`, `FrontmatterBadges.tsx`
+- `constants.tsx` → `constants.ts` (컴포넌트 분리)
+- `SkillsPageContent.tsx` → `SkillsPage.tsx` (ErrorBoundary + Provider 래퍼)
+- SkillsScopeSection: prop drilling → Context 전환
+- SkillDetailPanel: 인라인 query/mutation → queries 훅
+- AddSkillDialog: 인라인 invalidation → createMutation
+- 196 tests 통과, 빌드 성공
 
 ### plugin-service 분리 (2026-02-25)
 - config-service.ts (839줄) → plugin-service.ts (335줄) + config-service.ts (558줄)

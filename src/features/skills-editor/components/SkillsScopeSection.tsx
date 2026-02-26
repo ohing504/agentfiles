@@ -13,34 +13,31 @@ import {
 } from "@/components/ui/tooltip"
 import { Tree, TreeFile, TreeFolder } from "@/components/ui/tree"
 import { m } from "@/paraglide/messages"
-import type { AgentFile, Scope, SupportingFile } from "@/shared/types"
+import type { Scope } from "@/shared/types"
+import { useSkillsSelection } from "../context/SkillsContext"
 
 export function SkillsScopeSection({
   label,
   scope,
-  allFiles,
   searchQuery,
-  selectedSkill,
-  selectedSupportingFile,
-  expandedSkillPath,
-  onSelectSkill,
-  onSelectSupportingFile,
-  onExpandSkill,
   onAddClick,
 }: {
   label: string
   scope: Scope
-  allFiles: AgentFile[]
   searchQuery: string
-  selectedSkill: AgentFile | null
-  selectedSupportingFile: SupportingFile | null
-  expandedSkillPath: string | null
-  onSelectSkill: (skill: AgentFile) => void
-  onSelectSupportingFile: (sf: SupportingFile | null) => void
-  onExpandSkill: (path: string | null) => void
   onAddClick: () => void
 }) {
-  const scopeFiles = allFiles.filter((f) => f.scope === scope)
+  const {
+    skills: allFiles,
+    selectedSkill,
+    selectedSupportingFile,
+    expandedSkillPath,
+    handleSelectSkill: onSelectSkill,
+    handleSelectSupportingFile: onSelectSupportingFile,
+    handleExpandSkill: onExpandSkill,
+  } = useSkillsSelection()
+
+  const scopeFiles = (allFiles ?? []).filter((f) => f.scope === scope)
   const skills = scopeFiles.filter((f) => f.type === "skill")
   const commands = scopeFiles.filter((f) => f.type === "command")
 
@@ -53,8 +50,8 @@ export function SkillsScopeSection({
     : commands
 
   // Group commands by namespace
-  const namespacedCommands = new Map<string, AgentFile[]>()
-  const flatCommands: AgentFile[] = []
+  const namespacedCommands = new Map<string, typeof commands>()
+  const flatCommands: typeof commands = []
   for (const cmd of filteredCommands) {
     if (cmd.namespace) {
       const existing = namespacedCommands.get(cmd.namespace)
@@ -88,12 +85,12 @@ export function SkillsScopeSection({
 
   // Build unified sorted tree items
   type TreeItem =
-    | { kind: "skill"; file: AgentFile; sortKey: string }
-    | { kind: "command"; file: AgentFile; sortKey: string }
+    | { kind: "skill"; file: (typeof skills)[0]; sortKey: string }
+    | { kind: "command"; file: (typeof commands)[0]; sortKey: string }
     | {
         kind: "namespace"
         name: string
-        commands: AgentFile[]
+        commands: typeof commands
         sortKey: string
       }
   const treeItems: TreeItem[] = [

@@ -44,8 +44,6 @@ export const saveFrontmatterFn = createServerFn({ method: "POST" })
     return { success: true }
   })
 
-export { openFolderFn, openInEditorFn } from "@/server/editor"
-
 export const createSkillFn = createServerFn({ method: "POST" })
   .inputValidator(
     z.object({

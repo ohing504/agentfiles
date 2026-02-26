@@ -1,5 +1,4 @@
 import { useForm, useStore } from "@tanstack/react-form"
-import { useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import {
@@ -18,20 +17,18 @@ import {
   FieldLabel,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { queryKeys } from "@/lib/query-keys"
 import type { Scope } from "@/shared/types"
+import { useSkillMutations } from "../api/skills.queries"
 import { addSkillSchema } from "../constants"
 
 export function AddSkillDialog({
   scope,
-  activeProjectPath,
   onClose,
 }: {
   scope: Scope
-  activeProjectPath: string | null | undefined
   onClose: () => void
 }) {
-  const queryClient = useQueryClient()
+  const { createMutation } = useSkillMutations()
 
   const form = useForm({
     defaultValues: {
@@ -43,19 +40,12 @@ export function AddSkillDialog({
     },
     onSubmit: async ({ value }) => {
       try {
-        const { createSkillFn } = await import("../api/skills.functions")
-        await createSkillFn({
-          data: {
-            name: value.name,
-            scope,
-            description: value.description || undefined,
-            projectPath: activeProjectPath ?? undefined,
-          },
+        await createMutation.mutateAsync({
+          name: value.name,
+          scope,
+          description: value.description || undefined,
         })
         toast.success(`Skill '${value.name}' created`)
-        await queryClient.invalidateQueries({
-          queryKey: queryKeys.agentFiles.all,
-        })
         onClose()
       } catch {
         toast.error("Failed to create skill")

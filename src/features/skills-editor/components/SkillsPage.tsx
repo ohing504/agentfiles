@@ -1,5 +1,6 @@
-import { ExternalLink, ScrollText, Search } from "lucide-react"
+import { AlertTriangle, ExternalLink, ScrollText, Search } from "lucide-react"
 import { useState } from "react"
+import { ErrorBoundary } from "@/components/ErrorBoundary"
 import { useProjectContext } from "@/components/ProjectContext"
 import {
   Empty,
@@ -9,45 +10,32 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty"
 import { Input } from "@/components/ui/input"
+import { useSidebar } from "@/components/ui/sidebar"
 import { Skeleton } from "@/components/ui/skeleton"
-import { useAgentFiles } from "@/hooks/use-config"
 import { m } from "@/paraglide/messages"
-import type { AgentFile, Scope, SupportingFile } from "@/shared/types"
+import { useSkillsQuery } from "../api/skills.queries"
+import { SkillsProvider, useSkillsSelection } from "../context/SkillsContext"
 import { AddSkillDialog } from "./AddSkillDialog"
+import { SkillActionBar } from "./SkillActionBar"
 import { SkillDetailPanel } from "./SkillDetailPanel"
 import { SkillsScopeSection } from "./SkillsScopeSection"
 import { SupportingFilePanel } from "./SupportingFilePanel"
 
-export function SkillsPageContent() {
+function SkillsPageInner() {
   const { activeProjectPath } = useProjectContext()
-  const [selectedSkill, setSelectedSkill] = useState<AgentFile | null>(null)
-  const [selectedSupportingFile, setSelectedSupportingFile] =
-    useState<SupportingFile | null>(null)
-  const [expandedSkillPath, setExpandedSkillPath] = useState<string | null>(
-    null,
-  )
   const [searchQuery, setSearchQuery] = useState("")
-  const [addDialogOpen, setAddDialogOpen] = useState(false)
-  const [addDialogScope, setAddDialogScope] = useState<Scope>("global")
+  const {
+    selectedSkill,
+    selectedSupportingFile,
+    handleClearSelection,
+    addDialogOpen,
+    addDialogScope,
+    handleAddClick,
+    handleAddClose,
+  } = useSkillsSelection()
+  const { isLoading } = useSkillsQuery()
 
-  // When selecting a skill/command, auto-expand its folder (if it has one) and collapse others
-  function handleSelectSkill(skill: AgentFile) {
-    setSelectedSkill(skill)
-    setSelectedSupportingFile(null)
-    // Collapse expanded folder for non-folder items;
-    // folder items handle expansion via their own onClick
-    const hasSF =
-      skill.isSkillDir &&
-      skill.supportingFiles &&
-      skill.supportingFiles.length > 0
-    if (!hasSF) {
-      setExpandedSkillPath(null)
-    }
-  }
-
-  const { query } = useAgentFiles("skill")
-
-  if (query.isLoading) {
+  if (isLoading) {
     return (
       <div className="flex h-full">
         <div className="w-[280px] shrink-0 border-r border-border p-4 space-y-3">
@@ -62,18 +50,10 @@ export function SkillsPageContent() {
     )
   }
 
-  const allFiles: AgentFile[] = query.data ?? []
-
-  function handleAddClick(scope: Scope) {
-    setAddDialogScope(scope)
-    setAddDialogOpen(true)
-  }
-
   return (
     <div className="flex h-full">
-      {/* 좌측 패널 - 280px 트리 */}
+      {/* Left panel - 280px tree */}
       <div className="w-[280px] shrink-0 border-r border-border flex flex-col">
-        {/* 좌측 헤더 */}
         <div className="flex items-center justify-between px-4 h-12 shrink-0">
           <h2 className="text-sm font-semibold">Skills</h2>
           <a
@@ -87,7 +67,6 @@ export function SkillsPageContent() {
           </a>
         </div>
 
-        {/* 검색 + 트리 */}
         <div className="flex-1 overflow-y-auto p-3 flex flex-col gap-3">
           <div className="relative">
             <Search className="absolute left-2 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
@@ -99,58 +78,36 @@ export function SkillsPageContent() {
             />
           </div>
 
-          {/* Global 스코프 섹션 */}
           <SkillsScopeSection
             label="Global"
             scope="global"
-            allFiles={allFiles}
             searchQuery={searchQuery}
-            selectedSkill={selectedSkill}
-            selectedSupportingFile={selectedSupportingFile}
-            expandedSkillPath={expandedSkillPath}
-            onSelectSkill={handleSelectSkill}
-            onSelectSupportingFile={setSelectedSupportingFile}
-            onExpandSkill={setExpandedSkillPath}
             onAddClick={() => handleAddClick("global")}
           />
 
-          {/* Project 스코프 섹션 (activeProjectPath 있을 때만) */}
           {activeProjectPath && (
             <SkillsScopeSection
               label="Project"
               scope="project"
-              allFiles={allFiles}
               searchQuery={searchQuery}
-              selectedSkill={selectedSkill}
-              selectedSupportingFile={selectedSupportingFile}
-              expandedSkillPath={expandedSkillPath}
-              onSelectSkill={handleSelectSkill}
-              onSelectSupportingFile={setSelectedSupportingFile}
-              onExpandSkill={setExpandedSkillPath}
               onAddClick={() => handleAddClick("project")}
             />
           )}
         </div>
       </div>
 
-      {/* 우측 패널 - 상세 또는 빈 상태 */}
+      {/* Right panel */}
       <div className="flex-1 flex flex-col min-w-0">
         {selectedSkill && selectedSupportingFile ? (
-          <SupportingFilePanel
-            key={selectedSupportingFile.relativePath}
-            skill={selectedSkill}
-            supportingFile={selectedSupportingFile}
-          />
+          <SupportingFilePanel />
         ) : selectedSkill ? (
-          <SkillDetailPanel
-            key={selectedSkill.path}
-            skill={selectedSkill}
-            activeProjectPath={activeProjectPath}
-            onDeleted={() => {
-              setSelectedSkill(null)
-              setSelectedSupportingFile(null)
-            }}
-          />
+          <>
+            <SkillActionBar
+              skill={selectedSkill}
+              onDeleted={handleClearSelection}
+            />
+            <SkillDetailPanel />
+          </>
         ) : (
           <div className="flex-1 flex items-center justify-center">
             <Empty>
@@ -166,14 +123,34 @@ export function SkillsPageContent() {
         )}
       </div>
 
-      {/* Add Skill Dialog */}
       {addDialogOpen && (
-        <AddSkillDialog
-          scope={addDialogScope}
-          activeProjectPath={activeProjectPath}
-          onClose={() => setAddDialogOpen(false)}
-        />
+        <AddSkillDialog scope={addDialogScope} onClose={handleAddClose} />
       )}
     </div>
+  )
+}
+
+function SkillsErrorFallback() {
+  return (
+    <div className="flex-1 flex items-center justify-center">
+      <div className="text-center space-y-2">
+        <AlertTriangle className="size-8 text-muted-foreground mx-auto" />
+        <p className="text-sm font-medium">Failed to load Skills editor</p>
+        <p className="text-xs text-muted-foreground">
+          Please try refreshing the page
+        </p>
+      </div>
+    </div>
+  )
+}
+
+export function SkillsPage() {
+  const { setOpen: setSidebarOpen } = useSidebar()
+  return (
+    <ErrorBoundary fallback={<SkillsErrorFallback />}>
+      <SkillsProvider onSelect={() => setSidebarOpen(false)}>
+        <SkillsPageInner />
+      </SkillsProvider>
+    </ErrorBoundary>
   )
 }
