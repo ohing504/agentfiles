@@ -1,5 +1,7 @@
 import { ExternalLink, Search, Zap } from "lucide-react"
 import { useState } from "react"
+import { toast } from "sonner"
+import { HookDetailPanel } from "@/components/HookDetailPanel"
 import { useProjectContext } from "@/components/ProjectContext"
 import {
   Empty,
@@ -10,11 +12,11 @@ import {
 } from "@/components/ui/empty"
 import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
+import { isHookFilePath, resolveHookFilePath } from "@/lib/hook-utils"
 import { m } from "@/paraglide/messages"
+import { useHooksMutations } from "../api/hooks.queries"
 import { useHooksSelection } from "../context/HooksContext"
 import { AddHookDialog } from "./AddHookDialog"
-import { HookActionBar } from "./HookActionBar"
-import { HookDetailPanel } from "./HookDetailPanel"
 import { HooksScopeSection } from "./HooksScopeSection"
 
 export function HooksPageContent() {
@@ -27,12 +29,37 @@ export function HooksPageContent() {
     isLoading,
     selectedHook,
     handleSelectHook,
+    handleClearSelection,
     editingHook,
     setEditingHook,
     addDialogScope,
     handleAddClick,
     handleAddClose,
   } = useHooksSelection()
+
+  const { removeMutation } = useHooksMutations(selectedHook?.scope ?? "global")
+
+  function handleDeleteHook() {
+    if (!selectedHook) return
+    removeMutation.mutate(
+      {
+        event: selectedHook.event,
+        groupIndex: selectedHook.groupIndex,
+        hookIndex: selectedHook.hookIndex,
+      },
+      {
+        onSuccess: handleClearSelection,
+        onError: (e) => toast.error(e.message || m.hooks_delete_error()),
+      },
+    )
+  }
+
+  const resolvedFilePath =
+    selectedHook && isHookFilePath(selectedHook.hook)
+      ? resolveHookFilePath(selectedHook.hook.command!, {
+          projectPath: activeProjectPath,
+        })
+      : undefined
 
   if (isLoading) {
     return (
@@ -54,14 +81,14 @@ export function HooksPageContent() {
       {/* 좌측 패널 */}
       <div className="w-[280px] shrink-0 border-r border-border flex flex-col">
         <div className="flex items-center justify-between px-4 h-12 shrink-0">
-          <h2 className="text-sm font-semibold">Hooks</h2>
+          <h2 className="text-sm font-semibold">{m.hooks_title()}</h2>
           <a
             href={m.claude_hook_docs_url()}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
           >
-            Docs
+            {m.hooks_docs()}
             <ExternalLink className="size-3" />
           </a>
         </div>
@@ -71,7 +98,7 @@ export function HooksPageContent() {
             <Input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search hooks..."
+              placeholder={m.hooks_search_placeholder()}
               className="pl-8 h-8 text-xs"
             />
           </div>
@@ -112,15 +139,15 @@ export function HooksPageContent() {
       {/* 우측 패널 */}
       <div className="flex-1 flex flex-col min-w-0">
         {selectedHook ? (
-          <>
-            <HookActionBar />
-            <div className="flex-1 flex flex-col min-h-0 p-4">
-              <HookDetailPanel
-                selectedHook={selectedHook}
-                activeProjectPath={activeProjectPath}
-              />
-            </div>
-          </>
+          <HookDetailPanel
+            hook={selectedHook.hook}
+            event={selectedHook.event}
+            matcher={selectedHook.matcher}
+            filePath={resolvedFilePath}
+            activeProjectPath={activeProjectPath}
+            onEdit={() => setEditingHook(selectedHook)}
+            onDelete={handleDeleteHook}
+          />
         ) : (
           <div className="flex-1 flex items-center justify-center">
             <Empty>
@@ -128,10 +155,8 @@ export function HooksPageContent() {
                 <EmptyMedia variant="icon">
                   <Zap />
                 </EmptyMedia>
-                <EmptyTitle>No Hook Selected</EmptyTitle>
-                <EmptyDescription>
-                  Select a hook from the left panel to view its details.
-                </EmptyDescription>
+                <EmptyTitle>{m.hooks_empty_title()}</EmptyTitle>
+                <EmptyDescription>{m.hooks_empty_desc()}</EmptyDescription>
               </EmptyHeader>
             </Empty>
           </div>

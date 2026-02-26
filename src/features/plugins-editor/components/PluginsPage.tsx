@@ -69,6 +69,7 @@ function PluginsRightPanel() {
               contents={selectedPlugin.contents}
               componentType={selectedComponentType}
               itemId={selectedItemId}
+              pluginInstallPath={selectedPlugin.installPath}
             />
           ) : (
             <div className="flex-1 flex items-center justify-center">

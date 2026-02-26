@@ -19,8 +19,6 @@ export interface HooksContextValue {
   handleClearSelection: () => void
   editingHook: SelectedHook | null
   setEditingHook: (hook: SelectedHook | null) => void
-  pendingDelete: SelectedHook | null
-  setPendingDelete: (hook: SelectedHook | null) => void
   addDialogScope: HookScope | null
   handleAddClick: (scope: HookScope) => void
   handleAddClose: () => void
@@ -45,7 +43,6 @@ export function HooksProvider({
 }) {
   const [selectedHook, setSelectedHook] = useState<SelectedHook | null>(null)
   const [editingHook, setEditingHook] = useState<SelectedHook | null>(null)
-  const [pendingDelete, setPendingDelete] = useState<SelectedHook | null>(null)
   const [addDialogScope, setAddDialogScope] = useState<HookScope | null>(null)
 
   const globalQuery = useHooksQuery("global")
@@ -69,7 +66,6 @@ export function HooksProvider({
   const handleClearSelection = useCallback(() => {
     setSelectedHook(null)
     setEditingHook(null)
-    setPendingDelete(null)
   }, [])
 
   const handleAddClick = useCallback(
@@ -90,8 +86,6 @@ export function HooksProvider({
       handleClearSelection,
       editingHook,
       setEditingHook,
-      pendingDelete,
-      setPendingDelete,
       addDialogScope,
       handleAddClick,
       handleAddClose,
@@ -105,7 +99,6 @@ export function HooksProvider({
       handleSelectHook,
       handleClearSelection,
       editingHook,
-      pendingDelete,
       addDialogScope,
       handleAddClick,
       handleAddClose,

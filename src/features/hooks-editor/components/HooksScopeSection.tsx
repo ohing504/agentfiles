@@ -1,6 +1,8 @@
-import { Plus, Zap } from "lucide-react"
-import { memo, useMemo } from "react"
-import { Tree, TreeFile, TreeFolder } from "@/components/ui/tree"
+import { ChevronRight, Plus, Zap } from "lucide-react"
+import { memo, useMemo, useState } from "react"
+import { ListItem, ListSubItem } from "@/components/ui/list-item"
+import { cn } from "@/lib/utils"
+import { m } from "@/paraglide/messages"
 import type {
   HookEventName,
   HookMatcherGroup,
@@ -32,6 +34,18 @@ export const HooksScopeSection = memo(function HooksScopeSection({
   onSelectHook: (hook: SelectedHook) => void
   onAddClick: () => void
 }) {
+  // Track which events are CLOSED (empty = all open by default)
+  const [closedEvents, setClosedEvents] = useState<Set<string>>(new Set())
+
+  function toggleEvent(event: string) {
+    setClosedEvents((prev) => {
+      const next = new Set(prev)
+      if (next.has(event)) next.delete(event)
+      else next.add(event)
+      return next
+    })
+  }
+
   const eventEntries = Object.entries(hooks) as [
     HookEventName,
     HookMatcherGroup[],
@@ -95,24 +109,40 @@ export const HooksScopeSection = memo(function HooksScopeSection({
       {/* 훅 목록 */}
       {!hasHooks ? (
         <p className="text-xs text-muted-foreground px-2 py-1.5">
-          No hooks configured
+          {m.hooks_no_configured()}
         </p>
       ) : filteredEvents.length === 0 ? (
-        <p className="text-xs text-muted-foreground px-2 py-1.5">No results</p>
+        <p className="text-xs text-muted-foreground px-2 py-1.5">
+          {m.hooks_no_results()}
+        </p>
       ) : (
-        <Tree>
+        <div className="flex flex-col gap-0.5">
           {filteredEvents.map(({ event, groups }) => {
+            const isOpen = !closedEvents.has(event)
             const totalCount = groups.reduce(
               (sum, { hooks }) => sum + hooks.length,
               0,
             )
             return (
-              <TreeFolder
+              <ListItem
                 key={event}
                 icon={Zap}
                 label={event}
-                count={totalCount}
-                defaultOpen
+                trailing={
+                  <>
+                    <span className="text-[10px] text-muted-foreground/60">
+                      {totalCount}
+                    </span>
+                    <ChevronRight
+                      className={cn(
+                        "size-3.5 text-muted-foreground transition-transform",
+                        isOpen && "rotate-90",
+                      )}
+                    />
+                  </>
+                }
+                open={isOpen}
+                onClick={() => toggleEvent(event)}
               >
                 {groups.map(({ group, groupIndex, hooks: filteredHooks }) =>
                   filteredHooks.map(({ hook, hookIndex }) => {
@@ -125,7 +155,7 @@ export const HooksScopeSection = memo(function HooksScopeSection({
                       selectedHook.hookIndex === hookIndex
 
                     return (
-                      <TreeFile
+                      <ListSubItem
                         key={`${groupIndex}-${hookIndex}`}
                         icon={Icon}
                         label={name}
@@ -144,10 +174,10 @@ export const HooksScopeSection = memo(function HooksScopeSection({
                     )
                   }),
                 )}
-              </TreeFolder>
+              </ListItem>
             )
           })}
-        </Tree>
+        </div>
       )}
     </div>
   )

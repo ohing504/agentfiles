@@ -36,6 +36,7 @@ import {
 import { Separator } from "@/components/ui/separator"
 import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
+import { m } from "@/paraglide/messages"
 import type {
   HookEntry,
   HookEventName,
@@ -167,11 +168,13 @@ export function AddHookDialog({
       <DialogContent className="min-w-4xl max-w-5xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {isEdit ? "Edit" : "Add"}{" "}
-            <span className="text-primary">
-              {scope.charAt(0).toUpperCase() + scope.slice(1)}
-            </span>{" "}
-            Hook
+            {isEdit
+              ? m.hooks_dialog_title_edit({
+                  scope: scope.charAt(0).toUpperCase() + scope.slice(1),
+                })
+              : m.hooks_dialog_title_add({
+                  scope: scope.charAt(0).toUpperCase() + scope.slice(1),
+                })}
           </DialogTitle>
           <DialogDescription>{HOOK_SCOPE_DESC[scope]()}</DialogDescription>
         </DialogHeader>
@@ -191,7 +194,8 @@ export function AddHookDialog({
                   {(field) => (
                     <Field>
                       <FieldLabel>
-                        Event <span className="text-destructive">*</span>
+                        {m.hooks_form_event()}{" "}
+                        <span className="text-destructive">*</span>
                       </FieldLabel>
                       <Select
                         value={field.state.value}
@@ -231,7 +235,8 @@ export function AddHookDialog({
                   {(field) => (
                     <Field>
                       <FieldLabel>
-                        Hook Handler <span className="text-destructive">*</span>
+                        {m.hooks_form_handler()}{" "}
+                        <span className="text-destructive">*</span>
                       </FieldLabel>
                       <Select
                         value={field.state.value}
@@ -265,13 +270,13 @@ export function AddHookDialog({
                 <form.Field name="timeout">
                   {(field) => (
                     <Field>
-                      <FieldLabel>Timeout (sec)</FieldLabel>
+                      <FieldLabel>{m.hooks_form_timeout()}</FieldLabel>
                       <Input
                         type="number"
                         value={field.state.value}
                         onBlur={field.handleBlur}
                         onChange={(e) => field.handleChange(e.target.value)}
-                        placeholder="Default: cmd 600, prompt 30, agent 60"
+                        placeholder={m.hooks_form_timeout_placeholder()}
                         min={1}
                       />
                     </Field>
@@ -282,12 +287,12 @@ export function AddHookDialog({
                 <form.Field name="statusMessage">
                   {(field) => (
                     <Field>
-                      <FieldLabel>Status Message</FieldLabel>
+                      <FieldLabel>{m.hooks_form_status_message()}</FieldLabel>
                       <Input
                         value={field.state.value}
                         onBlur={field.handleBlur}
                         onChange={(e) => field.handleChange(e.target.value)}
-                        placeholder="Custom spinner message"
+                        placeholder={m.hooks_form_status_placeholder()}
                       />
                     </Field>
                   )}
@@ -298,9 +303,11 @@ export function AddHookDialog({
                   {(field) => (
                     <Field orientation="horizontal">
                       <FieldContent>
-                        <FieldLabel htmlFor="once-switch">Once</FieldLabel>
+                        <FieldLabel htmlFor="once-switch">
+                          {m.hooks_form_once()}
+                        </FieldLabel>
                         <FieldDescription>
-                          Run only once per session
+                          {m.hooks_form_once_desc()}
                         </FieldDescription>
                       </FieldContent>
                       <Switch
@@ -322,7 +329,7 @@ export function AddHookDialog({
                   <form.Field name="matcher">
                     {(field) => (
                       <Field>
-                        <FieldLabel>Matcher</FieldLabel>
+                        <FieldLabel>{m.hooks_form_matcher()}</FieldLabel>
                         <Input
                           value={field.state.value}
                           onBlur={field.handleBlur}
@@ -345,7 +352,7 @@ export function AddHookDialog({
                         return (
                           <Field data-invalid={isInvalid}>
                             <FieldLabel>
-                              Command{" "}
+                              {m.hooks_form_command()}{" "}
                               <span className="text-destructive">*</span>
                             </FieldLabel>
                             <Input
@@ -355,7 +362,7 @@ export function AddHookDialog({
                                 field.handleChange(e.target.value)
                               }
                               aria-invalid={isInvalid}
-                              placeholder="e.g. npx biome check --write"
+                              placeholder={m.hooks_form_command_placeholder()}
                             />
                             {isInvalid && (
                               <FieldError errors={field.state.meta.errors} />
@@ -370,10 +377,10 @@ export function AddHookDialog({
                         <Field orientation="horizontal">
                           <FieldContent>
                             <FieldLabel htmlFor="async-switch">
-                              Async
+                              {m.hooks_form_async()}
                             </FieldLabel>
                             <FieldDescription>
-                              Run hook without blocking execution
+                              {m.hooks_form_async_desc()}
                             </FieldDescription>
                           </FieldContent>
                           <Switch
@@ -398,7 +405,8 @@ export function AddHookDialog({
                         return (
                           <Field data-invalid={isInvalid}>
                             <FieldLabel>
-                              Prompt <span className="text-destructive">*</span>
+                              {m.hooks_form_prompt()}{" "}
+                              <span className="text-destructive">*</span>
                             </FieldLabel>
                             <Textarea
                               value={field.state.value}
@@ -407,7 +415,7 @@ export function AddHookDialog({
                                 field.handleChange(e.target.value)
                               }
                               aria-invalid={isInvalid}
-                              placeholder="Enter prompt..."
+                              placeholder={m.hooks_form_prompt_placeholder()}
                               rows={4}
                             />
                             {isInvalid && (
@@ -421,14 +429,16 @@ export function AddHookDialog({
                     <form.Field name="model">
                       {(field) => (
                         <Field>
-                          <FieldLabel>Model</FieldLabel>
+                          <FieldLabel>{m.hooks_form_model()}</FieldLabel>
                           <Input
                             value={field.state.value}
                             onBlur={field.handleBlur}
                             onChange={(e) => field.handleChange(e.target.value)}
-                            placeholder="e.g. claude-opus-4-6"
+                            placeholder={m.hooks_form_model_placeholder()}
                           />
-                          <FieldDescription>Optional</FieldDescription>
+                          <FieldDescription>
+                            {m.hooks_form_model_desc()}
+                          </FieldDescription>
                         </Field>
                       )}
                     </form.Field>
@@ -441,7 +451,7 @@ export function AddHookDialog({
           {/* 하단: Templates */}
           <Separator className="my-2" />
           <Field>
-            <FieldLabel>Templates</FieldLabel>
+            <FieldLabel>{m.hooks_form_templates()}</FieldLabel>
             <div className="flex flex-wrap gap-1.5">
               {HOOK_TEMPLATES.map((tpl) => (
                 <Button
@@ -460,16 +470,16 @@ export function AddHookDialog({
 
           <DialogFooter className="mt-4">
             <Button type="button" variant="outline" onClick={onClose}>
-              Cancel
+              {m.hooks_cancel()}
             </Button>
             <Button type="submit" disabled={addMutation.isPending}>
               {addMutation.isPending
                 ? isEdit
-                  ? "Saving..."
-                  : "Adding..."
+                  ? m.hooks_form_saving()
+                  : m.hooks_form_adding()
                 : isEdit
-                  ? "Save"
-                  : "Add"}
+                  ? m.hooks_form_save()
+                  : m.hooks_form_add()}
             </Button>
           </DialogFooter>
         </form>
