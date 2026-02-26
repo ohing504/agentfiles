@@ -1,7 +1,9 @@
 import { AlertTriangle, ExternalLink, ScrollText, Search } from "lucide-react"
 import { useState } from "react"
+import { toast } from "sonner"
 import { ErrorBoundary } from "@/components/ErrorBoundary"
 import { useProjectContext } from "@/components/ProjectContext"
+import { SkillDetailPanel } from "@/components/SkillDetailPanel"
 import {
   Empty,
   EmptyDescription,
@@ -13,11 +15,9 @@ import { Input } from "@/components/ui/input"
 import { useSidebar } from "@/components/ui/sidebar"
 import { Skeleton } from "@/components/ui/skeleton"
 import { m } from "@/paraglide/messages"
-import { useSkillsQuery } from "../api/skills.queries"
+import { useSkillMutations, useSkillsQuery } from "../api/skills.queries"
 import { SkillsProvider, useSkillsSelection } from "../context/SkillsContext"
 import { AddSkillDialog } from "./AddSkillDialog"
-import { SkillActionBar } from "./SkillActionBar"
-import { SkillDetailPanel } from "./SkillDetailPanel"
 import { SkillsScopeSection } from "./SkillsScopeSection"
 import { SupportingFilePanel } from "./SupportingFilePanel"
 
@@ -34,6 +34,18 @@ function SkillsPageInner() {
     handleAddClose,
   } = useSkillsSelection()
   const { isLoading } = useSkillsQuery()
+  const { deleteMutation } = useSkillMutations()
+
+  function handleDeleteSkill() {
+    if (!selectedSkill) return
+    deleteMutation.mutate(
+      { name: selectedSkill.name, scope: selectedSkill.scope },
+      {
+        onSuccess: handleClearSelection,
+        onError: (e) => toast.error(e.message || "Failed to delete skill"),
+      },
+    )
+  }
 
   if (isLoading) {
     return (
@@ -101,13 +113,10 @@ function SkillsPageInner() {
         {selectedSkill && selectedSupportingFile ? (
           <SupportingFilePanel />
         ) : selectedSkill ? (
-          <>
-            <SkillActionBar
-              skill={selectedSkill}
-              onDeleted={handleClearSelection}
-            />
-            <SkillDetailPanel />
-          </>
+          <SkillDetailPanel
+            skill={selectedSkill}
+            onDelete={handleDeleteSkill}
+          />
         ) : (
           <div className="flex-1 flex items-center justify-center">
             <Empty>

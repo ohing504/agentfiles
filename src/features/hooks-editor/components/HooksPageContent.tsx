@@ -56,7 +56,7 @@ export function HooksPageContent() {
 
   const resolvedFilePath =
     selectedHook && isHookFilePath(selectedHook.hook)
-      ? resolveHookFilePath(selectedHook.hook.command!, {
+      ? resolveHookFilePath(selectedHook.hook.command ?? "", {
           projectPath: activeProjectPath,
         })
       : undefined

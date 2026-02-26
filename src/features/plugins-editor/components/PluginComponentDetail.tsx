@@ -3,7 +3,7 @@ import { DetailField } from "@/components/DetailField"
 import { FileViewer } from "@/components/FileViewer"
 import { HookDetailPanel } from "@/components/HookDetailPanel"
 import { CursorIcon, VscodeIcon } from "@/components/icons/editor-icons"
-import { SkillDetailView } from "@/components/SkillDetailView"
+import { SkillDetailPanel } from "@/components/SkillDetailPanel"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -70,44 +70,24 @@ export function PluginComponentDetail({
     case "commands": {
       const file = contents.commands.find((f) => (f.path ?? f.name) === itemId)
       if (!file) return <EmptyDetail />
-      return (
-        <>
-          <DetailHeader name={file.name} filePath={file.path} />
-          <SkillDetailView skill={file} />
-        </>
-      )
+      return <SkillDetailPanel skill={file} />
     }
     case "skills": {
       const file = contents.skills.find((f) => (f.path ?? f.name) === itemId)
       if (!file) return <EmptyDetail />
-      return (
-        <>
-          <DetailHeader name={file.name} filePath={file.path} />
-          <SkillDetailView skill={file} />
-        </>
-      )
+      return <SkillDetailPanel skill={file} />
     }
     case "agents": {
       const file = contents.agents.find((f) => (f.path ?? f.name) === itemId)
       if (!file) return <EmptyDetail />
-      return (
-        <>
-          <DetailHeader name={file.name} filePath={file.path} />
-          <SkillDetailView skill={file} />
-        </>
-      )
+      return <SkillDetailPanel skill={file} />
     }
     case "outputStyles": {
       const file = contents.outputStyles.find(
         (f) => (f.path ?? f.name) === itemId,
       )
       if (!file) return <EmptyDetail />
-      return (
-        <>
-          <DetailHeader name={file.name} filePath={file.path} />
-          <SkillDetailView skill={file} />
-        </>
-      )
+      return <SkillDetailPanel skill={file} />
     }
     case "hooks": {
       const hooks = contents.hooks
@@ -119,7 +99,7 @@ export function PluginComponentDetail({
             if (`${event}-${gi}-${hi}` === itemId) {
               const hook = group.hooks[hi]
               const resolvedPath = isHookFilePath(hook)
-                ? resolveHookFilePath(hook.command!, { pluginInstallPath })
+                ? resolveHookFilePath(hook.command ?? "", { pluginInstallPath })
                 : undefined
               return (
                 <HookDetailPanel
