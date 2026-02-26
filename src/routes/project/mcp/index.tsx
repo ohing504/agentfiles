@@ -1,6 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router"
-import { McpPageContent } from "@/components/pages/McpPageContent"
+import { createFileRoute, redirect } from "@tanstack/react-router"
 
 export const Route = createFileRoute("/project/mcp/")({
-  component: () => <McpPageContent scope="project" />,
+  beforeLoad: () => {
+    throw redirect({ to: "/mcp" })
+  },
+  component: () => null,
 })

@@ -35,11 +35,6 @@ const globalNavItems = [
     labelFn: () => m.nav_settings(),
   },
   { to: "/global/files", icon: FolderOpen, labelFn: () => m.nav_files() },
-  {
-    to: "/global/mcp",
-    icon: Server,
-    labelFn: () => m.nav_mcp_servers(),
-  },
 ] as const
 
 const projectNavItems = [
@@ -49,11 +44,6 @@ const projectNavItems = [
     labelFn: () => m.nav_settings(),
   },
   { to: "/project/files", icon: FolderOpen, labelFn: () => m.nav_files() },
-  {
-    to: "/project/mcp",
-    icon: Server,
-    labelFn: () => m.nav_mcp_servers(),
-  },
 ] as const
 
 function SidebarToggle() {
@@ -112,6 +102,14 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
                   <Link to="/hooks" activeProps={{ "data-active": true }}>
                     <Zap />
                     <span>Hooks</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild tooltip={m.nav_mcp_servers()}>
+                  <Link to="/mcp" activeProps={{ "data-active": true }}>
+                    <Server />
+                    <span>{m.nav_mcp_servers()}</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>

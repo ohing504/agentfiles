@@ -5,7 +5,7 @@ import { scopeSchema } from "@/shared/types"
 export const getMcpServersFn = createServerFn({ method: "GET" })
   .inputValidator(z.object({ projectPath: z.string().optional() }))
   .handler(async ({ data }) => {
-    const { getMcpServers } = await import("@/services/config-service")
+    const { getMcpServers } = await import("@/services/mcp-service")
     return getMcpServers(data.projectPath)
   })
 

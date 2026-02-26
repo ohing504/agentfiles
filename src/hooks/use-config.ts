@@ -8,7 +8,7 @@ export const FREQUENT_REFETCH = {
   refetchInterval: 5000,
 } as const
 
-const INFREQUENT_REFETCH = {
+export const INFREQUENT_REFETCH = {
   refetchOnWindowFocus: true,
   refetchInterval: 30_000,
 } as const
@@ -94,57 +94,6 @@ export function useClaudeMdGlobalMeta() {
     select: (data) => data.size,
     ...FREQUENT_REFETCH,
   })
-}
-
-// ── MCP Servers ───────────────────────────────────────────────────────────────
-
-export function useMcpServers() {
-  const { activeProjectPath } = useProjectContext()
-  const queryClient = useQueryClient()
-
-  const query = useQuery({
-    queryKey: queryKeys.mcpServers.byProject(activeProjectPath),
-    queryFn: async () => {
-      const { getMcpServersFn } = await import("@/server/mcp")
-      return getMcpServersFn({ data: { projectPath: activeProjectPath } })
-    },
-    ...INFREQUENT_REFETCH,
-  })
-
-  const addMutation = useMutation({
-    mutationFn: async (params: {
-      name: string
-      command?: string
-      args?: string[]
-      url?: string
-      env?: Record<string, string>
-      scope: Scope
-    }) => {
-      const { addMcpServerFn } = await import("@/server/mcp")
-      return addMcpServerFn({
-        data: { ...params, projectPath: activeProjectPath },
-      })
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.mcpServers.all })
-      queryClient.invalidateQueries({ queryKey: queryKeys.overview.all })
-    },
-  })
-
-  const removeMutation = useMutation({
-    mutationFn: async (params: { name: string; scope: Scope }) => {
-      const { removeMcpServerFn } = await import("@/server/mcp")
-      return removeMcpServerFn({
-        data: { ...params, projectPath: activeProjectPath },
-      })
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.mcpServers.all })
-      queryClient.invalidateQueries({ queryKey: queryKeys.overview.all })
-    },
-  })
-
-  return { query, addMutation, removeMutation }
 }
 
 // ── Agent Files ───────────────────────────────────────────────────────────────

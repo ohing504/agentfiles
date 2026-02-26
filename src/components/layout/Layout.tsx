@@ -35,10 +35,11 @@ function buildBreadcrumbItems(pathname: string) {
     return items
   }
 
-  // /hooks, /skills, /plugins 는 자체 타이틀이 있으므로 브레드크럼 불필요
+  // /hooks, /skills, /mcp, /plugins 는 자체 타이틀이 있으므로 브레드크럼 불필요
   if (
     segments[0] === "hooks" ||
     segments[0] === "skills" ||
+    segments[0] === "mcp" ||
     segments[0] === "plugins"
   ) {
     return items
@@ -101,7 +102,12 @@ function HeaderBreadcrumb() {
 
 function shouldShowHeader(pathname: string): boolean {
   const first = pathname.split("/").filter(Boolean)[0]
-  return first !== "hooks" && first !== "skills" && first !== "plugins"
+  return (
+    first !== "hooks" &&
+    first !== "skills" &&
+    first !== "mcp" &&
+    first !== "plugins"
+  )
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {

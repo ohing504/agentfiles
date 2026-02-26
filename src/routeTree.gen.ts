@@ -12,11 +12,11 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SkillsRouteRouteImport } from './routes/skills/route'
 import { Route as ProjectRouteRouteImport } from './routes/project/route'
 import { Route as PluginsRouteRouteImport } from './routes/plugins/route'
+import { Route as McpRouteRouteImport } from './routes/mcp/route'
 import { Route as HooksRouteRouteImport } from './routes/hooks/route'
 import { Route as GlobalRouteRouteImport } from './routes/global/route'
 import { Route as FilesRouteRouteImport } from './routes/files/route'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as McpIndexRouteImport } from './routes/mcp/index'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as ProjectSettingsRouteRouteImport } from './routes/project/settings/route'
 import { Route as ProjectFilesRouteRouteImport } from './routes/project/files/route'
@@ -48,6 +48,11 @@ const PluginsRouteRoute = PluginsRouteRouteImport.update({
   path: '/plugins',
   getParentRoute: () => rootRouteImport,
 } as any)
+const McpRouteRoute = McpRouteRouteImport.update({
+  id: '/mcp',
+  path: '/mcp',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const HooksRouteRoute = HooksRouteRouteImport.update({
   id: '/hooks',
   path: '/hooks',
@@ -66,11 +71,6 @@ const FilesRouteRoute = FilesRouteRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const McpIndexRoute = McpIndexRouteImport.update({
-  id: '/mcp/',
-  path: '/mcp/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiHealthRoute = ApiHealthRouteImport.update({
@@ -94,9 +94,9 @@ const PluginsIdRouteRoute = PluginsIdRouteRouteImport.update({
   getParentRoute: () => PluginsRouteRoute,
 } as any)
 const McpNameRouteRoute = McpNameRouteRouteImport.update({
-  id: '/mcp/$name',
-  path: '/mcp/$name',
-  getParentRoute: () => rootRouteImport,
+  id: '/$name',
+  path: '/$name',
+  getParentRoute: () => McpRouteRoute,
 } as any)
 const GlobalSettingsRouteRoute = GlobalSettingsRouteRouteImport.update({
   id: '/settings',
@@ -154,6 +154,7 @@ export interface FileRoutesByFullPath {
   '/files': typeof FilesRouteRoute
   '/global': typeof GlobalRouteRouteWithChildren
   '/hooks': typeof HooksRouteRoute
+  '/mcp': typeof McpRouteRouteWithChildren
   '/plugins': typeof PluginsRouteRouteWithChildren
   '/project': typeof ProjectRouteRouteWithChildren
   '/skills': typeof SkillsRouteRoute
@@ -164,7 +165,6 @@ export interface FileRoutesByFullPath {
   '/project/files': typeof ProjectFilesRouteRoute
   '/project/settings': typeof ProjectSettingsRouteRoute
   '/api/health': typeof ApiHealthRoute
-  '/mcp/': typeof McpIndexRoute
   '/global/mcp/$name': typeof GlobalMcpNameRouteRoute
   '/global/plugins/$id': typeof GlobalPluginsIdRouteRoute
   '/project/mcp/$name': typeof ProjectMcpNameRouteRoute
@@ -179,6 +179,7 @@ export interface FileRoutesByTo {
   '/files': typeof FilesRouteRoute
   '/global': typeof GlobalRouteRouteWithChildren
   '/hooks': typeof HooksRouteRoute
+  '/mcp': typeof McpRouteRouteWithChildren
   '/plugins': typeof PluginsRouteRouteWithChildren
   '/project': typeof ProjectRouteRouteWithChildren
   '/skills': typeof SkillsRouteRoute
@@ -189,7 +190,6 @@ export interface FileRoutesByTo {
   '/project/files': typeof ProjectFilesRouteRoute
   '/project/settings': typeof ProjectSettingsRouteRoute
   '/api/health': typeof ApiHealthRoute
-  '/mcp': typeof McpIndexRoute
   '/global/mcp/$name': typeof GlobalMcpNameRouteRoute
   '/global/plugins/$id': typeof GlobalPluginsIdRouteRoute
   '/project/mcp/$name': typeof ProjectMcpNameRouteRoute
@@ -205,6 +205,7 @@ export interface FileRoutesById {
   '/files': typeof FilesRouteRoute
   '/global': typeof GlobalRouteRouteWithChildren
   '/hooks': typeof HooksRouteRoute
+  '/mcp': typeof McpRouteRouteWithChildren
   '/plugins': typeof PluginsRouteRouteWithChildren
   '/project': typeof ProjectRouteRouteWithChildren
   '/skills': typeof SkillsRouteRoute
@@ -215,7 +216,6 @@ export interface FileRoutesById {
   '/project/files': typeof ProjectFilesRouteRoute
   '/project/settings': typeof ProjectSettingsRouteRoute
   '/api/health': typeof ApiHealthRoute
-  '/mcp/': typeof McpIndexRoute
   '/global/mcp/$name': typeof GlobalMcpNameRouteRoute
   '/global/plugins/$id': typeof GlobalPluginsIdRouteRoute
   '/project/mcp/$name': typeof ProjectMcpNameRouteRoute
@@ -232,6 +232,7 @@ export interface FileRouteTypes {
     | '/files'
     | '/global'
     | '/hooks'
+    | '/mcp'
     | '/plugins'
     | '/project'
     | '/skills'
@@ -242,7 +243,6 @@ export interface FileRouteTypes {
     | '/project/files'
     | '/project/settings'
     | '/api/health'
-    | '/mcp/'
     | '/global/mcp/$name'
     | '/global/plugins/$id'
     | '/project/mcp/$name'
@@ -257,6 +257,7 @@ export interface FileRouteTypes {
     | '/files'
     | '/global'
     | '/hooks'
+    | '/mcp'
     | '/plugins'
     | '/project'
     | '/skills'
@@ -267,7 +268,6 @@ export interface FileRouteTypes {
     | '/project/files'
     | '/project/settings'
     | '/api/health'
-    | '/mcp'
     | '/global/mcp/$name'
     | '/global/plugins/$id'
     | '/project/mcp/$name'
@@ -282,6 +282,7 @@ export interface FileRouteTypes {
     | '/files'
     | '/global'
     | '/hooks'
+    | '/mcp'
     | '/plugins'
     | '/project'
     | '/skills'
@@ -292,7 +293,6 @@ export interface FileRouteTypes {
     | '/project/files'
     | '/project/settings'
     | '/api/health'
-    | '/mcp/'
     | '/global/mcp/$name'
     | '/global/plugins/$id'
     | '/project/mcp/$name'
@@ -308,12 +308,11 @@ export interface RootRouteChildren {
   FilesRouteRoute: typeof FilesRouteRoute
   GlobalRouteRoute: typeof GlobalRouteRouteWithChildren
   HooksRouteRoute: typeof HooksRouteRoute
+  McpRouteRoute: typeof McpRouteRouteWithChildren
   PluginsRouteRoute: typeof PluginsRouteRouteWithChildren
   ProjectRouteRoute: typeof ProjectRouteRouteWithChildren
   SkillsRouteRoute: typeof SkillsRouteRoute
-  McpNameRouteRoute: typeof McpNameRouteRoute
   ApiHealthRoute: typeof ApiHealthRoute
-  McpIndexRoute: typeof McpIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -337,6 +336,13 @@ declare module '@tanstack/react-router' {
       path: '/plugins'
       fullPath: '/plugins'
       preLoaderRoute: typeof PluginsRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mcp': {
+      id: '/mcp'
+      path: '/mcp'
+      fullPath: '/mcp'
+      preLoaderRoute: typeof McpRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/hooks': {
@@ -365,13 +371,6 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/mcp/': {
-      id: '/mcp/'
-      path: '/mcp'
-      fullPath: '/mcp/'
-      preLoaderRoute: typeof McpIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/health': {
@@ -404,10 +403,10 @@ declare module '@tanstack/react-router' {
     }
     '/mcp/$name': {
       id: '/mcp/$name'
-      path: '/mcp/$name'
+      path: '/$name'
       fullPath: '/mcp/$name'
       preLoaderRoute: typeof McpNameRouteRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof McpRouteRoute
     }
     '/global/settings': {
       id: '/global/settings'
@@ -504,6 +503,18 @@ const GlobalRouteRouteWithChildren = GlobalRouteRoute._addFileChildren(
   GlobalRouteRouteChildren,
 )
 
+interface McpRouteRouteChildren {
+  McpNameRouteRoute: typeof McpNameRouteRoute
+}
+
+const McpRouteRouteChildren: McpRouteRouteChildren = {
+  McpNameRouteRoute: McpNameRouteRoute,
+}
+
+const McpRouteRouteWithChildren = McpRouteRoute._addFileChildren(
+  McpRouteRouteChildren,
+)
+
 interface PluginsRouteRouteChildren {
   PluginsIdRouteRoute: typeof PluginsIdRouteRoute
 }
@@ -543,12 +554,11 @@ const rootRouteChildren: RootRouteChildren = {
   FilesRouteRoute: FilesRouteRoute,
   GlobalRouteRoute: GlobalRouteRouteWithChildren,
   HooksRouteRoute: HooksRouteRoute,
+  McpRouteRoute: McpRouteRouteWithChildren,
   PluginsRouteRoute: PluginsRouteRouteWithChildren,
   ProjectRouteRoute: ProjectRouteRouteWithChildren,
   SkillsRouteRoute: SkillsRouteRoute,
-  McpNameRouteRoute: McpNameRouteRoute,
   ApiHealthRoute: ApiHealthRoute,
-  McpIndexRoute: McpIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
