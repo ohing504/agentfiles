@@ -25,12 +25,16 @@
 - [x] queryFn 파라미터화 — queryKey에 의존성 포함 (plugins-editor 패턴 참고)
 - [x] 공유 상세 컴포넌트 추출 — `SkillDetailView`, `AgentFileView`, `useAgentFileDetailQuery`
   - plugins의 `PluginComponentDetail`에서 `SkillDetailView` 재사용 (실제 파일 내용 표시)
-- [ ] 추가 공유 컴포넌트 — `HookDetailView`, `McpServerDetailView`, `LspServerDetailView`
+- [x] 공유 DetailPanel 통합 — `SkillDetailPanel` (skills-editor + plugins-editor 공유)
+- [ ] 추가 공유 컴포넌트 — `McpServerDetailView`, `LspServerDetailView`
 - **주의**: server function handler 내 `@/services/*` import는 반드시 dynamic import 유지 (Node.js 전용 모듈이 클라이언트 번들에 포함되면 깨짐) — `docs/EDITOR-GUIDE.md` 참조
 
 ### hooks-editor 리팩토링
 - [x] **주의**: `hooks.functions.ts` handler 내 dynamic import 유지 필수 (static으로 바꾸면 클라이언트 번들 깨짐)
 - [x] hooks-editor를 plugins-editor 패턴에 맞춰 구조 개선
+- [x] 공유 DetailPanel 통합 — `HookDetailPanel` (hooks-editor + plugins-editor 공유)
+- [x] `hook-utils.ts` 유틸리티 추출 (isHookFilePath + resolveHookFilePath)
+- [x] `$CLAUDE_PLUGIN_ROOT` 변수 해석 (plugins-editor에서 Open in Editor 동작)
 
 ### 추후 개선 (Backlog)
 - [x] AgentFileDetail: synthetic markdown 대신 실제 파일 내용 표시 (#18) — SkillDetailView로 교체
@@ -49,6 +53,15 @@
 - 현재 문제: 프로젝트마다 MCP 서버 검색 → 설정방법 확인 → 에이전트별 수동 설치가 반복적이고 번거로움
 
 ## Shipped
+
+### 공유 DetailPanel 통합 + Flutter-style 콜백 패턴 (2026-02-26)
+- `HookDetailPanel` 공유화: hooks-editor (편집+삭제) + plugins-editor (읽기 전용)
+- `SkillDetailPanel` 공유화: skills-editor (삭제) + plugins-editor (읽기 전용)
+- Flutter-style 콜백: `onEdit?`/`onDelete?` 존재 여부로 버튼 표시 제어 (boolean prop 제거)
+- `hook-utils.ts` 추출: `isHookFilePath()` + `resolveHookFilePath()` (3곳 중복 제거)
+- `$CLAUDE_PLUGIN_ROOT` 변수 해석으로 plugins-editor에서 Open in Editor 정상 동작
+- feature 내부 ActionBar/DetailPanel 삭제 (HookActionBar, SkillActionBar, 기존 feature-local DetailPanel)
+- EDITOR-GUIDE.md + CLAUDE.md 문서 업데이트
 
 ### hooks-editor 리팩토링 (2026-02-26)
 - plugins-editor 패턴에 맞춰 구조 통일 (EDITOR-GUIDE.md 기반)
