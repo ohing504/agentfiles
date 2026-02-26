@@ -176,15 +176,19 @@ export function PermissionsSettings({
       <div className="flex items-center justify-between">
         <Label>Disable Bypass Permissions Mode</Label>
         <Select
-          value={perms.disableBypassPermissionsMode ?? ""}
-          onValueChange={(v) => savePerms({ disableBypassPermissionsMode: v })}
+          value={perms.disableBypassPermissionsMode || "none"}
+          onValueChange={(v) =>
+            savePerms({
+              disableBypassPermissionsMode: v === "none" ? undefined : v,
+            })
+          }
           disabled={isPending}
         >
           <SelectTrigger className="w-36">
             <SelectValue placeholder="(none)" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">—</SelectItem>
+            <SelectItem value="none">—</SelectItem>
             <SelectItem value="disable">disable</SelectItem>
           </SelectContent>
         </Select>

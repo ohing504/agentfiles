@@ -522,9 +522,45 @@ plugins-editor ──→ mcp-editor        ✅ 허용
 skills-editor  ──→ plugins-editor    ❌ 금지
 hooks-editor   ──→ plugins-editor    ❌ 금지
 mcp-editor     ──→ plugins-editor    ❌ 금지
+config-editor  ──→ 다른 feature      ❌ 금지 (독립)
+다른 feature   ──→ config-editor     ❌ 금지 (독립)
 ```
 
 plugins가 상위 그룹(skill, hook, mcp 등을 번들)이므로 하위 참조 허용, 역방향 금지.
+config-editor는 다른 feature에 의존하지 않으며, 다른 feature도 config-editor에 의존하지 않는다.
+
+### config-editor 구조 (Settings → Configuration 전면 교체)
+
+```text
+src/features/config-editor/
+├── api/
+│   ├── config.functions.ts        # Server Functions (getConfigSettingsFn, updateConfigSettingFn, deleteConfigSettingFn)
+│   └── config.queries.ts          # React Query 훅 (useConfigQuery, useConfigMutations) + configKeys
+├── components/
+│   ├── ConfigPage.tsx             # ErrorBoundary + ConfigProvider
+│   ├── ConfigPageContent.tsx      # 3단 레이아웃 (Scope 탭 + 카테고리 nav + 설정 폼)
+│   ├── ConfigScopeTabs.tsx        # User/Project/Local 스코프 탭
+│   ├── ConfigCategoryNav.tsx      # 6개 카테고리 좌측 네비게이션
+│   ├── ConfigSettingsPanel.tsx    # 카테고리별 분기 (CategorySettingsProps export)
+│   └── categories/
+│       ├── GeneralSettings.tsx    # model, language, alwaysThinkingEnabled 등
+│       ├── PermissionsSettings.tsx # permissions.allow/ask/deny/defaultMode
+│       ├── EnvironmentSettings.tsx # env key-value 편집기
+│       ├── SandboxSettings.tsx    # sandbox.* 중첩 설정
+│       ├── DisplaySettings.tsx    # statusLine, spinner, UI 토글
+│       └── AuthSettings.tsx       # apiKeyHelper, AWS 인증
+├── services/
+│   └── config-settings.service.ts # settings.json 파싱/쓰기 (dot-notation 중첩 키)
+├── context/
+│   └── ConfigContext.tsx          # scope + category 선택 상태
+└── constants.ts                   # CONFIG_CATEGORIES, CategoryId, ConfigScope
+```
+
+**특이사항:**
+- VSCode 스타일 레이아웃: 상단 Scope 탭 + 좌측 카테고리 nav + 우측 설정 폼
+- `config-settings.service.ts`는 feature-local (공유 서비스가 아님)
+- dot-notation 중첩 키 지원 (`sandbox.network.allowedDomains` 등)
+- 개별 키 단위 저장 (`onUpdate(key, value)`) — 전체 덮어쓰기 방지
 
 ## 8. 금지 사항 (Anti-patterns)
 

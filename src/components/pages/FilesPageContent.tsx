@@ -470,7 +470,7 @@ export function FilesPageContent({ scope }: FilesPageContentProps) {
     const globalAgents = allAgents.filter((f) => f.scope === "global")
 
     return (
-      <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-6 p-4 overflow-y-auto h-full">
         {/* Left: File tree */}
         <Tree>
           <TreeFile
@@ -521,7 +521,7 @@ export function FilesPageContent({ scope }: FilesPageContentProps) {
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-6">
+    <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-6 p-4 overflow-y-auto h-full">
       {/* Left: File tree */}
       <Tree>
         {/* Project CLAUDE.md files */}

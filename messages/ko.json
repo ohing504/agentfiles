@@ -234,6 +234,8 @@
   "mcp_render_error_desc": "페이지를 새로고침 해보세요.",
   "mcp_docs_url": "https://code.claude.com/docs/en/mcp",
   "config_title": "설정",
+  "config_docs": "문서",
+  "config_docs_url": "https://code.claude.com/docs/en/settings",
   "config_render_error": "설정 에디터 렌더링 실패",
   "config_scope_user": "사용자",
   "config_scope_project": "프로젝트",

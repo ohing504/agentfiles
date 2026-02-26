@@ -6,7 +6,7 @@ import {
   Plug2Icon,
   ScrollText,
   Server,
-  Settings,
+  SettingsIcon,
   Zap,
 } from "lucide-react"
 
@@ -29,20 +29,10 @@ import {
 import { m } from "@/paraglide/messages"
 
 const globalNavItems = [
-  {
-    to: "/global/settings",
-    icon: Settings,
-    labelFn: () => m.nav_settings(),
-  },
   { to: "/global/files", icon: FolderOpen, labelFn: () => m.nav_files() },
 ] as const
 
 const projectNavItems = [
-  {
-    to: "/project/settings",
-    icon: Settings,
-    labelFn: () => m.nav_settings(),
-  },
   { to: "/project/files", icon: FolderOpen, labelFn: () => m.nav_files() },
 ] as const
 
@@ -73,7 +63,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
         <ProjectSwitcher />
       </SidebarHeader>
       <SidebarContent>
-        {/* Dashboard, Skills, Hooks */}
+        {/* Dashboard, Skills, Hooks, MCP, Plugins, Configuration */}
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
@@ -118,6 +108,17 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
                   <Link to="/plugins" activeProps={{ "data-active": true }}>
                     <Plug2Icon />
                     <span>{m.nav_plugins()}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild tooltip={m.config_title()}>
+                  <Link
+                    to="/global/settings"
+                    activeProps={{ "data-active": true }}
+                  >
+                    <SettingsIcon />
+                    <span>{m.config_title()}</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>

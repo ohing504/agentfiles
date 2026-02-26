@@ -234,6 +234,8 @@
   "mcp_render_error_desc": "Please try refreshing the page.",
   "mcp_docs_url": "https://code.claude.com/docs/en/mcp",
   "config_title": "Configuration",
+  "config_docs": "Docs",
+  "config_docs_url": "https://code.claude.com/docs/en/settings",
   "config_render_error": "Failed to render configuration editor",
   "config_scope_user": "User",
   "config_scope_project": "Project",

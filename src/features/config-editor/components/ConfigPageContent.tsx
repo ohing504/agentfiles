@@ -1,3 +1,4 @@
+import { ExternalLink } from "lucide-react"
 import { useProjectContext } from "@/components/ProjectContext"
 import { Skeleton } from "@/components/ui/skeleton"
 import { m } from "@/paraglide/messages"
@@ -23,9 +24,22 @@ export function ConfigPageContent() {
 
   return (
     <div className="flex flex-col h-full">
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 h-12 shrink-0">
+        <h2 className="text-sm font-semibold">{m.config_title()}</h2>
+        <a
+          href={m.config_docs_url()}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+        >
+          {m.config_docs()}
+          <ExternalLink className="size-3" />
+        </a>
+      </div>
+
       {/* Scope tabs */}
-      <div className="shrink-0 px-4 pt-2">
-        <h2 className="text-sm font-semibold mb-2">{m.config_title()}</h2>
+      <div className="shrink-0 px-4 pb-2">
         <ConfigScopeTabs
           scope={scope}
           onScopeChange={setScope}

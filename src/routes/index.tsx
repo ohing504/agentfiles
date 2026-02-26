@@ -118,7 +118,7 @@ function DashboardPage() {
   const conflictCount = overview?.conflictCount ?? 0
 
   return (
-    <div>
+    <div className="p-4 overflow-y-auto h-full">
       {conflictCount > 0 && (
         <div className="flex items-center justify-end gap-3 mb-4">
           <Badge variant="destructive" className="gap-1">
