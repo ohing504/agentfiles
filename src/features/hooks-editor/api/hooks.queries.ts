@@ -2,57 +2,95 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useProjectContext } from "@/components/ProjectContext"
 import { FREQUENT_REFETCH } from "@/hooks/use-config"
 import { queryKeys } from "@/lib/query-keys"
-import type { HookScope } from "@/shared/types"
+import type { HookEventName, HookMatcherGroup, HookScope } from "@/shared/types"
+import {
+  addHookFn,
+  getHooksFn,
+  readScriptFn,
+  removeHookFn,
+} from "./hooks.functions"
 
-export function useHooks(scope: HookScope) {
+// ── Feature-local query keys ──
+
+export const hookKeys = {
+  all: ["hooks"] as const,
+  byScope: (scope: HookScope, projectPath?: string) =>
+    [...hookKeys.all, scope, projectPath] as const,
+  script: (command: string, projectPath?: string) =>
+    [...hookKeys.all, "script", command, projectPath] as const,
+}
+
+// ── Queries ──
+
+export function useHooksQuery(scope: HookScope) {
   const { activeProjectPath } = useProjectContext()
-  const queryClient = useQueryClient()
-
   const needsProject = scope === "project" || scope === "local"
 
-  const query = useQuery({
-    queryKey: queryKeys.hooks.byScope(
+  return useQuery({
+    queryKey: hookKeys.byScope(
       scope,
       needsProject ? activeProjectPath : undefined,
     ),
-    queryFn: async () => {
-      const { getHooksFn } = await import("./hooks.functions")
-      return getHooksFn({
+    queryFn: () =>
+      getHooksFn({
         data: { scope, projectPath: activeProjectPath },
-      })
-    },
+      }),
     ...FREQUENT_REFETCH,
   })
+}
+
+export function useHookScriptQuery(
+  command: string | undefined,
+  projectPath: string | null | undefined,
+  enabled: boolean,
+) {
+  return useQuery({
+    queryKey: hookKeys.script(command ?? "", projectPath ?? undefined),
+    queryFn: () =>
+      readScriptFn({
+        data: {
+          filePath: command ?? "",
+          projectPath: projectPath ?? undefined,
+        },
+      }),
+    enabled: enabled && !!command,
+  })
+}
+
+// ── Mutations ──
+
+export function useHooksMutations(scope: HookScope) {
+  const { activeProjectPath } = useProjectContext()
+  const queryClient = useQueryClient()
+
+  function invalidate() {
+    queryClient.invalidateQueries({ queryKey: hookKeys.all })
+    queryClient.invalidateQueries({ queryKey: queryKeys.overview.all })
+  }
 
   const addMutation = useMutation({
-    mutationFn: async (params: {
-      event: import("@/shared/types").HookEventName
-      matcherGroup: import("@/shared/types").HookMatcherGroup
-    }) => {
-      const { addHookFn } = await import("./hooks.functions")
-      return addHookFn({
+    mutationFn: (params: {
+      event: HookEventName
+      matcherGroup: HookMatcherGroup
+    }) =>
+      addHookFn({
         data: {
           scope,
           event: params.event,
           matcherGroup: params.matcherGroup,
           projectPath: activeProjectPath,
         },
-      })
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.hooks.all })
-      queryClient.invalidateQueries({ queryKey: queryKeys.overview.all })
-    },
+      }),
+    onSuccess: invalidate,
   })
 
   const removeMutation = useMutation({
-    mutationFn: async (params: {
-      event: import("@/shared/types").HookEventName
+    mutationFn: (params: {
+      event: HookEventName
       groupIndex: number
       hookIndex: number
-    }) => {
-      const { removeHookFn } = await import("./hooks.functions")
-      return removeHookFn({
+    }) =>
+      removeHookFn({
         data: {
           scope,
           event: params.event,
@@ -60,13 +98,9 @@ export function useHooks(scope: HookScope) {
           hookIndex: params.hookIndex,
           projectPath: activeProjectPath,
         },
-      })
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.hooks.all })
-      queryClient.invalidateQueries({ queryKey: queryKeys.overview.all })
-    },
+      }),
+    onSuccess: invalidate,
   })
 
-  return { query, addMutation, removeMutation }
+  return { addMutation, removeMutation }
 }

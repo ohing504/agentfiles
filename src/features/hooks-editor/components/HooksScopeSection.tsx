@@ -1,5 +1,5 @@
 import { Plus, Zap } from "lucide-react"
-import { useMemo } from "react"
+import { memo, useMemo } from "react"
 import { Tree, TreeFile, TreeFolder } from "@/components/ui/tree"
 import type {
   HookEventName,
@@ -15,7 +15,7 @@ import {
 
 // ── HooksScopeSection ────────────────────────────────────────────────────────
 
-export function HooksScopeSection({
+export const HooksScopeSection = memo(function HooksScopeSection({
   label,
   scope,
   hooks,
@@ -151,4 +151,4 @@ export function HooksScopeSection({
       )}
     </div>
   )
-}
+})

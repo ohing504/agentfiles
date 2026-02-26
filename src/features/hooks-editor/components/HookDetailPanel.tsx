@@ -1,9 +1,8 @@
-import { useQuery } from "@tanstack/react-query"
 import { DetailField } from "@/components/DetailField"
 import { FileViewer } from "@/components/FileViewer"
 import { Separator } from "@/components/ui/separator"
 import { Skeleton } from "@/components/ui/skeleton"
-import { queryKeys } from "@/lib/query-keys"
+import { useHookScriptQuery } from "../api/hooks.queries"
 import type { SelectedHook } from "../constants"
 
 // ── HookDetailPanel ──────────────────────────────────────────────────────────
@@ -24,22 +23,11 @@ export function HookDetailPanel({
         hook.command.startsWith(".claude/")
       : false
 
-  const scriptQuery = useQuery({
-    queryKey: queryKeys.hooks.script(
-      hook.command ?? "",
-      activeProjectPath ?? undefined,
-    ),
-    queryFn: async () => {
-      const { readScriptFn } = await import("../api/hooks.functions")
-      return readScriptFn({
-        data: {
-          filePath: hook.command ?? "",
-          projectPath: activeProjectPath ?? undefined,
-        },
-      })
-    },
-    enabled: isFilePath && !!hook.command,
-  })
+  const scriptQuery = useHookScriptQuery(
+    hook.command,
+    activeProjectPath,
+    isFilePath && !!hook.command,
+  )
 
   return (
     <div className="flex flex-col gap-6 h-full min-h-0">

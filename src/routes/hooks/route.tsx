@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router"
-import { HooksPageContent } from "@/features/hooks-editor/components/HooksPageContent"
+import { HooksPage } from "@/features/hooks-editor/components/HooksPage"
 
 export const Route = createFileRoute("/hooks")({
-  component: HooksPageContent,
+  component: HooksPage,
 })

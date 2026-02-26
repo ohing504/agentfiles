@@ -1,4 +1,4 @@
-import type { AgentFile, HookScope, Scope } from "@/shared/types"
+import type { AgentFile, Scope } from "@/shared/types"
 
 /**
  * Query Key Factory — 모든 React Query 키를 중앙 관리
@@ -56,14 +56,6 @@ export const queryKeys = {
 
   projects: {
     all: ["projects"] as const,
-  },
-
-  hooks: {
-    all: ["hooks"] as const,
-    byScope: (scope: HookScope, projectPath?: string) =>
-      [...queryKeys.hooks.all, scope, projectPath] as const,
-    script: (command: string, projectPath?: string) =>
-      [...queryKeys.hooks.all, "script", command, projectPath] as const,
   },
 
   settings: {

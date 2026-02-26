@@ -43,7 +43,7 @@ import type {
   HookScope,
   HookType,
 } from "@/shared/types"
-import type { useHooks } from "../api/hooks.queries"
+import { useHooksMutations } from "../api/hooks.queries"
 import {
   EVENT_GROUPS,
   HOOK_EVENT_META,
@@ -59,16 +59,13 @@ import {
 export function AddHookDialog({
   scope,
   onClose,
-  addMutation,
-  removeMutation,
   editHook,
 }: {
   scope: HookScope
   onClose: () => void
-  addMutation: ReturnType<typeof useHooks>["addMutation"]
-  removeMutation?: ReturnType<typeof useHooks>["removeMutation"]
   editHook?: SelectedHook | null
 }) {
+  const { addMutation, removeMutation } = useHooksMutations(scope)
   const isEdit = !!editHook
   const form = useForm({
     defaultValues: {
