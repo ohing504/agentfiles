@@ -90,12 +90,14 @@ src/
       health.ts              ← GET /api/health
   features/                  ← Feature-based 모듈 (도메인별 콜로케이션)
     hooks-editor/
-      components/            ← HooksPageContent, HookDetailPanel, HooksScopeSection, AddHookDialog
+      components/            ← HooksPageContent, HooksScopeSection, AddHookDialog
       api/                   ← hooks.functions.ts (server fns), hooks.queries.ts (React Query)
+      context/               ← HooksContext.tsx (선택 상태 + 파생 데이터)
       constants.ts           ← HOOK_EVENT_META, HOOK_TEMPLATES, hookFormSchema
     skills-editor/
-      components/            ← SkillsPageContent, SkillDetailPanel, SkillsScopeSection, AddSkillDialog, SupportingFilePanel
-      api/                   ← skills.functions.ts (server fns)
+      components/            ← SkillsPage, SkillsScopeSection, AddSkillDialog, SupportingFilePanel
+      api/                   ← skills.functions.ts (server fns), skills.queries.ts (React Query)
+      context/               ← SkillsContext.tsx (선택 상태 + 파생 데이터)
       constants.tsx          ← FrontmatterBadges, addSkillSchema
   components/                ← 공유 UI 컴포넌트 (2곳 이상에서 사용)
     layout/                  ← Layout, Sidebar, StatusBar
@@ -103,6 +105,10 @@ src/
     settings/                ← GlobalSettingsPage, ProjectSettingsPage
     ui/                      ← shadcn 컴포넌트
     icons/                   ← 아이콘 컴포넌트
+    HookDetailPanel.tsx      ← 공유 Hook 상세 패널 (hooks-editor + plugins-editor)
+    HookDetailView.tsx       ← Hook 상세 뷰 (메타 필드 + 스크립트 프리뷰)
+    SkillDetailPanel.tsx     ← 공유 Skill 상세 패널 (skills-editor + plugins-editor)
+    SkillDetailView.tsx      ← Skill 상세 뷰 (self-fetching 콘텐츠)
     DetailField.tsx          ← 공유 위젯
     FileViewer.tsx           ← 파일 뷰어
     ScopeBadge.tsx           ← 스코프 배지
@@ -128,7 +134,7 @@ src/
     use-claude-md-files.ts   ← CLAUDE.md 파일 목록 훅
     use-projects.ts          ← 프로젝트 관리 훅
   lib/                       ← 유틸리티
-    auth.ts, query-keys.ts, format.ts
+    auth.ts, query-keys.ts, format.ts, hook-utils.ts
   shared/types.ts            ← 공유 타입
 messages/                    ← i18n 메시지 (en.json, ko.json)
 bin/cli.ts                   ← CLI 진입점

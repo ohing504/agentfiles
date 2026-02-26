@@ -14,8 +14,7 @@ src/features/{name}-editor/
 │   ├── {Name}Page.tsx          # 메인 페이지 (ErrorBoundary + Provider 래퍼)
 │   ├── {Name}List.tsx          # 좌측 목록 패널
 │   ├── {Name}ListItem.tsx      # 목록 아이템 (memo)
-│   ├── {Name}ActionBar.tsx     # 상단 액션바 (토글, 업데이트, 삭제 등)
-│   ├── {Name}Detail.tsx        # 우측 상세 패널
+│   ├── {Name}ScopeSection.tsx  # 스코프별 그룹 섹션
 │   └── Add{Name}Dialog.tsx     # 추가 다이얼로그
 ├── context/
 │   └── {Name}Context.tsx       # 선택 상태 + 파생 데이터
@@ -26,6 +25,7 @@ src/features/{name}-editor/
 **규칙:**
 - `constants.tsx` 금지 — 컴포넌트는 `components/`에, 상수는 `constants.ts`에 분리
 - `types.ts`에 feature 로컬 타입 정의 (공유 타입은 `src/shared/types.ts`)
+- 상세 패널(Header + DetailView + Actions)은 **공유 컴포넌트**로 추출 — feature 내부에 ActionBar/DetailPanel을 두지 않음 (섹션 7 참조)
 
 ## 2. Server Functions (⚠️ 핵심 규칙)
 
@@ -255,45 +255,80 @@ export function FooPage() {
 </div>
 ```
 
-### ActionBar 패턴
+### 공유 DetailPanel 패턴 (Flutter-style 콜백)
+
+상세 패널(Header + Actions + DetailView + 삭제 확인)은 **공유 컴포넌트**로 관리한다.
+feature 내부에 ActionBar/DetailPanel을 별도로 만들지 않는다.
+
+**핵심 원칙 — 콜백 존재 = UI 표시:**
+
+```typescript
+// Flutter-style: 콜백이 있으면 해당 액션 버튼 표시, undefined이면 숨김
+// boolean prop (editable, deletable) 대신 콜백 유무로 제어
+interface DetailPanelProps {
+  onEdit?: () => void    // 있으면 "Edit" 메뉴 표시
+  onDelete?: () => void  // 있으면 "Delete" 메뉴 + 확인 다이얼로그
+  filePath?: string      // 있으면 "Open in Editor" 메뉴 표시
+}
+```
+
+**사용 예시:**
 
 ```tsx
-<div className="flex items-center justify-between px-4 h-12 shrink-0 border-b border-border">
-  <h2 className="text-sm font-semibold truncate min-w-0">{title}</h2>
-  <div className="flex items-center gap-2 shrink-0">
-    {/* 주요 액션: SpinnerButton, Switch */}
-    {/* 보조 액션: DropdownMenu (Open in Editor, Uninstall 등) */}
-  </div>
-</div>
+// hooks-editor: 편집 + 삭제 가능
+<HookDetailPanel
+  hook={selectedHook.hook}
+  event={selectedHook.event}
+  matcher={selectedHook.matcher}
+  filePath={resolvedFilePath}
+  onEdit={() => setEditingHook(selectedHook)}
+  onDelete={handleDeleteHook}
+/>
+
+// plugins-editor: 읽기 전용 (콜백 없음 → 버튼 없음)
+<HookDetailPanel
+  hook={hook}
+  event={event}
+  matcher={group.matcher}
+  filePath={resolvedPath}
+/>
+
+// skills-editor: 삭제만 가능
+<SkillDetailPanel skill={selectedSkill} onDelete={handleDeleteSkill} />
+
+// plugins-editor: 읽기 전용
+<SkillDetailPanel skill={file} />
 ```
+
+**Mutation 소유권:** 부모 컴포넌트(Page)가 mutation을 소유하고, 콜백으로 패널에 전달한다. 패널은 삭제 확인 AlertDialog UI만 내부 관리.
 
 ### 삭제 확인 다이얼로그
 
-```tsx
-const [pendingDelete, setPendingDelete] = useState(false)
+삭제 확인은 공유 DetailPanel **내부**에서 관리 (외부 state 불필요):
 
-<AlertDialog open={pendingDelete} onOpenChange={setPendingDelete}>
-  <AlertDialogContent>
-    <AlertDialogHeader>
-      <AlertDialogTitle>{m.delete_title()}</AlertDialogTitle>
-      <AlertDialogDescription>{m.delete_confirm({ name })}</AlertDialogDescription>
-    </AlertDialogHeader>
-    <AlertDialogFooter>
-      <AlertDialogCancel>{m.cancel()}</AlertDialogCancel>
-      <AlertDialogAction onClick={() => {
-        deleteMutation.mutate(
-          { id },
-          {
-            onSuccess: () => { setPendingDelete(false); onDeleted?.() },
-            onError: (e) => { setPendingDelete(false); toast.error(e.message) },
-          },
-        )
-      }}>
-        {m.delete()}
-      </AlertDialogAction>
-    </AlertDialogFooter>
-  </AlertDialogContent>
-</AlertDialog>
+```tsx
+// DetailPanel 내부
+const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+
+{onDelete && (
+  <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+    <AlertDialogContent>
+      <AlertDialogHeader>
+        <AlertDialogTitle>{m.delete_title()}</AlertDialogTitle>
+        <AlertDialogDescription>{m.delete_confirm({ name })}</AlertDialogDescription>
+      </AlertDialogHeader>
+      <AlertDialogFooter>
+        <AlertDialogCancel>{m.cancel()}</AlertDialogCancel>
+        <AlertDialogAction onClick={() => {
+          onDelete()
+          setShowDeleteConfirm(false)
+        }}>
+          {m.delete()}
+        </AlertDialogAction>
+      </AlertDialogFooter>
+    </AlertDialogContent>
+  </AlertDialog>
+)}
 ```
 
 ### 빈 상태
@@ -402,11 +437,24 @@ async function handleOpenInEditor(editor: "code" | "cursor") {
 
 ## 7. 공유 컴포넌트 및 훅
 
+### 공유 DetailPanel 컴포넌트
+
+```text
+src/components/
+  HookDetailPanel.tsx      ← Hook 상세 패널 (Header + Actions + HookDetailView + 삭제 확인)
+  HookDetailView.tsx       ← Hook 상세 뷰 (메타 필드 + 스크립트 프리뷰)
+  SkillDetailPanel.tsx     ← Skill/Agent/Command 상세 패널 (Header + Actions + SkillDetailView + 삭제 확인)
+  SkillDetailView.tsx      ← self-fetching, AgentFile의 메타+콘텐츠 표시
+```
+
+**사용처:**
+- `HookDetailPanel` → hooks-editor (편집+삭제), plugins-editor (읽기 전용)
+- `SkillDetailPanel` → skills-editor (삭제), plugins-editor (읽기 전용, commands/skills/agents/outputStyles)
+
 ### 상세 뷰 컴포넌트
 
 ```text
 src/components/
-  SkillDetailView.tsx      ← self-fetching, AgentFile의 메타+콘텐츠 표시
   AgentFileView.tsx        ← 순수 표시, 파일명+내용을 받아 FileViewer 위임
   FrontmatterBadges.tsx    ← frontmatter 키를 Badge로 시각화
   DetailField.tsx          ← 메타 필드 래퍼 (label + children)
@@ -424,6 +472,16 @@ src/hooks/
 // 파일 내용을 직접 전달하는 순수 뷰어
 <AgentFileView fileName="helper.ts" rawContent={content} isLoading={loading} />
 ```
+
+### 공유 유틸리티
+
+```text
+src/lib/
+  hook-utils.ts            ← isHookFilePath() + resolveHookFilePath()
+```
+
+- `isHookFilePath(hook)` — hook command가 파일 경로인지 판별 (확장자, `$CLAUDE_` 변수, `.claude/` 접두사)
+- `resolveHookFilePath(command, context)` — `$CLAUDE_PLUGIN_ROOT`, `$CLAUDE_PROJECT_DIR` 등 변수 해석
 
 ### 의존성 방향 규칙
 
@@ -446,6 +504,9 @@ plugins가 상위 그룹(skill, hook, mcp 등을 번들)이므로 하위 참조 
 | 선택 상태를 Page 컴포넌트에 useState로 관리 | prop drilling, 정리 로직 분산 | Context로 분리 |
 | mutation `onSuccess`에서 invalidation 누락 | 스테일 데이터 | 관련 queryKey + overview.all 무효화 |
 | 에러 발생 가능 영역에 ErrorBoundary 없음 | 흰 화면 | 페이지 최외곽에 ErrorBoundary 래핑 |
+| feature 내부에 ActionBar/DetailPanel 중복 생성 | 로직 분산, 동작 불일치 | 공유 DetailPanel 사용 (섹션 7) |
+| `editable`/`deletable` boolean prop으로 버튼 표시 제어 | prop 과다, 의도 불명확 | Flutter-style 콜백 유무로 제어 (섹션 5) |
+| isFilePath 등 판별 로직을 컴포넌트에 인라인 | 중복, 불일치 | `src/lib/` 공유 유틸리티 추출 |
 
 ## 9. 체크리스트
 
@@ -461,3 +522,6 @@ plugins가 상위 그룹(skill, hook, mcp 등을 번들)이므로 하위 참조 
 - [ ] 좌측 패널이 280px, 헤더가 h-12 규격인가?
 - [ ] 삭제 시 AlertDialog 확인이 있는가?
 - [ ] mutation 성공 시 queryKey + overview 무효화가 있는가?
+- [ ] 상세 패널이 공유 DetailPanel 컴포넌트를 사용하는가? (feature 내부 ActionBar 금지)
+- [ ] 액션 버튼 표시가 Flutter-style 콜백 유무로 제어되는가? (boolean prop 금지)
+- [ ] 판별/해석 로직이 `src/lib/` 공유 유틸리티에 있는가? (컴포넌트 인라인 금지)
