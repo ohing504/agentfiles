@@ -244,5 +244,16 @@
   "config_saved": "설정 저장됨",
   "config_deleted": "설정 제거됨",
   "config_save_error": "설정 저장 실패",
-  "config_delete_error": "설정 제거 실패"
+  "config_delete_error": "설정 제거 실패",
+  "files_title": "파일",
+  "files_docs": "문서",
+  "files_docs_url": "https://code.claude.com/docs/en/settings#configuration-file-locations",
+  "files_no_selection": "파일을 선택하세요",
+  "files_no_selection_desc": "왼쪽의 .claude/ 디렉토리 트리를 탐색하세요",
+  "files_empty_dir": "디렉토리가 비어있거나 존재하지 않습니다",
+  "files_scope_global": "글로벌",
+  "files_scope_project": "프로젝트",
+  "files_render_error": "파일 탐색기를 불러올 수 없습니다",
+  "files_open_vscode": "VSCode",
+  "files_open_cursor": "Cursor"
 }
