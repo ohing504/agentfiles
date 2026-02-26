@@ -26,6 +26,7 @@ src/features/{name}-editor/
 - `constants.tsx` 금지 — 컴포넌트는 `components/`에, 상수는 `constants.ts`에 분리
 - `types.ts`에 feature 로컬 타입 정의 (공유 타입은 `src/shared/types.ts`)
 - 상세 패널(Header + DetailView + Actions)은 **공유 컴포넌트**로 추출 — feature 내부에 ActionBar/DetailPanel을 두지 않음 (섹션 7 참조)
+- `Add{Name}Dialog`는 `editXxx` prop으로 편집 모드도 겸용 (섹션 5 참조)
 
 ## 2. Server Functions (⚠️ 핵심 규칙)
 
@@ -272,6 +273,10 @@ interface DetailPanelProps {
 }
 ```
 
+**더보기 버튼 규격:**
+- 아이콘: `MoreHorizontalIcon` (가로 ⋯) — 모든 에디터에서 통일
+- 버튼: `variant="ghost" size="icon" className="size-8"`
+
 **사용 예시:**
 
 ```tsx
@@ -285,19 +290,28 @@ interface DetailPanelProps {
   onDelete={handleDeleteHook}
 />
 
-// plugins-editor: 읽기 전용 (콜백 없음 → 버튼 없음)
-<HookDetailPanel
-  hook={hook}
-  event={event}
-  matcher={group.matcher}
-  filePath={resolvedPath}
+// mcp-editor: 편집 + 삭제 가능
+<McpDetailPanel
+  server={selectedServer}
+  filePath={selectedServer.configPath}
+  onEdit={() => setEditingServer(selectedServer)}
+  onDelete={handleDeleteServer}
 />
 
-// skills-editor: 삭제만 가능
-<SkillDetailPanel skill={selectedSkill} onDelete={handleDeleteSkill} />
-
-// plugins-editor: 읽기 전용
+// plugins-editor: 읽기 전용 (filePath만 → 에디터 열기만 가능)
+<HookDetailPanel hook={hook} event={event} matcher={group.matcher} filePath={resolvedPath} />
+<McpDetailPanel server={server} filePath={pluginInstallPath} />
 <SkillDetailPanel skill={file} />
+```
+
+**AddDialog 편집 모드 (Add/Edit 겸용):**
+
+```tsx
+// AddMcpDialog — editServer prop으로 편집 모드 활성화
+<AddMcpDialog scope={addDialogScope} onClose={handleAddClose} />                    // 추가
+<AddMcpDialog scope={server.scope} onClose={...} editServer={selectedServer} />     // 편집
+
+// 편집 시 동작: remove old → add new (CLI 제약 — 직접 수정 불가)
 ```
 
 **Mutation 소유권:** 부모 컴포넌트(Page)가 mutation을 소유하고, 콜백으로 패널에 전달한다. 패널은 삭제 확인 AlertDialog UI만 내부 관리.
@@ -378,6 +392,19 @@ export const FOO_TYPE_META: Record<FooType, {
 }> = { ... }
 ```
 
+### lucide-react 아이콘
+
+- import 시 항상 `Icon` 접미사 사용: `MoreHorizontalIcon`, `Trash2Icon`, `SearchIcon` 등
+- 커스텀 아이콘 (`VscodeIcon`, `CursorIcon`)은 `@/components/icons/`에서 import
+
+```typescript
+// ✅ 올바른 패턴
+import { MoreHorizontalIcon, PencilIcon, Trash2Icon } from "lucide-react"
+
+// ❌ 금지 패턴
+import { MoreHorizontal, Pencil, Trash2 } from "lucide-react"
+```
+
 ### i18n
 
 - 모든 UI 텍스트는 `m.xxx()` 함수 사용 (`@/paraglide/messages`)
@@ -443,12 +470,15 @@ async function handleOpenInEditor(editor: "code" | "cursor") {
 src/components/
   HookDetailPanel.tsx      ← Hook 상세 패널 (Header + Actions + HookDetailView + 삭제 확인)
   HookDetailView.tsx       ← Hook 상세 뷰 (메타 필드 + 스크립트 프리뷰)
+  McpDetailPanel.tsx       ← MCP 서버 상세 패널 (Header + Actions + McpDetailView + 삭제 확인)
+  McpDetailView.tsx        ← MCP 서버 상세 뷰 (타입, 명령어, args, env 표시)
   SkillDetailPanel.tsx     ← Skill/Agent/Command 상세 패널 (Header + Actions + SkillDetailView + 삭제 확인)
   SkillDetailView.tsx      ← self-fetching, AgentFile의 메타+콘텐츠 표시
 ```
 
 **사용처:**
 - `HookDetailPanel` → hooks-editor (편집+삭제), plugins-editor (읽기 전용)
+- `McpDetailPanel` → mcp-editor (편집+삭제), plugins-editor (에디터 열기만)
 - `SkillDetailPanel` → skills-editor (삭제), plugins-editor (읽기 전용, commands/skills/agents/outputStyles)
 
 ### 상세 뷰 컴포넌트
@@ -488,8 +518,10 @@ src/lib/
 ```text
 plugins-editor ──→ skills-editor     ✅ 허용
 plugins-editor ──→ hooks-editor      ✅ 허용
+plugins-editor ──→ mcp-editor        ✅ 허용
 skills-editor  ──→ plugins-editor    ❌ 금지
 hooks-editor   ──→ plugins-editor    ❌ 금지
+mcp-editor     ──→ plugins-editor    ❌ 금지
 ```
 
 plugins가 상위 그룹(skill, hook, mcp 등을 번들)이므로 하위 참조 허용, 역방향 금지.
@@ -507,6 +539,7 @@ plugins가 상위 그룹(skill, hook, mcp 등을 번들)이므로 하위 참조 
 | feature 내부에 ActionBar/DetailPanel 중복 생성 | 로직 분산, 동작 불일치 | 공유 DetailPanel 사용 (섹션 7) |
 | `editable`/`deletable` boolean prop으로 버튼 표시 제어 | prop 과다, 의도 불명확 | Flutter-style 콜백 유무로 제어 (섹션 5) |
 | isFilePath 등 판별 로직을 컴포넌트에 인라인 | 중복, 불일치 | `src/lib/` 공유 유틸리티 추출 |
+| lucide-react 아이콘 `Icon` 접미사 없이 import | 네이밍 불일치 | `MoreHorizontalIcon`, `Trash2Icon` 등 `Icon` 접미사 사용 |
 
 ## 9. 체크리스트
 
