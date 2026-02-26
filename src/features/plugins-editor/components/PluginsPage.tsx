@@ -28,9 +28,6 @@ function PluginsRightPanel() {
     selectedItemId,
     setSelectedItemId,
     handleSelectComponentType,
-    toggleMutation,
-    updateMutation,
-    uninstallMutation,
   } = usePluginsSelection()
 
   // State 1: Plugin selected, no componentType → overview panel
@@ -39,9 +36,6 @@ function PluginsRightPanel() {
       <div className="flex-1 flex flex-col min-w-0">
         <PluginActionBar
           plugin={selectedPlugin}
-          toggleMutation={toggleMutation}
-          updateMutation={updateMutation}
-          uninstallMutation={uninstallMutation}
           onUninstalled={() => setSelectedPluginId(null)}
         />
         <PluginOverview
@@ -156,6 +150,7 @@ function PluginsPageInner() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search plugins..."
+              aria-label="Search plugins"
               className="pl-8 h-8 text-xs"
             />
           </div>

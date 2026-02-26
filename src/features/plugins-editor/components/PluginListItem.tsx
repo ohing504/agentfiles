@@ -1,4 +1,5 @@
 import { Plug2Icon } from "lucide-react"
+import { memo } from "react"
 import { ListItem, ListSubItem } from "@/components/ui/list-item"
 import { titleCase } from "@/lib/format"
 import { m } from "@/paraglide/messages"
@@ -6,7 +7,7 @@ import type { Plugin, PluginComponents } from "@/shared/types"
 import { getNonEmptyComponents, PLUGIN_COMPONENT_META } from "../constants"
 import type { PluginComponentType } from "../types"
 
-export function PluginListItem({
+export const PluginListItem = memo(function PluginListItem({
   plugin,
   isSelected,
   selectedComponentType,
@@ -87,4 +88,4 @@ export function PluginListItem({
       })}
     </ListItem>
   )
-}
+})

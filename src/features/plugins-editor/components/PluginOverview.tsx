@@ -11,60 +11,17 @@ import { m } from "@/paraglide/messages"
 import type { Plugin, PluginComponents } from "@/shared/types"
 import { PLUGIN_COMPONENT_META, PLUGIN_COMPONENT_ORDER } from "../constants"
 import type { PluginComponentType } from "../types"
+import { getComponentItems } from "./PluginComponentList"
 
 const MAX_VISIBLE_ITEMS = 8
 
-interface ItemInfo {
-  id: string
-  name: string
-  description?: string
-}
-
-function agentFilesToItems(files: PluginComponents["commands"]): ItemInfo[] {
-  return files.map((f) => ({
-    id: f.path ?? f.name,
-    name: f.name,
-    description: f.frontmatter?.description
-      ? String(f.frontmatter.description)
-      : undefined,
-  }))
-}
-
-function getItems(
-  contents: PluginComponents,
-  componentType: PluginComponentType,
-): ItemInfo[] {
-  switch (componentType) {
-    case "commands":
-      return agentFilesToItems(contents.commands)
-    case "skills":
-      return agentFilesToItems(contents.skills)
-    case "agents":
-      return agentFilesToItems(contents.agents)
-    case "outputStyles":
-      return agentFilesToItems(contents.outputStyles)
-    case "hooks":
-      return Object.entries(contents.hooks).flatMap(([eventName, groups]) => {
-        if (!Array.isArray(groups) || groups.length === 0) return []
-        const matchers = groups
-          .map((g: { matcher?: string }) => g.matcher)
-          .filter(Boolean)
-        const name =
-          matchers.length > 0
-            ? `${eventName}: ${matchers.join("|")}`
-            : eventName
-        return [{ id: `${eventName}-0-0`, name }]
-      })
-    case "mcpServers":
-      return contents.mcpServers.map((s) => ({ id: s.name, name: s.name }))
-    case "lspServers":
-      return contents.lspServers.map((s) => ({ id: s.name, name: s.name }))
-    default:
-      return []
-  }
-}
-
-function ItemBadge({ item, onClick }: { item: ItemInfo; onClick: () => void }) {
+function ItemBadge({
+  item,
+  onClick,
+}: {
+  item: { id: string; name: string; description?: string }
+  onClick: () => void
+}) {
   const button = (
     <Button
       variant="secondary"
@@ -99,8 +56,13 @@ function ComponentSection({
 }) {
   const [expanded, setExpanded] = useState(false)
   const meta = PLUGIN_COMPONENT_META[componentType]
-  const items = getItems(contents, componentType)
-  if (items.length === 0) return null
+  const rawItems = getComponentItems(contents, componentType)
+  if (rawItems.length === 0) return null
+  const items = rawItems.map((item) => ({
+    id: item.id,
+    name: item.label,
+    description: item.tooltip,
+  }))
 
   const visible = expanded ? items : items.slice(0, MAX_VISIBLE_ITEMS)
   const remaining = items.length - MAX_VISIBLE_ITEMS
@@ -111,6 +73,7 @@ function ComponentSection({
         <button
           type="button"
           className="text-sm font-semibold text-primary hover:underline"
+          aria-label={`View ${meta.labelFn()} list`}
           onClick={() => onSelectComponentType(componentType)}
         >
           {meta.labelFn()}

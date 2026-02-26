@@ -8,7 +8,7 @@ import {
 } from "react"
 import { useProjectContext } from "@/components/ProjectContext"
 import type { Plugin, PluginScope } from "@/shared/types"
-import { usePluginMutations, usePluginsQuery } from "../api/plugins.queries"
+import { usePluginsQuery } from "../api/plugins.queries"
 import type { PluginComponentType } from "../types"
 
 export const SCOPE_ORDER: PluginScope[] = [
@@ -40,9 +40,6 @@ export interface PluginsContextValue {
   groupedByScope: Map<string, Plugin[]>
   duplicateNames: Set<string>
   plugins: Plugin[] | undefined
-  toggleMutation: ReturnType<typeof usePluginMutations>["toggleMutation"]
-  updateMutation: ReturnType<typeof usePluginMutations>["updateMutation"]
-  uninstallMutation: ReturnType<typeof usePluginMutations>["uninstallMutation"]
 }
 
 const PluginsContext = createContext<PluginsContextValue | null>(null)
@@ -69,8 +66,6 @@ export function PluginsProvider({
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null)
 
   const { data: plugins } = usePluginsQuery(activeProjectPath ?? undefined)
-  const { toggleMutation, uninstallMutation, updateMutation } =
-    usePluginMutations()
 
   const selectedPlugin = useMemo(
     () => plugins?.find((p) => p.id === selectedPluginId) ?? null,
@@ -147,9 +142,6 @@ export function PluginsProvider({
       groupedByScope,
       duplicateNames,
       plugins,
-      toggleMutation,
-      updateMutation,
-      uninstallMutation,
     }),
     [
       selectedPlugin,
@@ -161,9 +153,6 @@ export function PluginsProvider({
       groupedByScope,
       duplicateNames,
       plugins,
-      toggleMutation,
-      updateMutation,
-      uninstallMutation,
     ],
   )
 

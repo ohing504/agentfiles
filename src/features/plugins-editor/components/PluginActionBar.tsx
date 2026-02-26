@@ -24,25 +24,19 @@ import { Switch } from "@/components/ui/switch"
 import { titleCase } from "@/lib/format"
 import { m } from "@/paraglide/messages"
 import type { Plugin } from "@/shared/types"
-import type { usePluginMutations } from "../api/plugins.queries"
-
-type Mutations = ReturnType<typeof usePluginMutations>
+import { usePluginMutations } from "../api/plugins.queries"
 
 interface PluginActionBarProps {
   plugin: Plugin
-  toggleMutation: Mutations["toggleMutation"]
-  updateMutation: Mutations["updateMutation"]
-  uninstallMutation: Mutations["uninstallMutation"]
   onUninstalled?: () => void
 }
 
 export function PluginActionBar({
   plugin,
-  toggleMutation,
-  updateMutation,
-  uninstallMutation,
   onUninstalled,
 }: PluginActionBarProps) {
+  const { toggleMutation, updateMutation, uninstallMutation } =
+    usePluginMutations()
   const [pendingUninstall, setPendingUninstall] = useState(false)
 
   return (
@@ -90,7 +84,12 @@ export function PluginActionBar({
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="size-8">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-8"
+                aria-label="More options"
+              >
                 <MoreHorizontal className="size-4" />
               </Button>
             </DropdownMenuTrigger>
