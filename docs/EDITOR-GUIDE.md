@@ -524,6 +524,8 @@ hooks-editor   ──→ plugins-editor    ❌ 금지
 mcp-editor     ──→ plugins-editor    ❌ 금지
 config-editor  ──→ 다른 feature      ❌ 금지 (독립)
 다른 feature   ──→ config-editor     ❌ 금지 (독립)
+files-editor   ──→ 다른 feature      ❌ 금지 (독립)
+다른 feature   ──→ files-editor      ❌ 금지 (독립)
 ```
 
 plugins가 상위 그룹(skill, hook, mcp 등을 번들)이므로 하위 참조 허용, 역방향 금지.
@@ -561,6 +563,31 @@ src/features/config-editor/
 - `config-settings.service.ts`는 feature-local (공유 서비스가 아님)
 - dot-notation 중첩 키 지원 (`sandbox.network.allowedDomains` 등)
 - 개별 키 단위 저장 (`onUpdate(key, value)`) — 전체 덮어쓰기 방지
+
+### files-editor 구조 (.claude/ 디렉토리 파일 탐색기)
+
+```text
+src/features/files-editor/
+├── api/
+│   ├── files.functions.ts           # Server Functions (getFileTreeFn, getFileContentFn)
+│   └── files.queries.ts             # React Query 훅 (useFileTreeQuery, useFileContentQuery) + fileKeys
+├── components/
+│   ├── FilesPage.tsx                # ErrorBoundary + FilesProvider
+│   ├── FilesPageContent.tsx         # 헤더 + 스코프 탭 + 트리 + 뷰어
+│   ├── FilesScopeTabs.tsx           # Global/Project 스코프 탭
+│   ├── FileTree.tsx                 # 재귀 디렉토리 트리
+│   └── FileViewerPanel.tsx          # 마크다운/코드 뷰어 + Open in Editor
+├── services/
+│   └── files-scanner.service.ts     # scanClaudeDir, readFileContent, isExcluded
+├── context/
+│   └── FilesContext.tsx             # scope + selectedPath 상태
+└── constants.ts                     # FilesScope, EXTENSION_ICONS, KNOWN_ITEMS
+```
+
+**특이사항:**
+- `.claude/` 디렉토리 재귀 스캔 (EXCLUDED_NAMES로 캐시/내부 파일 제외)
+- 읽기 전용 뷰어 — 인라인 편집 없음, Open in Editor로 외부 편집기 위임
+- 내부 스코프 탭으로 Global(`~/.claude/`) / Project(`.claude/`) 전환
 
 ## 8. 금지 사항 (Anti-patterns)
 

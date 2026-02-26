@@ -37,6 +37,16 @@
 
 ## Shipped
 
+### files-editor 리팩토링 (2026-02-27)
+- 기존 Files 페이지를 `.claude/` 디렉토리 전체 파일 탐색기 + 읽기 전용 뷰어로 전면 리팩토링
+- feature-local 서비스 (`files-scanner.service.ts`) — 디렉토리 재귀 스캔 + 제외 패턴
+- Server Functions + React Query + FilesContext 패턴 (EDITOR-GUIDE.md 준수)
+- 5개 UI 컴포넌트: FilesPage, FilesPageContent, FilesScopeTabs, FileTree, FileViewerPanel
+- 사이드바: Files를 top-level 네비게이션에 추가, Global/Project 그룹 제거
+- `/files` 단일 라우트 통합 (`/global/files`, `/project/files` → 리다이렉트)
+- 기존 `FilesPageContent.tsx` 삭제
+- co-located 테스트 12개 (files-scanner.service)
+
 ### config-editor — Configuration 에디터 (2026-02-26)
 - 기존 Settings 페이지를 공식 Claude Code 문서 기반 Configuration 에디터로 전면 교체
 - VSCode 스타일 3단 레이아웃: Scope 탭(User/Project/Local) + 카테고리 nav + 설정 폼
