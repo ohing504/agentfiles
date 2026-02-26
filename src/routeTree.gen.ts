@@ -9,61 +9,56 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as SkillsRouteImport } from './routes/skills'
-import { Route as ProjectRouteImport } from './routes/project'
-import { Route as PluginsRouteImport } from './routes/plugins'
-import { Route as McpRouteImport } from './routes/mcp'
-import { Route as HooksRouteImport } from './routes/hooks'
-import { Route as GlobalRouteImport } from './routes/global'
-import { Route as FilesRouteImport } from './routes/files'
+import { Route as SkillsRouteRouteImport } from './routes/skills/route'
+import { Route as ProjectRouteRouteImport } from './routes/project/route'
+import { Route as PluginsRouteRouteImport } from './routes/plugins/route'
+import { Route as HooksRouteRouteImport } from './routes/hooks/route'
+import { Route as GlobalRouteRouteImport } from './routes/global/route'
+import { Route as FilesRouteRouteImport } from './routes/files/route'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as ProjectSettingsRouteImport } from './routes/project/settings'
-import { Route as ProjectPluginsRouteImport } from './routes/project/plugins'
-import { Route as ProjectMcpRouteImport } from './routes/project/mcp'
-import { Route as ProjectFilesRouteImport } from './routes/project/files'
-import { Route as PluginsIdRouteImport } from './routes/plugins.$id'
-import { Route as McpNameRouteImport } from './routes/mcp.$name'
-import { Route as GlobalSettingsRouteImport } from './routes/global/settings'
-import { Route as GlobalPluginsRouteImport } from './routes/global/plugins'
-import { Route as GlobalMcpRouteImport } from './routes/global/mcp'
-import { Route as GlobalFilesRouteImport } from './routes/global/files'
+import { Route as McpIndexRouteImport } from './routes/mcp/index'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
-import { Route as ProjectPluginsIdRouteImport } from './routes/project/plugins.$id'
-import { Route as ProjectMcpNameRouteImport } from './routes/project/mcp.$name'
-import { Route as GlobalPluginsIdRouteImport } from './routes/global/plugins.$id'
-import { Route as GlobalMcpNameRouteImport } from './routes/global/mcp.$name'
+import { Route as ProjectSettingsRouteRouteImport } from './routes/project/settings/route'
+import { Route as ProjectFilesRouteRouteImport } from './routes/project/files/route'
+import { Route as PluginsIdRouteRouteImport } from './routes/plugins/$id/route'
+import { Route as McpNameRouteRouteImport } from './routes/mcp/$name/route'
+import { Route as GlobalSettingsRouteRouteImport } from './routes/global/settings/route'
+import { Route as GlobalFilesRouteRouteImport } from './routes/global/files/route'
+import { Route as ProjectPluginsIndexRouteImport } from './routes/project/plugins/index'
+import { Route as ProjectMcpIndexRouteImport } from './routes/project/mcp/index'
+import { Route as GlobalPluginsIndexRouteImport } from './routes/global/plugins/index'
+import { Route as GlobalMcpIndexRouteImport } from './routes/global/mcp/index'
+import { Route as ProjectPluginsIdRouteRouteImport } from './routes/project/plugins/$id/route'
+import { Route as ProjectMcpNameRouteRouteImport } from './routes/project/mcp/$name/route'
+import { Route as GlobalPluginsIdRouteRouteImport } from './routes/global/plugins/$id/route'
+import { Route as GlobalMcpNameRouteRouteImport } from './routes/global/mcp/$name/route'
 
-const SkillsRoute = SkillsRouteImport.update({
+const SkillsRouteRoute = SkillsRouteRouteImport.update({
   id: '/skills',
   path: '/skills',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ProjectRoute = ProjectRouteImport.update({
+const ProjectRouteRoute = ProjectRouteRouteImport.update({
   id: '/project',
   path: '/project',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PluginsRoute = PluginsRouteImport.update({
+const PluginsRouteRoute = PluginsRouteRouteImport.update({
   id: '/plugins',
   path: '/plugins',
   getParentRoute: () => rootRouteImport,
 } as any)
-const McpRoute = McpRouteImport.update({
-  id: '/mcp',
-  path: '/mcp',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const HooksRoute = HooksRouteImport.update({
+const HooksRouteRoute = HooksRouteRouteImport.update({
   id: '/hooks',
   path: '/hooks',
   getParentRoute: () => rootRouteImport,
 } as any)
-const GlobalRoute = GlobalRouteImport.update({
+const GlobalRouteRoute = GlobalRouteRouteImport.update({
   id: '/global',
   path: '/global',
   getParentRoute: () => rootRouteImport,
 } as any)
-const FilesRoute = FilesRouteImport.update({
+const FilesRouteRoute = FilesRouteRouteImport.update({
   id: '/files',
   path: '/files',
   getParentRoute: () => rootRouteImport,
@@ -73,157 +68,162 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ProjectSettingsRoute = ProjectSettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => ProjectRoute,
-} as any)
-const ProjectPluginsRoute = ProjectPluginsRouteImport.update({
-  id: '/plugins',
-  path: '/plugins',
-  getParentRoute: () => ProjectRoute,
-} as any)
-const ProjectMcpRoute = ProjectMcpRouteImport.update({
-  id: '/mcp',
-  path: '/mcp',
-  getParentRoute: () => ProjectRoute,
-} as any)
-const ProjectFilesRoute = ProjectFilesRouteImport.update({
-  id: '/files',
-  path: '/files',
-  getParentRoute: () => ProjectRoute,
-} as any)
-const PluginsIdRoute = PluginsIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => PluginsRoute,
-} as any)
-const McpNameRoute = McpNameRouteImport.update({
-  id: '/$name',
-  path: '/$name',
-  getParentRoute: () => McpRoute,
-} as any)
-const GlobalSettingsRoute = GlobalSettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => GlobalRoute,
-} as any)
-const GlobalPluginsRoute = GlobalPluginsRouteImport.update({
-  id: '/plugins',
-  path: '/plugins',
-  getParentRoute: () => GlobalRoute,
-} as any)
-const GlobalMcpRoute = GlobalMcpRouteImport.update({
-  id: '/mcp',
-  path: '/mcp',
-  getParentRoute: () => GlobalRoute,
-} as any)
-const GlobalFilesRoute = GlobalFilesRouteImport.update({
-  id: '/files',
-  path: '/files',
-  getParentRoute: () => GlobalRoute,
+const McpIndexRoute = McpIndexRouteImport.update({
+  id: '/mcp/',
+  path: '/mcp/',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ApiHealthRoute = ApiHealthRouteImport.update({
   id: '/api/health',
   path: '/api/health',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ProjectPluginsIdRoute = ProjectPluginsIdRouteImport.update({
+const ProjectSettingsRouteRoute = ProjectSettingsRouteRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => ProjectRouteRoute,
+} as any)
+const ProjectFilesRouteRoute = ProjectFilesRouteRouteImport.update({
+  id: '/files',
+  path: '/files',
+  getParentRoute: () => ProjectRouteRoute,
+} as any)
+const PluginsIdRouteRoute = PluginsIdRouteRouteImport.update({
   id: '/$id',
   path: '/$id',
-  getParentRoute: () => ProjectPluginsRoute,
+  getParentRoute: () => PluginsRouteRoute,
 } as any)
-const ProjectMcpNameRoute = ProjectMcpNameRouteImport.update({
-  id: '/$name',
-  path: '/$name',
-  getParentRoute: () => ProjectMcpRoute,
+const McpNameRouteRoute = McpNameRouteRouteImport.update({
+  id: '/mcp/$name',
+  path: '/mcp/$name',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const GlobalPluginsIdRoute = GlobalPluginsIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => GlobalPluginsRoute,
+const GlobalSettingsRouteRoute = GlobalSettingsRouteRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => GlobalRouteRoute,
 } as any)
-const GlobalMcpNameRoute = GlobalMcpNameRouteImport.update({
-  id: '/$name',
-  path: '/$name',
-  getParentRoute: () => GlobalMcpRoute,
+const GlobalFilesRouteRoute = GlobalFilesRouteRouteImport.update({
+  id: '/files',
+  path: '/files',
+  getParentRoute: () => GlobalRouteRoute,
+} as any)
+const ProjectPluginsIndexRoute = ProjectPluginsIndexRouteImport.update({
+  id: '/plugins/',
+  path: '/plugins/',
+  getParentRoute: () => ProjectRouteRoute,
+} as any)
+const ProjectMcpIndexRoute = ProjectMcpIndexRouteImport.update({
+  id: '/mcp/',
+  path: '/mcp/',
+  getParentRoute: () => ProjectRouteRoute,
+} as any)
+const GlobalPluginsIndexRoute = GlobalPluginsIndexRouteImport.update({
+  id: '/plugins/',
+  path: '/plugins/',
+  getParentRoute: () => GlobalRouteRoute,
+} as any)
+const GlobalMcpIndexRoute = GlobalMcpIndexRouteImport.update({
+  id: '/mcp/',
+  path: '/mcp/',
+  getParentRoute: () => GlobalRouteRoute,
+} as any)
+const ProjectPluginsIdRouteRoute = ProjectPluginsIdRouteRouteImport.update({
+  id: '/plugins/$id',
+  path: '/plugins/$id',
+  getParentRoute: () => ProjectRouteRoute,
+} as any)
+const ProjectMcpNameRouteRoute = ProjectMcpNameRouteRouteImport.update({
+  id: '/mcp/$name',
+  path: '/mcp/$name',
+  getParentRoute: () => ProjectRouteRoute,
+} as any)
+const GlobalPluginsIdRouteRoute = GlobalPluginsIdRouteRouteImport.update({
+  id: '/plugins/$id',
+  path: '/plugins/$id',
+  getParentRoute: () => GlobalRouteRoute,
+} as any)
+const GlobalMcpNameRouteRoute = GlobalMcpNameRouteRouteImport.update({
+  id: '/mcp/$name',
+  path: '/mcp/$name',
+  getParentRoute: () => GlobalRouteRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/files': typeof FilesRoute
-  '/global': typeof GlobalRouteWithChildren
-  '/hooks': typeof HooksRoute
-  '/mcp': typeof McpRouteWithChildren
-  '/plugins': typeof PluginsRouteWithChildren
-  '/project': typeof ProjectRouteWithChildren
-  '/skills': typeof SkillsRoute
+  '/files': typeof FilesRouteRoute
+  '/global': typeof GlobalRouteRouteWithChildren
+  '/hooks': typeof HooksRouteRoute
+  '/plugins': typeof PluginsRouteRouteWithChildren
+  '/project': typeof ProjectRouteRouteWithChildren
+  '/skills': typeof SkillsRouteRoute
+  '/global/files': typeof GlobalFilesRouteRoute
+  '/global/settings': typeof GlobalSettingsRouteRoute
+  '/mcp/$name': typeof McpNameRouteRoute
+  '/plugins/$id': typeof PluginsIdRouteRoute
+  '/project/files': typeof ProjectFilesRouteRoute
+  '/project/settings': typeof ProjectSettingsRouteRoute
   '/api/health': typeof ApiHealthRoute
-  '/global/files': typeof GlobalFilesRoute
-  '/global/mcp': typeof GlobalMcpRouteWithChildren
-  '/global/plugins': typeof GlobalPluginsRouteWithChildren
-  '/global/settings': typeof GlobalSettingsRoute
-  '/mcp/$name': typeof McpNameRoute
-  '/plugins/$id': typeof PluginsIdRoute
-  '/project/files': typeof ProjectFilesRoute
-  '/project/mcp': typeof ProjectMcpRouteWithChildren
-  '/project/plugins': typeof ProjectPluginsRouteWithChildren
-  '/project/settings': typeof ProjectSettingsRoute
-  '/global/mcp/$name': typeof GlobalMcpNameRoute
-  '/global/plugins/$id': typeof GlobalPluginsIdRoute
-  '/project/mcp/$name': typeof ProjectMcpNameRoute
-  '/project/plugins/$id': typeof ProjectPluginsIdRoute
+  '/mcp/': typeof McpIndexRoute
+  '/global/mcp/$name': typeof GlobalMcpNameRouteRoute
+  '/global/plugins/$id': typeof GlobalPluginsIdRouteRoute
+  '/project/mcp/$name': typeof ProjectMcpNameRouteRoute
+  '/project/plugins/$id': typeof ProjectPluginsIdRouteRoute
+  '/global/mcp/': typeof GlobalMcpIndexRoute
+  '/global/plugins/': typeof GlobalPluginsIndexRoute
+  '/project/mcp/': typeof ProjectMcpIndexRoute
+  '/project/plugins/': typeof ProjectPluginsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/files': typeof FilesRoute
-  '/global': typeof GlobalRouteWithChildren
-  '/hooks': typeof HooksRoute
-  '/mcp': typeof McpRouteWithChildren
-  '/plugins': typeof PluginsRouteWithChildren
-  '/project': typeof ProjectRouteWithChildren
-  '/skills': typeof SkillsRoute
+  '/files': typeof FilesRouteRoute
+  '/global': typeof GlobalRouteRouteWithChildren
+  '/hooks': typeof HooksRouteRoute
+  '/plugins': typeof PluginsRouteRouteWithChildren
+  '/project': typeof ProjectRouteRouteWithChildren
+  '/skills': typeof SkillsRouteRoute
+  '/global/files': typeof GlobalFilesRouteRoute
+  '/global/settings': typeof GlobalSettingsRouteRoute
+  '/mcp/$name': typeof McpNameRouteRoute
+  '/plugins/$id': typeof PluginsIdRouteRoute
+  '/project/files': typeof ProjectFilesRouteRoute
+  '/project/settings': typeof ProjectSettingsRouteRoute
   '/api/health': typeof ApiHealthRoute
-  '/global/files': typeof GlobalFilesRoute
-  '/global/mcp': typeof GlobalMcpRouteWithChildren
-  '/global/plugins': typeof GlobalPluginsRouteWithChildren
-  '/global/settings': typeof GlobalSettingsRoute
-  '/mcp/$name': typeof McpNameRoute
-  '/plugins/$id': typeof PluginsIdRoute
-  '/project/files': typeof ProjectFilesRoute
-  '/project/mcp': typeof ProjectMcpRouteWithChildren
-  '/project/plugins': typeof ProjectPluginsRouteWithChildren
-  '/project/settings': typeof ProjectSettingsRoute
-  '/global/mcp/$name': typeof GlobalMcpNameRoute
-  '/global/plugins/$id': typeof GlobalPluginsIdRoute
-  '/project/mcp/$name': typeof ProjectMcpNameRoute
-  '/project/plugins/$id': typeof ProjectPluginsIdRoute
+  '/mcp': typeof McpIndexRoute
+  '/global/mcp/$name': typeof GlobalMcpNameRouteRoute
+  '/global/plugins/$id': typeof GlobalPluginsIdRouteRoute
+  '/project/mcp/$name': typeof ProjectMcpNameRouteRoute
+  '/project/plugins/$id': typeof ProjectPluginsIdRouteRoute
+  '/global/mcp': typeof GlobalMcpIndexRoute
+  '/global/plugins': typeof GlobalPluginsIndexRoute
+  '/project/mcp': typeof ProjectMcpIndexRoute
+  '/project/plugins': typeof ProjectPluginsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/files': typeof FilesRoute
-  '/global': typeof GlobalRouteWithChildren
-  '/hooks': typeof HooksRoute
-  '/mcp': typeof McpRouteWithChildren
-  '/plugins': typeof PluginsRouteWithChildren
-  '/project': typeof ProjectRouteWithChildren
-  '/skills': typeof SkillsRoute
+  '/files': typeof FilesRouteRoute
+  '/global': typeof GlobalRouteRouteWithChildren
+  '/hooks': typeof HooksRouteRoute
+  '/plugins': typeof PluginsRouteRouteWithChildren
+  '/project': typeof ProjectRouteRouteWithChildren
+  '/skills': typeof SkillsRouteRoute
+  '/global/files': typeof GlobalFilesRouteRoute
+  '/global/settings': typeof GlobalSettingsRouteRoute
+  '/mcp/$name': typeof McpNameRouteRoute
+  '/plugins/$id': typeof PluginsIdRouteRoute
+  '/project/files': typeof ProjectFilesRouteRoute
+  '/project/settings': typeof ProjectSettingsRouteRoute
   '/api/health': typeof ApiHealthRoute
-  '/global/files': typeof GlobalFilesRoute
-  '/global/mcp': typeof GlobalMcpRouteWithChildren
-  '/global/plugins': typeof GlobalPluginsRouteWithChildren
-  '/global/settings': typeof GlobalSettingsRoute
-  '/mcp/$name': typeof McpNameRoute
-  '/plugins/$id': typeof PluginsIdRoute
-  '/project/files': typeof ProjectFilesRoute
-  '/project/mcp': typeof ProjectMcpRouteWithChildren
-  '/project/plugins': typeof ProjectPluginsRouteWithChildren
-  '/project/settings': typeof ProjectSettingsRoute
-  '/global/mcp/$name': typeof GlobalMcpNameRoute
-  '/global/plugins/$id': typeof GlobalPluginsIdRoute
-  '/project/mcp/$name': typeof ProjectMcpNameRoute
-  '/project/plugins/$id': typeof ProjectPluginsIdRoute
+  '/mcp/': typeof McpIndexRoute
+  '/global/mcp/$name': typeof GlobalMcpNameRouteRoute
+  '/global/plugins/$id': typeof GlobalPluginsIdRouteRoute
+  '/project/mcp/$name': typeof ProjectMcpNameRouteRoute
+  '/project/plugins/$id': typeof ProjectPluginsIdRouteRoute
+  '/global/mcp/': typeof GlobalMcpIndexRoute
+  '/global/plugins/': typeof GlobalPluginsIndexRoute
+  '/project/mcp/': typeof ProjectMcpIndexRoute
+  '/project/plugins/': typeof ProjectPluginsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -232,87 +232,88 @@ export interface FileRouteTypes {
     | '/files'
     | '/global'
     | '/hooks'
-    | '/mcp'
     | '/plugins'
     | '/project'
     | '/skills'
-    | '/api/health'
     | '/global/files'
-    | '/global/mcp'
-    | '/global/plugins'
     | '/global/settings'
     | '/mcp/$name'
     | '/plugins/$id'
     | '/project/files'
-    | '/project/mcp'
-    | '/project/plugins'
     | '/project/settings'
+    | '/api/health'
+    | '/mcp/'
     | '/global/mcp/$name'
     | '/global/plugins/$id'
     | '/project/mcp/$name'
     | '/project/plugins/$id'
+    | '/global/mcp/'
+    | '/global/plugins/'
+    | '/project/mcp/'
+    | '/project/plugins/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/files'
     | '/global'
     | '/hooks'
-    | '/mcp'
     | '/plugins'
     | '/project'
     | '/skills'
-    | '/api/health'
     | '/global/files'
-    | '/global/mcp'
-    | '/global/plugins'
     | '/global/settings'
     | '/mcp/$name'
     | '/plugins/$id'
     | '/project/files'
-    | '/project/mcp'
-    | '/project/plugins'
     | '/project/settings'
+    | '/api/health'
+    | '/mcp'
     | '/global/mcp/$name'
     | '/global/plugins/$id'
     | '/project/mcp/$name'
     | '/project/plugins/$id'
+    | '/global/mcp'
+    | '/global/plugins'
+    | '/project/mcp'
+    | '/project/plugins'
   id:
     | '__root__'
     | '/'
     | '/files'
     | '/global'
     | '/hooks'
-    | '/mcp'
     | '/plugins'
     | '/project'
     | '/skills'
-    | '/api/health'
     | '/global/files'
-    | '/global/mcp'
-    | '/global/plugins'
     | '/global/settings'
     | '/mcp/$name'
     | '/plugins/$id'
     | '/project/files'
-    | '/project/mcp'
-    | '/project/plugins'
     | '/project/settings'
+    | '/api/health'
+    | '/mcp/'
     | '/global/mcp/$name'
     | '/global/plugins/$id'
     | '/project/mcp/$name'
     | '/project/plugins/$id'
+    | '/global/mcp/'
+    | '/global/plugins/'
+    | '/project/mcp/'
+    | '/project/plugins/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  FilesRoute: typeof FilesRoute
-  GlobalRoute: typeof GlobalRouteWithChildren
-  HooksRoute: typeof HooksRoute
-  McpRoute: typeof McpRouteWithChildren
-  PluginsRoute: typeof PluginsRouteWithChildren
-  ProjectRoute: typeof ProjectRouteWithChildren
-  SkillsRoute: typeof SkillsRoute
+  FilesRouteRoute: typeof FilesRouteRoute
+  GlobalRouteRoute: typeof GlobalRouteRouteWithChildren
+  HooksRouteRoute: typeof HooksRouteRoute
+  PluginsRouteRoute: typeof PluginsRouteRouteWithChildren
+  ProjectRouteRoute: typeof ProjectRouteRouteWithChildren
+  SkillsRouteRoute: typeof SkillsRouteRoute
+  McpNameRouteRoute: typeof McpNameRouteRoute
   ApiHealthRoute: typeof ApiHealthRoute
+  McpIndexRoute: typeof McpIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -321,49 +322,42 @@ declare module '@tanstack/react-router' {
       id: '/skills'
       path: '/skills'
       fullPath: '/skills'
-      preLoaderRoute: typeof SkillsRouteImport
+      preLoaderRoute: typeof SkillsRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/project': {
       id: '/project'
       path: '/project'
       fullPath: '/project'
-      preLoaderRoute: typeof ProjectRouteImport
+      preLoaderRoute: typeof ProjectRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/plugins': {
       id: '/plugins'
       path: '/plugins'
       fullPath: '/plugins'
-      preLoaderRoute: typeof PluginsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/mcp': {
-      id: '/mcp'
-      path: '/mcp'
-      fullPath: '/mcp'
-      preLoaderRoute: typeof McpRouteImport
+      preLoaderRoute: typeof PluginsRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/hooks': {
       id: '/hooks'
       path: '/hooks'
       fullPath: '/hooks'
-      preLoaderRoute: typeof HooksRouteImport
+      preLoaderRoute: typeof HooksRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/global': {
       id: '/global'
       path: '/global'
       fullPath: '/global'
-      preLoaderRoute: typeof GlobalRouteImport
+      preLoaderRoute: typeof GlobalRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/files': {
       id: '/files'
       path: '/files'
       fullPath: '/files'
-      preLoaderRoute: typeof FilesRouteImport
+      preLoaderRoute: typeof FilesRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -373,75 +367,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/project/settings': {
-      id: '/project/settings'
-      path: '/settings'
-      fullPath: '/project/settings'
-      preLoaderRoute: typeof ProjectSettingsRouteImport
-      parentRoute: typeof ProjectRoute
-    }
-    '/project/plugins': {
-      id: '/project/plugins'
-      path: '/plugins'
-      fullPath: '/project/plugins'
-      preLoaderRoute: typeof ProjectPluginsRouteImport
-      parentRoute: typeof ProjectRoute
-    }
-    '/project/mcp': {
-      id: '/project/mcp'
+    '/mcp/': {
+      id: '/mcp/'
       path: '/mcp'
-      fullPath: '/project/mcp'
-      preLoaderRoute: typeof ProjectMcpRouteImport
-      parentRoute: typeof ProjectRoute
-    }
-    '/project/files': {
-      id: '/project/files'
-      path: '/files'
-      fullPath: '/project/files'
-      preLoaderRoute: typeof ProjectFilesRouteImport
-      parentRoute: typeof ProjectRoute
-    }
-    '/plugins/$id': {
-      id: '/plugins/$id'
-      path: '/$id'
-      fullPath: '/plugins/$id'
-      preLoaderRoute: typeof PluginsIdRouteImport
-      parentRoute: typeof PluginsRoute
-    }
-    '/mcp/$name': {
-      id: '/mcp/$name'
-      path: '/$name'
-      fullPath: '/mcp/$name'
-      preLoaderRoute: typeof McpNameRouteImport
-      parentRoute: typeof McpRoute
-    }
-    '/global/settings': {
-      id: '/global/settings'
-      path: '/settings'
-      fullPath: '/global/settings'
-      preLoaderRoute: typeof GlobalSettingsRouteImport
-      parentRoute: typeof GlobalRoute
-    }
-    '/global/plugins': {
-      id: '/global/plugins'
-      path: '/plugins'
-      fullPath: '/global/plugins'
-      preLoaderRoute: typeof GlobalPluginsRouteImport
-      parentRoute: typeof GlobalRoute
-    }
-    '/global/mcp': {
-      id: '/global/mcp'
-      path: '/mcp'
-      fullPath: '/global/mcp'
-      preLoaderRoute: typeof GlobalMcpRouteImport
-      parentRoute: typeof GlobalRoute
-    }
-    '/global/files': {
-      id: '/global/files'
-      path: '/files'
-      fullPath: '/global/files'
-      preLoaderRoute: typeof GlobalFilesRouteImport
-      parentRoute: typeof GlobalRoute
+      fullPath: '/mcp/'
+      preLoaderRoute: typeof McpIndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/health': {
       id: '/api/health'
@@ -450,150 +381,174 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiHealthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/project/settings': {
+      id: '/project/settings'
+      path: '/settings'
+      fullPath: '/project/settings'
+      preLoaderRoute: typeof ProjectSettingsRouteRouteImport
+      parentRoute: typeof ProjectRouteRoute
+    }
+    '/project/files': {
+      id: '/project/files'
+      path: '/files'
+      fullPath: '/project/files'
+      preLoaderRoute: typeof ProjectFilesRouteRouteImport
+      parentRoute: typeof ProjectRouteRoute
+    }
+    '/plugins/$id': {
+      id: '/plugins/$id'
+      path: '/$id'
+      fullPath: '/plugins/$id'
+      preLoaderRoute: typeof PluginsIdRouteRouteImport
+      parentRoute: typeof PluginsRouteRoute
+    }
+    '/mcp/$name': {
+      id: '/mcp/$name'
+      path: '/mcp/$name'
+      fullPath: '/mcp/$name'
+      preLoaderRoute: typeof McpNameRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/global/settings': {
+      id: '/global/settings'
+      path: '/settings'
+      fullPath: '/global/settings'
+      preLoaderRoute: typeof GlobalSettingsRouteRouteImport
+      parentRoute: typeof GlobalRouteRoute
+    }
+    '/global/files': {
+      id: '/global/files'
+      path: '/files'
+      fullPath: '/global/files'
+      preLoaderRoute: typeof GlobalFilesRouteRouteImport
+      parentRoute: typeof GlobalRouteRoute
+    }
+    '/project/plugins/': {
+      id: '/project/plugins/'
+      path: '/plugins'
+      fullPath: '/project/plugins/'
+      preLoaderRoute: typeof ProjectPluginsIndexRouteImport
+      parentRoute: typeof ProjectRouteRoute
+    }
+    '/project/mcp/': {
+      id: '/project/mcp/'
+      path: '/mcp'
+      fullPath: '/project/mcp/'
+      preLoaderRoute: typeof ProjectMcpIndexRouteImport
+      parentRoute: typeof ProjectRouteRoute
+    }
+    '/global/plugins/': {
+      id: '/global/plugins/'
+      path: '/plugins'
+      fullPath: '/global/plugins/'
+      preLoaderRoute: typeof GlobalPluginsIndexRouteImport
+      parentRoute: typeof GlobalRouteRoute
+    }
+    '/global/mcp/': {
+      id: '/global/mcp/'
+      path: '/mcp'
+      fullPath: '/global/mcp/'
+      preLoaderRoute: typeof GlobalMcpIndexRouteImport
+      parentRoute: typeof GlobalRouteRoute
+    }
     '/project/plugins/$id': {
       id: '/project/plugins/$id'
-      path: '/$id'
+      path: '/plugins/$id'
       fullPath: '/project/plugins/$id'
-      preLoaderRoute: typeof ProjectPluginsIdRouteImport
-      parentRoute: typeof ProjectPluginsRoute
+      preLoaderRoute: typeof ProjectPluginsIdRouteRouteImport
+      parentRoute: typeof ProjectRouteRoute
     }
     '/project/mcp/$name': {
       id: '/project/mcp/$name'
-      path: '/$name'
+      path: '/mcp/$name'
       fullPath: '/project/mcp/$name'
-      preLoaderRoute: typeof ProjectMcpNameRouteImport
-      parentRoute: typeof ProjectMcpRoute
+      preLoaderRoute: typeof ProjectMcpNameRouteRouteImport
+      parentRoute: typeof ProjectRouteRoute
     }
     '/global/plugins/$id': {
       id: '/global/plugins/$id'
-      path: '/$id'
+      path: '/plugins/$id'
       fullPath: '/global/plugins/$id'
-      preLoaderRoute: typeof GlobalPluginsIdRouteImport
-      parentRoute: typeof GlobalPluginsRoute
+      preLoaderRoute: typeof GlobalPluginsIdRouteRouteImport
+      parentRoute: typeof GlobalRouteRoute
     }
     '/global/mcp/$name': {
       id: '/global/mcp/$name'
-      path: '/$name'
+      path: '/mcp/$name'
       fullPath: '/global/mcp/$name'
-      preLoaderRoute: typeof GlobalMcpNameRouteImport
-      parentRoute: typeof GlobalMcpRoute
+      preLoaderRoute: typeof GlobalMcpNameRouteRouteImport
+      parentRoute: typeof GlobalRouteRoute
     }
   }
 }
 
-interface GlobalMcpRouteChildren {
-  GlobalMcpNameRoute: typeof GlobalMcpNameRoute
+interface GlobalRouteRouteChildren {
+  GlobalFilesRouteRoute: typeof GlobalFilesRouteRoute
+  GlobalSettingsRouteRoute: typeof GlobalSettingsRouteRoute
+  GlobalMcpNameRouteRoute: typeof GlobalMcpNameRouteRoute
+  GlobalPluginsIdRouteRoute: typeof GlobalPluginsIdRouteRoute
+  GlobalMcpIndexRoute: typeof GlobalMcpIndexRoute
+  GlobalPluginsIndexRoute: typeof GlobalPluginsIndexRoute
 }
 
-const GlobalMcpRouteChildren: GlobalMcpRouteChildren = {
-  GlobalMcpNameRoute: GlobalMcpNameRoute,
+const GlobalRouteRouteChildren: GlobalRouteRouteChildren = {
+  GlobalFilesRouteRoute: GlobalFilesRouteRoute,
+  GlobalSettingsRouteRoute: GlobalSettingsRouteRoute,
+  GlobalMcpNameRouteRoute: GlobalMcpNameRouteRoute,
+  GlobalPluginsIdRouteRoute: GlobalPluginsIdRouteRoute,
+  GlobalMcpIndexRoute: GlobalMcpIndexRoute,
+  GlobalPluginsIndexRoute: GlobalPluginsIndexRoute,
 }
 
-const GlobalMcpRouteWithChildren = GlobalMcpRoute._addFileChildren(
-  GlobalMcpRouteChildren,
+const GlobalRouteRouteWithChildren = GlobalRouteRoute._addFileChildren(
+  GlobalRouteRouteChildren,
 )
 
-interface GlobalPluginsRouteChildren {
-  GlobalPluginsIdRoute: typeof GlobalPluginsIdRoute
+interface PluginsRouteRouteChildren {
+  PluginsIdRouteRoute: typeof PluginsIdRouteRoute
 }
 
-const GlobalPluginsRouteChildren: GlobalPluginsRouteChildren = {
-  GlobalPluginsIdRoute: GlobalPluginsIdRoute,
+const PluginsRouteRouteChildren: PluginsRouteRouteChildren = {
+  PluginsIdRouteRoute: PluginsIdRouteRoute,
 }
 
-const GlobalPluginsRouteWithChildren = GlobalPluginsRoute._addFileChildren(
-  GlobalPluginsRouteChildren,
+const PluginsRouteRouteWithChildren = PluginsRouteRoute._addFileChildren(
+  PluginsRouteRouteChildren,
 )
 
-interface GlobalRouteChildren {
-  GlobalFilesRoute: typeof GlobalFilesRoute
-  GlobalMcpRoute: typeof GlobalMcpRouteWithChildren
-  GlobalPluginsRoute: typeof GlobalPluginsRouteWithChildren
-  GlobalSettingsRoute: typeof GlobalSettingsRoute
+interface ProjectRouteRouteChildren {
+  ProjectFilesRouteRoute: typeof ProjectFilesRouteRoute
+  ProjectSettingsRouteRoute: typeof ProjectSettingsRouteRoute
+  ProjectMcpNameRouteRoute: typeof ProjectMcpNameRouteRoute
+  ProjectPluginsIdRouteRoute: typeof ProjectPluginsIdRouteRoute
+  ProjectMcpIndexRoute: typeof ProjectMcpIndexRoute
+  ProjectPluginsIndexRoute: typeof ProjectPluginsIndexRoute
 }
 
-const GlobalRouteChildren: GlobalRouteChildren = {
-  GlobalFilesRoute: GlobalFilesRoute,
-  GlobalMcpRoute: GlobalMcpRouteWithChildren,
-  GlobalPluginsRoute: GlobalPluginsRouteWithChildren,
-  GlobalSettingsRoute: GlobalSettingsRoute,
+const ProjectRouteRouteChildren: ProjectRouteRouteChildren = {
+  ProjectFilesRouteRoute: ProjectFilesRouteRoute,
+  ProjectSettingsRouteRoute: ProjectSettingsRouteRoute,
+  ProjectMcpNameRouteRoute: ProjectMcpNameRouteRoute,
+  ProjectPluginsIdRouteRoute: ProjectPluginsIdRouteRoute,
+  ProjectMcpIndexRoute: ProjectMcpIndexRoute,
+  ProjectPluginsIndexRoute: ProjectPluginsIndexRoute,
 }
 
-const GlobalRouteWithChildren =
-  GlobalRoute._addFileChildren(GlobalRouteChildren)
-
-interface McpRouteChildren {
-  McpNameRoute: typeof McpNameRoute
-}
-
-const McpRouteChildren: McpRouteChildren = {
-  McpNameRoute: McpNameRoute,
-}
-
-const McpRouteWithChildren = McpRoute._addFileChildren(McpRouteChildren)
-
-interface PluginsRouteChildren {
-  PluginsIdRoute: typeof PluginsIdRoute
-}
-
-const PluginsRouteChildren: PluginsRouteChildren = {
-  PluginsIdRoute: PluginsIdRoute,
-}
-
-const PluginsRouteWithChildren =
-  PluginsRoute._addFileChildren(PluginsRouteChildren)
-
-interface ProjectMcpRouteChildren {
-  ProjectMcpNameRoute: typeof ProjectMcpNameRoute
-}
-
-const ProjectMcpRouteChildren: ProjectMcpRouteChildren = {
-  ProjectMcpNameRoute: ProjectMcpNameRoute,
-}
-
-const ProjectMcpRouteWithChildren = ProjectMcpRoute._addFileChildren(
-  ProjectMcpRouteChildren,
+const ProjectRouteRouteWithChildren = ProjectRouteRoute._addFileChildren(
+  ProjectRouteRouteChildren,
 )
-
-interface ProjectPluginsRouteChildren {
-  ProjectPluginsIdRoute: typeof ProjectPluginsIdRoute
-}
-
-const ProjectPluginsRouteChildren: ProjectPluginsRouteChildren = {
-  ProjectPluginsIdRoute: ProjectPluginsIdRoute,
-}
-
-const ProjectPluginsRouteWithChildren = ProjectPluginsRoute._addFileChildren(
-  ProjectPluginsRouteChildren,
-)
-
-interface ProjectRouteChildren {
-  ProjectFilesRoute: typeof ProjectFilesRoute
-  ProjectMcpRoute: typeof ProjectMcpRouteWithChildren
-  ProjectPluginsRoute: typeof ProjectPluginsRouteWithChildren
-  ProjectSettingsRoute: typeof ProjectSettingsRoute
-}
-
-const ProjectRouteChildren: ProjectRouteChildren = {
-  ProjectFilesRoute: ProjectFilesRoute,
-  ProjectMcpRoute: ProjectMcpRouteWithChildren,
-  ProjectPluginsRoute: ProjectPluginsRouteWithChildren,
-  ProjectSettingsRoute: ProjectSettingsRoute,
-}
-
-const ProjectRouteWithChildren =
-  ProjectRoute._addFileChildren(ProjectRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  FilesRoute: FilesRoute,
-  GlobalRoute: GlobalRouteWithChildren,
-  HooksRoute: HooksRoute,
-  McpRoute: McpRouteWithChildren,
-  PluginsRoute: PluginsRouteWithChildren,
-  ProjectRoute: ProjectRouteWithChildren,
-  SkillsRoute: SkillsRoute,
+  FilesRouteRoute: FilesRouteRoute,
+  GlobalRouteRoute: GlobalRouteRouteWithChildren,
+  HooksRouteRoute: HooksRouteRoute,
+  PluginsRouteRoute: PluginsRouteRouteWithChildren,
+  ProjectRouteRoute: ProjectRouteRouteWithChildren,
+  SkillsRouteRoute: SkillsRouteRoute,
+  McpNameRouteRoute: McpNameRouteRoute,
   ApiHealthRoute: ApiHealthRoute,
+  McpIndexRoute: McpIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

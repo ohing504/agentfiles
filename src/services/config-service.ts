@@ -8,7 +8,6 @@ import type {
   ClaudeMd,
   McpServer,
   Overview,
-  Plugin,
   Scope,
   SupportingFile,
 } from "@/shared/types"
@@ -294,102 +293,6 @@ export async function readProjectLocalSettings(
   }
 }
 
-// ── Plugin 목록 ──
-
-export async function getPlugins(): Promise<Plugin[]> {
-  const globalBase = getGlobalConfigPath()
-  const pluginsJsonPath = path.join(
-    globalBase,
-    "plugins",
-    "installed_plugins.json",
-  )
-
-  let rawData: Record<string, unknown> = {}
-  try {
-    const content = await fs.readFile(pluginsJsonPath, "utf-8")
-    rawData = JSON.parse(content) as Record<string, unknown>
-  } catch (err) {
-    if ((err as NodeJS.ErrnoException).code === "ENOENT") {
-      return []
-    }
-    throw err
-  }
-
-  // settings.json에서 enabledPlugins 읽기
-  const settings = await readSettingsJson(globalBase)
-  const enabledPlugins = settings.enabledPlugins
-
-  // enabledPlugins는 객체(id→boolean) 또는 배열(id[]) 형태 모두 지원
-  function isEnabled(id: string): boolean {
-    if (Array.isArray(enabledPlugins)) {
-      return (enabledPlugins as string[]).includes(id)
-    }
-    if (enabledPlugins && typeof enabledPlugins === "object") {
-      return (enabledPlugins as Record<string, boolean>)[id] === true
-    }
-    return false
-  }
-
-  // version 2: { version: 2, plugins: { "id@marketplace": [{ scope, installPath, ... }] } }
-  const plugins: Plugin[] = []
-
-  if (
-    rawData.version === 2 &&
-    rawData.plugins &&
-    typeof rawData.plugins === "object"
-  ) {
-    const pluginsMap = rawData.plugins as Record<string, unknown[]>
-
-    for (const [pluginId, entries] of Object.entries(pluginsMap)) {
-      if (!Array.isArray(entries)) continue
-
-      for (const entry of entries) {
-        if (typeof entry !== "object" || entry === null) continue
-
-        const e = entry as Record<string, unknown>
-        const [name, marketplace] = pluginId.includes("@")
-          ? pluginId.split("@")
-          : [pluginId, ""]
-
-        plugins.push({
-          id: pluginId,
-          name: name ?? pluginId,
-          marketplace: marketplace ?? "",
-          scope: (e.scope as "user" | "project") ?? "user",
-          projectPath: e.projectPath as string | undefined,
-          version: (e.version as string) ?? "",
-          installedAt: (e.installedAt as string) ?? "",
-          lastUpdated: (e.lastUpdated as string) ?? "",
-          gitCommitSha: (e.gitCommitSha as string) ?? "",
-          installPath: (e.installPath as string) ?? "",
-          enabled: isEnabled(pluginId),
-        })
-      }
-    }
-  } else if (Array.isArray(rawData)) {
-    // 레거시 배열 형태
-    for (const entry of rawData as Record<string, unknown>[]) {
-      if (typeof entry !== "object" || entry === null) continue
-      const id = (entry.id as string) ?? ""
-      plugins.push({
-        id,
-        name: (entry.name as string) ?? id,
-        marketplace: (entry.marketplace as string) ?? "",
-        scope: (entry.scope as "user" | "project") ?? "user",
-        projectPath: entry.projectPath as string | undefined,
-        version: (entry.version as string) ?? "",
-        installedAt: (entry.installedAt as string) ?? "",
-        lastUpdated: (entry.lastUpdated as string) ?? "",
-        gitCommitSha: (entry.gitCommitSha as string) ?? "",
-        installPath: (entry.installPath as string) ?? "",
-        enabled: isEnabled(id),
-      })
-    }
-  }
-
-  return plugins
-}
-
 // ── MCP 서버 목록 ──
 
 function parseMcpServers(
@@ -457,6 +360,7 @@ export async function getMcpServers(
 // ── Overview 생성 ──
 
 export async function getOverview(projectPath?: string): Promise<Overview> {
+  const { getPlugins } = await import("@/services/plugin-service")
   const globalBase = getGlobalConfigPath()
   const projectBase = getProjectConfigPath(projectPath)
 
@@ -474,7 +378,7 @@ export async function getOverview(projectPath?: string): Promise<Overview> {
   ] = await Promise.all([
     getClaudeMd("global"),
     getClaudeMd("project", projectPath),
-    getPlugins(),
+    getPlugins(projectPath),
     getMcpServers(projectPath),
     scanMdDirWithScope(path.join(globalBase, "agents"), "agent", "global"),
     scanMdDirWithScope(path.join(projectBase, "agents"), "agent", "project"),

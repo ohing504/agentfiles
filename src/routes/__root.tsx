@@ -3,7 +3,7 @@ import { createRootRoute, HeadContent, Scripts } from "@tanstack/react-router"
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools"
 
 import { ErrorBoundary } from "@/components/ErrorBoundary"
-import { Layout } from "@/components/Layout"
+import { Layout } from "@/components/layout/Layout"
 import { ProjectProvider } from "@/components/ProjectContext"
 import { Toaster } from "@/components/ui/sonner"
 import { TooltipProvider } from "@/components/ui/tooltip"

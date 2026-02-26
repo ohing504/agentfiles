@@ -14,6 +14,14 @@ export const getItemsFn = createServerFn({ method: "GET" })
     return getAgentFiles(data.type, data.projectPath)
   })
 
+export const readFileContentFn = createServerFn({ method: "GET" })
+  .inputValidator(z.object({ filePath: z.string().min(1) }))
+  .handler(async ({ data }) => {
+    const fs = await import("node:fs/promises")
+    const content = await fs.readFile(data.filePath, "utf-8")
+    return { content }
+  })
+
 export const getItemFn = createServerFn({ method: "GET" })
   .inputValidator(
     z.object({

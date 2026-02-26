@@ -43,7 +43,6 @@ export function useProjects() {
       queryClient.invalidateQueries({ queryKey: queryKeys.claudeMd.all })
       queryClient.invalidateQueries({ queryKey: queryKeys.mcpServers.all })
       queryClient.invalidateQueries({ queryKey: queryKeys.agentFiles.all })
-      queryClient.invalidateQueries({ queryKey: queryKeys.plugins.all })
     },
   })
 

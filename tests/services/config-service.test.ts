@@ -8,7 +8,6 @@ import {
   getGlobalConfigPath,
   getMcpServers,
   getOverview,
-  getPlugins,
   getProjectConfigPath,
   scanMdDir,
 } from "@/services/config-service"
@@ -216,159 +215,6 @@ describe("scanMdDir", () => {
     expect(result[0].isSymlink).toBe(true)
     expect(result[0].symlinkTarget).toBe(targetFile)
     expect(result[0].name).toBe("find-skills")
-  })
-})
-
-// ── getPlugins ──
-
-describe("getPlugins", () => {
-  it("installed_plugins.json 없으면 빈 배열", async () => {
-    const result = await getPlugins()
-    expect(result).toEqual([])
-  })
-
-  it("버전2 포맷 플러그인 파싱", async () => {
-    const pluginsJson = {
-      version: 2,
-      plugins: {
-        "my-plugin@marketplace": [
-          {
-            scope: "user",
-            installPath: "/some/path",
-            version: "abc123",
-            installedAt: "2026-01-01T00:00:00.000Z",
-            lastUpdated: "2026-01-02T00:00:00.000Z",
-            gitCommitSha: "abc123def456",
-          },
-        ],
-      },
-    }
-    await writeJson(
-      path.join(tmpGlobal, ".claude", "plugins", "installed_plugins.json"),
-      pluginsJson,
-    )
-
-    const result = await getPlugins()
-
-    expect(result).toHaveLength(1)
-    expect(result[0].id).toBe("my-plugin@marketplace")
-    expect(result[0].name).toBe("my-plugin")
-    expect(result[0].marketplace).toBe("marketplace")
-    expect(result[0].scope).toBe("user")
-    expect(result[0].enabled).toBe(false) // settings.json 없음
-  })
-
-  it("settings.json enabledPlugins(객체) 기반 enabled 필드 설정", async () => {
-    const pluginsJson = {
-      version: 2,
-      plugins: {
-        "plugin-a@mkt": [
-          {
-            scope: "user",
-            installPath: "/p/a",
-            version: "v1",
-            installedAt: "2026-01-01T00:00:00.000Z",
-            lastUpdated: "2026-01-01T00:00:00.000Z",
-            gitCommitSha: "sha1",
-          },
-        ],
-        "plugin-b@mkt": [
-          {
-            scope: "user",
-            installPath: "/p/b",
-            version: "v2",
-            installedAt: "2026-01-01T00:00:00.000Z",
-            lastUpdated: "2026-01-01T00:00:00.000Z",
-            gitCommitSha: "sha2",
-          },
-        ],
-      },
-    }
-    const settingsJson = {
-      enabledPlugins: {
-        "plugin-a@mkt": true,
-        "plugin-b@mkt": false,
-      },
-    }
-
-    await writeJson(
-      path.join(tmpGlobal, ".claude", "plugins", "installed_plugins.json"),
-      pluginsJson,
-    )
-    await writeJson(
-      path.join(tmpGlobal, ".claude", "settings.json"),
-      settingsJson,
-    )
-
-    const result = await getPlugins()
-
-    const pluginA = result.find((p) => p.id === "plugin-a@mkt")
-    const pluginB = result.find((p) => p.id === "plugin-b@mkt")
-    expect(pluginA?.enabled).toBe(true)
-    expect(pluginB?.enabled).toBe(false)
-  })
-
-  it("settings.json enabledPlugins(배열) 기반 enabled 필드 설정", async () => {
-    const pluginsJson = {
-      version: 2,
-      plugins: {
-        "plugin-x@mkt": [
-          {
-            scope: "user",
-            installPath: "/p/x",
-            version: "v1",
-            installedAt: "2026-01-01T00:00:00.000Z",
-            lastUpdated: "2026-01-01T00:00:00.000Z",
-            gitCommitSha: "sha1",
-          },
-        ],
-      },
-    }
-    const settingsJson = {
-      enabledPlugins: ["plugin-x@mkt"],
-    }
-
-    await writeJson(
-      path.join(tmpGlobal, ".claude", "plugins", "installed_plugins.json"),
-      pluginsJson,
-    )
-    await writeJson(
-      path.join(tmpGlobal, ".claude", "settings.json"),
-      settingsJson,
-    )
-
-    const result = await getPlugins()
-
-    expect(result[0].enabled).toBe(true)
-  })
-
-  it("project 스코프 플러그인 처리", async () => {
-    const pluginsJson = {
-      version: 2,
-      plugins: {
-        "proj-plugin@mkt": [
-          {
-            scope: "project",
-            projectPath: "/some/project",
-            installPath: "/p/proj",
-            version: "v1",
-            installedAt: "2026-01-01T00:00:00.000Z",
-            lastUpdated: "2026-01-01T00:00:00.000Z",
-            gitCommitSha: "sha1",
-          },
-        ],
-      },
-    }
-
-    await writeJson(
-      path.join(tmpGlobal, ".claude", "plugins", "installed_plugins.json"),
-      pluginsJson,
-    )
-
-    const result = await getPlugins()
-
-    expect(result[0].scope).toBe("project")
-    expect(result[0].projectPath).toBe("/some/project")
   })
 })
 
@@ -678,6 +524,76 @@ describe("getOverview", () => {
 
     expect(result.plugins.total).toBe(2)
     expect(result.plugins.user).toBe(1)
+    expect(result.plugins.project).toBe(1)
+  })
+
+  it("getOverview가 projectPath를 getPlugins에 전달 → project enabledPlugins 반영", async () => {
+    const pluginsJson = {
+      version: 2,
+      plugins: {
+        "ov-plugin@mkt": [
+          {
+            scope: "user",
+            installPath: "",
+            version: "v1",
+            installedAt: "2026-01-01T00:00:00.000Z",
+            lastUpdated: "2026-01-01T00:00:00.000Z",
+            gitCommitSha: "sha1",
+          },
+        ],
+      },
+    }
+    await writeJson(
+      path.join(tmpGlobal, ".claude", "plugins", "installed_plugins.json"),
+      pluginsJson,
+    )
+    // 프로젝트 settings에서만 enabled 설정
+    await writeJson(path.join(tmpProject, ".claude", "settings.json"), {
+      enabledPlugins: { "ov-plugin@mkt": true },
+    })
+
+    // projectPath 전달해서 getOverview 호출
+    const result = await getOverview(tmpProject)
+    // getPlugins(projectPath) 내부에서 project settings도 읽어야 함
+    expect(result.plugins.total).toBe(1)
+  })
+
+  it("project 스코프 플러그인이 projectPath로 정상 필터링됨", async () => {
+    const pluginsJson = {
+      version: 2,
+      plugins: {
+        "proj-plugin@mkt": [
+          {
+            scope: "project",
+            projectPath: tmpProject,
+            installPath: "",
+            version: "v1",
+            installedAt: "2026-01-01T00:00:00.000Z",
+            lastUpdated: "2026-01-01T00:00:00.000Z",
+            gitCommitSha: "sha1",
+          },
+        ],
+        "other-proj@mkt": [
+          {
+            scope: "project",
+            projectPath: "/other/unrelated/project",
+            installPath: "",
+            version: "v1",
+            installedAt: "2026-01-01T00:00:00.000Z",
+            lastUpdated: "2026-01-01T00:00:00.000Z",
+            gitCommitSha: "sha2",
+          },
+        ],
+      },
+    }
+    await writeJson(
+      path.join(tmpGlobal, ".claude", "plugins", "installed_plugins.json"),
+      pluginsJson,
+    )
+
+    const result = await getOverview(tmpProject)
+    // tmpProject 과 일치하는 project 플러그인만 포함
+    expect(result.plugins.total).toBe(1)
     expect(result.plugins.project).toBe(1)
   })
 })

@@ -32,7 +32,9 @@
         "hooks": [
           {
             "type": "command",
-            "command": "pnpm lint:fix && pnpm format"
+            "command": "pnpm format",
+            "async": true,
+            "timeout": 30
           }
         ]
       },
@@ -51,7 +53,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "pnpm typecheck"
+            "command": "pnpm lint:fix && pnpm typecheck"
           }
         ]
       }

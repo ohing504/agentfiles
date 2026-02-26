@@ -22,11 +22,37 @@ export interface ClaudeMd {
 }
 
 // ── Plugin ──
+export type PluginScope = "user" | "project" | "local" | "managed"
+
+export interface PluginAuthor {
+  name: string
+  email?: string
+  url?: string
+}
+
+export interface LspServer {
+  name: string
+  command: string
+  args?: string[]
+  transport?: "stdio" | "socket"
+  extensionToLanguage: Record<string, string>
+}
+
+export interface PluginComponents {
+  commands: AgentFile[]
+  skills: AgentFile[]
+  agents: AgentFile[]
+  hooks: HooksSettings
+  mcpServers: McpServer[]
+  lspServers: LspServer[]
+  outputStyles: AgentFile[]
+}
+
 export interface Plugin {
   id: string // "superpowers@claude-plugins-official"
   name: string
   marketplace: string
-  scope: "user" | "project"
+  scope: PluginScope
   projectPath?: string
   version: string
   installedAt: string
@@ -34,6 +60,13 @@ export interface Plugin {
   gitCommitSha: string
   installPath: string
   enabled: boolean
+  description?: string
+  author?: PluginAuthor
+  homepage?: string
+  repository?: string
+  license?: string
+  keywords?: string[]
+  contents?: PluginComponents
 }
 
 // ── MCP Server ──
