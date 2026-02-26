@@ -1,16 +1,15 @@
 import { Link } from "@tanstack/react-router"
 import {
-  FolderOpen,
-  LayoutDashboard,
+  FolderOpenIcon,
+  LayoutDashboardIcon,
   PanelLeftIcon,
   Plug2Icon,
-  ScrollText,
-  Server,
+  ScrollTextIcon,
+  ServerIcon,
   SettingsIcon,
-  Zap,
+  ZapIcon,
 } from "lucide-react"
 
-import { useProjectContext } from "@/components/ProjectContext"
 import { ProjectSwitcher } from "@/components/ProjectSwitcher"
 import {
   Sidebar,
@@ -18,7 +17,6 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -27,14 +25,6 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { m } from "@/paraglide/messages"
-
-const globalNavItems = [
-  { to: "/global/files", icon: FolderOpen, labelFn: () => m.nav_files() },
-] as const
-
-const projectNavItems = [
-  { to: "/project/files", icon: FolderOpen, labelFn: () => m.nav_files() },
-] as const
 
 function SidebarToggle() {
   const { toggleSidebar } = useSidebar()
@@ -55,15 +45,12 @@ function SidebarToggle() {
 }
 
 export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
-  const { activeProjectPath } = useProjectContext()
-
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
         <ProjectSwitcher />
       </SidebarHeader>
       <SidebarContent>
-        {/* Dashboard, Skills, Hooks, MCP, Plugins, Configuration */}
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
@@ -74,7 +61,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
                     activeProps={{ "data-active": true }}
                     activeOptions={{ exact: true }}
                   >
-                    <LayoutDashboard />
+                    <LayoutDashboardIcon />
                     <span>{m.nav_dashboard()}</span>
                   </Link>
                 </SidebarMenuButton>
@@ -82,7 +69,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
               <SidebarMenuItem>
                 <SidebarMenuButton asChild tooltip={m.nav_skills()}>
                   <Link to="/skills" activeProps={{ "data-active": true }}>
-                    <ScrollText />
+                    <ScrollTextIcon />
                     <span>{m.nav_skills()}</span>
                   </Link>
                 </SidebarMenuButton>
@@ -90,7 +77,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
               <SidebarMenuItem>
                 <SidebarMenuButton asChild tooltip="Hooks">
                   <Link to="/hooks" activeProps={{ "data-active": true }}>
-                    <Zap />
+                    <ZapIcon />
                     <span>Hooks</span>
                   </Link>
                 </SidebarMenuButton>
@@ -98,7 +85,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
               <SidebarMenuItem>
                 <SidebarMenuButton asChild tooltip={m.nav_mcp_servers()}>
                   <Link to="/mcp" activeProps={{ "data-active": true }}>
-                    <Server />
+                    <ServerIcon />
                     <span>{m.nav_mcp_servers()}</span>
                   </Link>
                 </SidebarMenuButton>
@@ -122,49 +109,17 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild tooltip={m.nav_files()}>
+                  <Link to="/files" activeProps={{ "data-active": true }}>
+                    <FolderOpenIcon />
+                    <span>{m.nav_files()}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-
-        {/* Global */}
-        <SidebarGroup>
-          <SidebarGroupLabel>{m.nav_group_global()}</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {globalNavItems.map(({ to, icon: Icon, labelFn }) => (
-                <SidebarMenuItem key={to}>
-                  <SidebarMenuButton asChild tooltip={labelFn()}>
-                    <Link to={to} activeProps={{ "data-active": true }}>
-                      <Icon />
-                      <span>{labelFn()}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        {/* Project (only when a project is selected) */}
-        {activeProjectPath && (
-          <SidebarGroup>
-            <SidebarGroupLabel>{m.nav_group_project()}</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {projectNavItems.map(({ to, icon: Icon, labelFn }) => (
-                  <SidebarMenuItem key={to}>
-                    <SidebarMenuButton asChild tooltip={labelFn()}>
-                      <Link to={to} activeProps={{ "data-active": true }}>
-                        <Icon />
-                        <span>{labelFn()}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        )}
       </SidebarContent>
       <SidebarFooter>
         <SidebarToggle />
