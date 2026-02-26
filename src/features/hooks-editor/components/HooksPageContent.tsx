@@ -139,7 +139,7 @@ export function HooksPageContent() {
             />
           </div>
           <HooksScopeSection
-            label="Global"
+            label="User"
             scope="global"
             hooks={globalHooks}
             searchQuery={searchQuery}

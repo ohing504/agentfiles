@@ -160,5 +160,5 @@
 - **Benefit**: Complete test coverage
 
 ### 18. `AgentFileDetail` shows synthetic markdown instead of real file content
-- **Adopt**: OPTIONAL
+- **Adopt**: ~~OPTIONAL~~ DONE — `SkillDetailView`로 교체 (2026-02-26)
 - **Benefit**: UX honesty

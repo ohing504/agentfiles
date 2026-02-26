@@ -1,6 +1,5 @@
-import { FileViewer } from "@/components/FileViewer"
+import { AgentFileView } from "@/components/AgentFileView"
 import { useSupportingFileQuery } from "../api/skills.queries"
-import { extractBody } from "../constants"
 import { useSkillsSelection } from "../context/SkillsContext"
 
 export function SupportingFilePanel() {
@@ -14,10 +13,6 @@ export function SupportingFilePanel() {
 
   if (!skill || !supportingFile) return null
 
-  const isMarkdown = supportingFile.name.endsWith(".md")
-  const rawContent = data?.content ?? ""
-  const body = isMarkdown ? extractBody(rawContent) : rawContent
-
   return (
     <>
       <div className="flex items-center justify-between px-4 h-12 shrink-0">
@@ -26,11 +21,9 @@ export function SupportingFilePanel() {
         </h2>
       </div>
       <div className="flex-1 overflow-y-auto p-4 flex flex-col min-h-0">
-        <FileViewer
-          content={isMarkdown ? body : undefined}
-          rawContent={rawContent}
+        <AgentFileView
           fileName={supportingFile.relativePath}
-          isMarkdown={isMarkdown}
+          rawContent={data?.content ?? ""}
           isLoading={isLoading}
           className="flex-1"
         />

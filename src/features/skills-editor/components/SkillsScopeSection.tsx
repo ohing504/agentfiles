@@ -1,17 +1,11 @@
 import {
   FileText,
   FolderOpen,
-  Info,
   Plus,
   ScrollText,
   SquareTerminal,
 } from "lucide-react"
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"
-import { Tree, TreeFile, TreeFolder } from "@/components/ui/tree"
+import { ListItem, ListSubItem } from "@/components/ui/list-item"
 import { m } from "@/paraglide/messages"
 import type { Scope } from "@/shared/types"
 import { useSkillsSelection } from "../context/SkillsContext"
@@ -71,17 +65,6 @@ export function SkillsScopeSection({
 
   // Track skill names for duplicate detection (command with same name -> muted)
   const skillNames = new Set(filteredSkills.map((f) => f.name))
-
-  const duplicateTooltip = (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <Info className="size-3 text-muted-foreground" />
-      </TooltipTrigger>
-      <TooltipContent side="right">
-        <p className="text-xs">{m.skills_duplicate_tooltip()}</p>
-      </TooltipContent>
-    </Tooltip>
-  )
 
   // Build unified sorted tree items
   type TreeItem =
@@ -144,7 +127,7 @@ export function SkillsScopeSection({
       ) : !hasAny ? (
         <p className="text-xs text-muted-foreground px-2 py-1.5">No results</p>
       ) : (
-        <Tree>
+        <div className="flex flex-col gap-0.5">
           {treeItems.map((item) => {
             if (item.kind === "skill") {
               const hasSupportingFiles =
@@ -155,7 +138,7 @@ export function SkillsScopeSection({
               if (hasSupportingFiles) {
                 const isExpanded = expandedSkillPath === item.file.path
                 return (
-                  <TreeFolder
+                  <ListItem
                     key={item.file.path}
                     icon={ScrollText}
                     label={item.file.name}
@@ -164,17 +147,13 @@ export function SkillsScopeSection({
                       !selectedSupportingFile
                     }
                     open={isExpanded}
-                    onOpenChange={(o) =>
-                      onExpandSkill(o ? item.file.path : null)
-                    }
                     onClick={() => {
                       onSelectSkill(item.file)
                       onSelectSupportingFile(null)
                       onExpandSkill(item.file.path)
                     }}
-                    hideChevron
                   >
-                    <TreeFile
+                    <ListSubItem
                       icon={FileText}
                       label="SKILL.md"
                       selected={
@@ -191,7 +170,7 @@ export function SkillsScopeSection({
                       }}
                     />
                     {item.file.supportingFiles?.map((sf) => (
-                      <TreeFile
+                      <ListSubItem
                         key={sf.relativePath}
                         icon={FileText}
                         label={sf.relativePath}
@@ -206,12 +185,12 @@ export function SkillsScopeSection({
                         }}
                       />
                     ))}
-                  </TreeFolder>
+                  </ListItem>
                 )
               }
 
               return (
-                <TreeFile
+                <ListItem
                   key={item.file.path}
                   icon={ScrollText}
                   label={item.file.name}
@@ -226,46 +205,52 @@ export function SkillsScopeSection({
                 />
               )
             }
+
             if (item.kind === "namespace") {
               return (
-                <TreeFolder
+                <ListItem
                   key={item.name}
                   icon={FolderOpen}
                   label={`${item.name}/`}
-                  count={item.commands.length}
-                  defaultOpen
+                  trailing={
+                    <span className="text-[10px] text-muted-foreground/60">
+                      {item.commands.length}
+                    </span>
+                  }
+                  open={true}
+                  onClick={() => {}}
                 >
                   {item.commands.map((f) => {
                     const isDup = skillNames.has(f.name)
                     return (
-                      <TreeFile
+                      <ListSubItem
                         key={f.path}
                         icon={SquareTerminal}
                         label={f.name}
-                        muted={isDup}
-                        trailing={isDup ? duplicateTooltip : undefined}
+                        className={isDup ? "opacity-50" : undefined}
                         selected={selectedSkill?.path === f.path}
                         onClick={() => onSelectSkill(f)}
                       />
                     )
                   })}
-                </TreeFolder>
+                </ListItem>
               )
             }
+
             const isDup = skillNames.has(item.file.name)
             return (
-              <TreeFile
+              <ListItem
                 key={item.file.path}
                 icon={SquareTerminal}
                 label={item.file.name}
-                muted={isDup}
-                trailing={isDup ? duplicateTooltip : undefined}
+                tooltip={isDup ? m.skills_duplicate_tooltip() : undefined}
+                className={isDup ? "opacity-50" : undefined}
                 selected={selectedSkill?.path === item.file.path}
                 onClick={() => onSelectSkill(item.file)}
               />
             )
           })}
-        </Tree>
+        </div>
       )}
     </div>
   )

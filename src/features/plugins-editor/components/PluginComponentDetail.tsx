@@ -1,9 +1,10 @@
 import { DetailField } from "@/components/DetailField"
 import { FileViewer } from "@/components/FileViewer"
+import { SkillDetailView } from "@/components/SkillDetailView"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { m } from "@/paraglide/messages"
-import type { AgentFile, PluginComponents } from "@/shared/types"
+import type { PluginComponents } from "@/shared/types"
 import type { PluginComponentType } from "../types"
 
 export function PluginComponentDetail({
@@ -19,24 +20,24 @@ export function PluginComponentDetail({
     case "commands": {
       const file = contents.commands.find((f) => (f.path ?? f.name) === itemId)
       if (!file) return <EmptyDetail />
-      return <AgentFileDetail file={file} />
+      return <SkillDetailView skill={file} />
     }
     case "skills": {
       const file = contents.skills.find((f) => (f.path ?? f.name) === itemId)
       if (!file) return <EmptyDetail />
-      return <AgentFileDetail file={file} />
+      return <SkillDetailView skill={file} />
     }
     case "agents": {
       const file = contents.agents.find((f) => (f.path ?? f.name) === itemId)
       if (!file) return <EmptyDetail />
-      return <AgentFileDetail file={file} />
+      return <SkillDetailView skill={file} />
     }
     case "outputStyles": {
       const file = contents.outputStyles.find(
         (f) => (f.path ?? f.name) === itemId,
       )
       if (!file) return <EmptyDetail />
-      return <AgentFileDetail file={file} />
+      return <SkillDetailView skill={file} />
     }
     case "hooks": {
       // itemId format: "EventName-groupIdx-hookIdx"
@@ -170,37 +171,6 @@ export function PluginComponentDetail({
     default:
       return <EmptyDetail />
   }
-}
-
-function AgentFileDetail({ file }: { file: AgentFile }) {
-  return (
-    <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-6">
-      <dl className="grid grid-cols-2 gap-x-6 gap-y-4">
-        <DetailField label="Name">
-          <span className="text-sm font-medium">{file.name}</span>
-        </DetailField>
-        <DetailField label="Type">
-          <Badge variant="secondary" className="text-xs capitalize">
-            {file.type}
-          </Badge>
-        </DetailField>
-        {file.frontmatter?.description && (
-          <DetailField label={m.plugin_description()}>
-            <span className="text-sm">
-              {String(file.frontmatter.description)}
-            </span>
-          </DetailField>
-        )}
-      </dl>
-      <Separator />
-      <FileViewer
-        rawContent={`# ${file.name}\n\nPath: ${file.path}`}
-        fileName={`${file.name}.md`}
-        isMarkdown={true}
-        className="flex-1"
-      />
-    </div>
-  )
 }
 
 function EmptyDetail() {

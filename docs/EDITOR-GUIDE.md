@@ -400,7 +400,43 @@ async function handleOpenInEditor(editor: "code" | "cursor") {
 }
 ```
 
-## 7. 금지 사항 (Anti-patterns)
+## 7. 공유 컴포넌트 및 훅
+
+### 상세 뷰 컴포넌트
+
+```text
+src/components/
+  SkillDetailView.tsx      ← self-fetching, AgentFile의 메타+콘텐츠 표시
+  AgentFileView.tsx        ← 순수 표시, 파일명+내용을 받아 FileViewer 위임
+  FrontmatterBadges.tsx    ← frontmatter 키를 Badge로 시각화
+  DetailField.tsx          ← 메타 필드 래퍼 (label + children)
+  FileViewer.tsx           ← preview/source 토글, 복사 버튼
+
+src/hooks/
+  use-agent-file-detail.ts ← useAgentFileDetailQuery (path 기반 파일 읽기)
+```
+
+**사용 패턴:**
+```tsx
+// 어디서든 AgentFile 객체만 넘기면 상세 표시
+<SkillDetailView skill={agentFile} />
+
+// 파일 내용을 직접 전달하는 순수 뷰어
+<AgentFileView fileName="helper.ts" rawContent={content} isLoading={loading} />
+```
+
+### 의존성 방향 규칙
+
+```text
+plugins-editor ──→ skills-editor     ✅ 허용
+plugins-editor ──→ hooks-editor      ✅ 허용
+skills-editor  ──→ plugins-editor    ❌ 금지
+hooks-editor   ──→ plugins-editor    ❌ 금지
+```
+
+plugins가 상위 그룹(skill, hook, mcp 등을 번들)이므로 하위 참조 허용, 역방향 금지.
+
+## 8. 금지 사항 (Anti-patterns)
 
 | 금지 | 이유 | 올바른 방법 |
 |------|------|------------|
@@ -411,7 +447,7 @@ async function handleOpenInEditor(editor: "code" | "cursor") {
 | mutation `onSuccess`에서 invalidation 누락 | 스테일 데이터 | 관련 queryKey + overview.all 무효화 |
 | 에러 발생 가능 영역에 ErrorBoundary 없음 | 흰 화면 | 페이지 최외곽에 ErrorBoundary 래핑 |
 
-## 8. 체크리스트
+## 9. 체크리스트
 
 새 에디터 작성 또는 기존 에디터 리팩토링 시:
 

@@ -79,7 +79,7 @@ function SkillsPageInner() {
           </div>
 
           <SkillsScopeSection
-            label="Global"
+            label="User"
             scope="global"
             searchQuery={searchQuery}
             onAddClick={() => handleAddClick("global")}

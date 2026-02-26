@@ -22,8 +22,9 @@
 ### skills-editor 리팩토링 (plugins-editor 패턴으로 통일)
 - [x] skills-editor를 plugins-editor 구조에 맞춰 리팩토링 (context, api, components 분리)
 - [x] queryFn 파라미터화 — queryKey에 의존성 포함 (plugins-editor 패턴 참고)
-- [ ] 공유 상세 컴포넌트 추출 — `AgentFileDetail`, `HookDetail`, `McpServerDetail`, `LspServerDetail` 등
-  - plugins의 `PluginComponentDetail` 에서 공유 컴포넌트를 재사용하도록 개선 (#16)
+- [x] 공유 상세 컴포넌트 추출 — `SkillDetailView`, `AgentFileView`, `useAgentFileDetailQuery`
+  - plugins의 `PluginComponentDetail`에서 `SkillDetailView` 재사용 (실제 파일 내용 표시)
+- [ ] 추가 공유 컴포넌트 — `HookDetailView`, `McpServerDetailView`, `LspServerDetailView`
 - **주의**: server function handler 내 `@/services/*` import는 반드시 dynamic import 유지 (Node.js 전용 모듈이 클라이언트 번들에 포함되면 깨짐) — `docs/EDITOR-GUIDE.md` 참조
 
 ### hooks-editor 리팩토링
@@ -31,7 +32,7 @@
 - [ ] hooks-editor를 plugins-editor 패턴에 맞춰 구조 개선
 
 ### 추후 개선 (Backlog)
-- [ ] AgentFileDetail: synthetic markdown 대신 실제 파일 내용 표시 (#18)
+- [x] AgentFileDetail: synthetic markdown 대신 실제 파일 내용 표시 (#18) — SkillDetailView로 교체
 - [ ] 플러그인 검색 입력에 `useDeferredValue` 적용 (#13)
 
 ## 마켓플레이스
@@ -39,6 +40,15 @@
 - plugins, skills 등을 마켓플레이스에서 검색/설치할 수 있도록
 
 ## Shipped
+
+### 공유 상세 컴포넌트 추출 (2026-02-26)
+- `SkillDetailView` (self-fetching, src/components/) — skills-editor + plugins-editor 공유
+- `AgentFileView` (순수 표시, src/components/) — supporting file 뷰어
+- `useAgentFileDetailQuery` (src/hooks/) — path 기반 파일 읽기
+- `FrontmatterBadges` → src/components/ 이동, `extractBody` → src/lib/format.ts 이동
+- plugins-editor `AgentFileDetail`(합성md) → `SkillDetailView`(실제 내용) 교체
+- skills/hooks `label="Global"` → `label="User"` 용어 통일
+- 196 tests 통과, 빌드 성공
 
 ### skills-editor 리팩토링 (2026-02-26)
 - plugins-editor 패턴에 맞춰 구조 통일 (EDITOR-GUIDE.md 기반)

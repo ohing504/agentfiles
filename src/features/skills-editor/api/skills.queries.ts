@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useProjectContext } from "@/components/ProjectContext"
 import { FREQUENT_REFETCH } from "@/hooks/use-config"
 import { queryKeys } from "@/lib/query-keys"
-import type { AgentFile, Scope } from "@/shared/types"
+import type { Scope } from "@/shared/types"
 import {
   createSkillFn,
   readSupportingFileFn,
@@ -23,28 +23,6 @@ export function useSkillsQuery() {
       })
     },
     ...FREQUENT_REFETCH,
-  })
-}
-
-export function useSkillDetailQuery(
-  skill: Pick<AgentFile, "type" | "name" | "scope" | "path"> | null,
-  projectPath?: string,
-) {
-  return useQuery({
-    queryKey: queryKeys.agentFiles.detail(skill?.path ?? ""),
-    queryFn: async () => {
-      if (!skill) return null
-      const { getItemFn } = await import("@/server/items")
-      return getItemFn({
-        data: {
-          type: skill.type,
-          name: skill.name,
-          scope: skill.scope,
-          projectPath,
-        },
-      })
-    },
-    enabled: !!skill,
   })
 }
 

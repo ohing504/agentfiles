@@ -2,10 +2,7 @@ import { z } from "zod"
 
 // ── Utilities ─────────────────────────────────────────────────────────────────
 
-export function extractBody(content: string): string {
-  const match = content.match(/^---\n[\s\S]*?\n---\n?([\s\S]*)$/)
-  return match ? match[1].trim() : content
-}
+export { extractBody } from "@/lib/format"
 
 // ── Schemas ──────────────────────────────────────────────────────────────────
 
