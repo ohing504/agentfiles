@@ -232,5 +232,15 @@
   "mcp_edit_title": "MCP 서버 편집",
   "mcp_render_error": "MCP 서버 에디터를 불러올 수 없습니다",
   "mcp_render_error_desc": "페이지를 새로고침 해보세요.",
-  "mcp_docs_url": "https://code.claude.com/docs/en/mcp"
+  "mcp_docs_url": "https://code.claude.com/docs/en/mcp",
+  "config_title": "설정",
+  "config_render_error": "설정 에디터 렌더링 실패",
+  "config_scope_user": "사용자",
+  "config_scope_project": "프로젝트",
+  "config_scope_local": "로컬",
+  "config_no_project": "프로젝트/로컬 설정을 보려면 프로젝트를 선택하세요",
+  "config_saved": "설정 저장됨",
+  "config_deleted": "설정 제거됨",
+  "config_save_error": "설정 저장 실패",
+  "config_delete_error": "설정 제거 실패"
 }

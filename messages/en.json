@@ -232,5 +232,15 @@
   "mcp_edit_title": "Edit MCP Server",
   "mcp_render_error": "Failed to load MCP Servers editor",
   "mcp_render_error_desc": "Please try refreshing the page.",
-  "mcp_docs_url": "https://code.claude.com/docs/en/mcp"
+  "mcp_docs_url": "https://code.claude.com/docs/en/mcp",
+  "config_title": "Configuration",
+  "config_render_error": "Failed to render configuration editor",
+  "config_scope_user": "User",
+  "config_scope_project": "Project",
+  "config_scope_local": "Local",
+  "config_no_project": "Select a project to view project/local settings",
+  "config_saved": "Setting saved",
+  "config_deleted": "Setting removed",
+  "config_save_error": "Failed to save setting",
+  "config_delete_error": "Failed to remove setting"
 }
