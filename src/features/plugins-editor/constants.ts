@@ -8,8 +8,21 @@ import {
   Zap,
 } from "lucide-react"
 import { m } from "@/paraglide/messages"
-import type { PluginComponents } from "@/shared/types"
+import type { PluginComponents, PluginScope } from "@/shared/types"
 import type { PluginComponentType } from "./types"
+
+export const SCOPE_ORDER: PluginScope[] = [
+  "user",
+  "project",
+  "local",
+  "managed",
+]
+export const SCOPE_LABELS: Record<PluginScope, string> = {
+  user: "User",
+  project: "Project",
+  local: "Local",
+  managed: "Managed",
+}
 
 export const PLUGIN_COMPONENT_META: Record<
   PluginComponentType,

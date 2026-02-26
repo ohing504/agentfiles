@@ -1,5 +1,6 @@
 import { useMemo } from "react"
 import { ListItem } from "@/components/ui/list-item"
+import { m } from "@/paraglide/messages"
 import type { AgentFile, PluginComponents } from "@/shared/types"
 import { PLUGIN_COMPONENT_META } from "../constants"
 import type { PluginComponentType } from "../types"
@@ -105,7 +106,9 @@ export function PluginComponentList({
       </div>
       <div className="flex-1 overflow-y-auto p-3">
         {items.length === 0 ? (
-          <p className="text-xs text-muted-foreground px-2">No items</p>
+          <p className="text-xs text-muted-foreground px-2">
+            {m.plugin_no_items()}
+          </p>
         ) : (
           <div className="flex flex-col gap-0.5">
             {items.map((item) => (

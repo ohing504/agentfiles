@@ -12,6 +12,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { useSidebar } from "@/components/ui/sidebar"
 import { Skeleton } from "@/components/ui/skeleton"
+import { m } from "@/paraglide/messages"
 import { usePluginsQuery } from "../api/plugins.queries"
 import { PluginsProvider, usePluginsSelection } from "../context/PluginsContext"
 import { PluginActionBar } from "./PluginActionBar"
@@ -72,7 +73,7 @@ function PluginsRightPanel() {
           ) : (
             <div className="flex-1 flex items-center justify-center">
               <p className="text-sm text-muted-foreground">
-                Select an item to view details
+                {m.plugin_select_item()}
               </p>
             </div>
           )}
@@ -89,10 +90,8 @@ function PluginsRightPanel() {
           <EmptyMedia variant="icon">
             <Plug2Icon />
           </EmptyMedia>
-          <EmptyTitle>No Plugin Selected</EmptyTitle>
-          <EmptyDescription>
-            Select a plugin from the left panel to view its details.
-          </EmptyDescription>
+          <EmptyTitle>{m.plugin_no_selection()}</EmptyTitle>
+          <EmptyDescription>{m.plugin_no_selection_desc()}</EmptyDescription>
         </EmptyHeader>
       </Empty>
     </div>
@@ -130,14 +129,14 @@ function PluginsPageInner() {
       >
         {/* Header */}
         <div className="flex items-center justify-between px-4 h-12 shrink-0">
-          <h2 className="text-sm font-semibold">Plugins</h2>
+          <h2 className="text-sm font-semibold">{m.plugin_title()}</h2>
           <a
             href="https://docs.anthropic.com/en/docs/claude-code/plugins"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
           >
-            Docs
+            {m.plugin_docs()}
             <ExternalLink className="size-3" />
           </a>
         </div>
@@ -149,7 +148,7 @@ function PluginsPageInner() {
             <Input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search plugins..."
+              placeholder={m.plugin_search_placeholder()}
               aria-label="Search plugins"
               className="pl-8 h-8 text-xs"
             />
@@ -170,8 +169,10 @@ function PluginsErrorFallback() {
     <div className="flex-1 flex items-center justify-center">
       <div className="text-center space-y-2">
         <AlertTriangle className="size-8 text-muted-foreground mx-auto" />
-        <p className="text-sm font-medium">Failed to render plugins</p>
-        <p className="text-xs text-muted-foreground">Try reloading the page.</p>
+        <p className="text-sm font-medium">{m.plugin_render_error()}</p>
+        <p className="text-xs text-muted-foreground">
+          {m.plugin_render_error_desc()}
+        </p>
       </div>
     </div>
   )

@@ -3,6 +3,7 @@ import os from "node:os"
 import path from "node:path"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import {
+  getMarketplaces,
   getPlugins,
   readPluginManifest,
   scanPluginComponents,
@@ -813,5 +814,90 @@ describe("getPlugins — edge cases", () => {
     expect(result).toHaveLength(2)
     expect(result.find((p) => p.id === "good@mkt")).toBeDefined()
     expect(result.find((p) => p.id === "bad@mkt")).toBeDefined()
+  })
+})
+
+// ── getMarketplaces ──
+
+describe("getMarketplaces", () => {
+  it("캐시 디렉토리가 없으면 빈 배열", async () => {
+    const result = await getMarketplaces()
+    expect(result).toEqual([])
+  })
+
+  it("유효한 marketplace.json 파일을 파싱", async () => {
+    const cachePath = path.join(tmpGlobal, ".claude", "plugins", "cache")
+    const marketplace = {
+      name: "official",
+      owner: { name: "Anthropic", email: "team@anthropic.com" },
+      metadata: { description: "Official marketplace", version: "1.0.0" },
+      plugins: [{ id: "plugin-a" }],
+      autoUpdate: true,
+    }
+    await writeJson(
+      path.join(cachePath, "official", "marketplace.json"),
+      marketplace,
+    )
+
+    const result = await getMarketplaces()
+
+    expect(result).toHaveLength(1)
+    expect(result[0].name).toBe("official")
+    expect(result[0].owner.name).toBe("Anthropic")
+    expect(result[0].plugins).toHaveLength(1)
+    expect(result[0].autoUpdate).toBe(true)
+  })
+
+  it("여러 마켓플레이스를 반환", async () => {
+    const cachePath = path.join(tmpGlobal, ".claude", "plugins", "cache")
+    await writeJson(path.join(cachePath, "mkt-a", "marketplace.json"), {
+      name: "mkt-a",
+      owner: { name: "Author A" },
+      plugins: [],
+    })
+    await writeJson(path.join(cachePath, "mkt-b", "marketplace.json"), {
+      name: "mkt-b",
+      owner: { name: "Author B" },
+      plugins: [{ id: "x" }],
+    })
+
+    const result = await getMarketplaces()
+
+    expect(result).toHaveLength(2)
+    const names = result.map((m) => m.name).sort()
+    expect(names).toEqual(["mkt-a", "mkt-b"])
+  })
+
+  it("marketplace.json이 잘못된 JSON이면 해당 항목만 스킵", async () => {
+    const cachePath = path.join(tmpGlobal, ".claude", "plugins", "cache")
+    await writeJson(path.join(cachePath, "good", "marketplace.json"), {
+      name: "good",
+      owner: { name: "Good Author" },
+      plugins: [],
+    })
+    await writeFile(
+      path.join(cachePath, "bad", "marketplace.json"),
+      "{ invalid json !!!",
+    )
+
+    const result = await getMarketplaces()
+
+    expect(result).toHaveLength(1)
+    expect(result[0].name).toBe("good")
+  })
+
+  it("marketplace.json이 없는 디렉토리는 스킵", async () => {
+    const cachePath = path.join(tmpGlobal, ".claude", "plugins", "cache")
+    await fs.mkdir(path.join(cachePath, "empty-dir"), { recursive: true })
+    await writeJson(path.join(cachePath, "valid", "marketplace.json"), {
+      name: "valid",
+      owner: { name: "Author" },
+      plugins: [],
+    })
+
+    const result = await getMarketplaces()
+
+    expect(result).toHaveLength(1)
+    expect(result[0].name).toBe("valid")
   })
 })

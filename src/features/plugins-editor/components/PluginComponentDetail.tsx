@@ -2,6 +2,7 @@ import { DetailField } from "@/components/DetailField"
 import { FileViewer } from "@/components/FileViewer"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
+import { m } from "@/paraglide/messages"
 import type { AgentFile, PluginComponents } from "@/shared/types"
 import type { PluginComponentType } from "../types"
 
@@ -50,14 +51,14 @@ export function PluginComponentDetail({
               return (
                 <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-6">
                   <dl className="grid grid-cols-2 gap-x-6 gap-y-4">
-                    <DetailField label="Event">
+                    <DetailField label={m.plugin_field_event()}>
                       <span className="text-sm font-medium">{event}</span>
                     </DetailField>
-                    <DetailField label="Type">
+                    <DetailField label={m.plugin_field_type()}>
                       <span className="text-sm font-medium">{hook.type}</span>
                     </DetailField>
                     {group.matcher && (
-                      <DetailField label="Matcher">
+                      <DetailField label={m.plugin_field_matcher()}>
                         <span className="text-sm font-medium">
                           {group.matcher}
                         </span>
@@ -95,7 +96,7 @@ export function PluginComponentDetail({
       return (
         <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-6">
           <dl className="grid grid-cols-2 gap-x-6 gap-y-4">
-            <DetailField label="Name">
+            <DetailField label={m.plugin_field_name()}>
               <span className="text-sm font-medium">{server.name}</span>
             </DetailField>
             <DetailField label="Type">
@@ -104,12 +105,12 @@ export function PluginComponentDetail({
               </Badge>
             </DetailField>
             {server.command && (
-              <DetailField label="Command">
+              <DetailField label={m.plugin_field_command()}>
                 <span className="font-mono text-xs">{server.command}</span>
               </DetailField>
             )}
             {server.url && (
-              <DetailField label="URL">
+              <DetailField label={m.plugin_field_url()}>
                 <span className="font-mono text-xs">{server.url}</span>
               </DetailField>
             )}
@@ -138,14 +139,14 @@ export function PluginComponentDetail({
       return (
         <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-6">
           <dl className="grid grid-cols-2 gap-x-6 gap-y-4">
-            <DetailField label="Name">
+            <DetailField label={m.plugin_field_name()}>
               <span className="text-sm font-medium">{server.name}</span>
             </DetailField>
-            <DetailField label="Command">
+            <DetailField label={m.plugin_field_command()}>
               <span className="font-mono text-xs">{server.command}</span>
             </DetailField>
             {server.transport && (
-              <DetailField label="Transport">
+              <DetailField label={m.plugin_field_transport()}>
                 <Badge variant="secondary" className="text-xs">
                   {server.transport}
                 </Badge>
@@ -184,7 +185,7 @@ function AgentFileDetail({ file }: { file: AgentFile }) {
           </Badge>
         </DetailField>
         {file.frontmatter?.description && (
-          <DetailField label="Description">
+          <DetailField label={m.plugin_description()}>
             <span className="text-sm">
               {String(file.frontmatter.description)}
             </span>
@@ -205,9 +206,7 @@ function AgentFileDetail({ file }: { file: AgentFile }) {
 function EmptyDetail() {
   return (
     <div className="flex-1 flex items-center justify-center">
-      <p className="text-sm text-muted-foreground">
-        Select an item to view details
-      </p>
+      <p className="text-sm text-muted-foreground">{m.plugin_select_item()}</p>
     </div>
   )
 }

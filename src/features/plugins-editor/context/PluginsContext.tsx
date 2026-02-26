@@ -7,22 +7,10 @@ import {
   useState,
 } from "react"
 import { useProjectContext } from "@/components/ProjectContext"
-import type { Plugin, PluginScope } from "@/shared/types"
+import type { Plugin } from "@/shared/types"
 import { usePluginsQuery } from "../api/plugins.queries"
+import { SCOPE_LABELS, SCOPE_ORDER } from "../constants"
 import type { PluginComponentType } from "../types"
-
-export const SCOPE_ORDER: PluginScope[] = [
-  "user",
-  "project",
-  "local",
-  "managed",
-]
-export const SCOPE_LABELS: Record<PluginScope, string> = {
-  user: "User",
-  project: "Project",
-  local: "Local",
-  managed: "Managed",
-}
 
 export interface PluginsContextValue {
   selectedPlugin: Plugin | null

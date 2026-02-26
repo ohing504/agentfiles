@@ -61,7 +61,7 @@ export function PluginActionBar({
             }
             loading={updateMutation.isPending}
           >
-            Update
+            {m.plugin_update_btn()}
           </SpinnerButton>
 
           <Switch
@@ -103,7 +103,7 @@ export function PluginActionBar({
                 }}
               >
                 <Pencil className="size-4" />
-                Edit
+                {m.plugin_edit()}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
@@ -111,7 +111,7 @@ export function PluginActionBar({
                 onClick={() => setPendingUninstall(true)}
               >
                 <Trash2 className="size-4" />
-                Uninstall
+                {m.plugin_uninstall()}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -121,14 +121,13 @@ export function PluginActionBar({
       <AlertDialog open={pendingUninstall} onOpenChange={setPendingUninstall}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Uninstall Plugin</AlertDialogTitle>
+            <AlertDialogTitle>{m.plugin_uninstall_title()}</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to uninstall "{titleCase(plugin.name)}"?
-              This action cannot be undone.
+              {m.plugin_uninstall_confirm({ name: titleCase(plugin.name) })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{m.plugin_cancel()}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
                 uninstallMutation.mutate(
@@ -146,7 +145,7 @@ export function PluginActionBar({
                 )
               }}
             >
-              Uninstall
+              {m.plugin_uninstall()}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
