@@ -1,6 +1,7 @@
-import { MoreHorizontal, Pencil, Trash2 } from "lucide-react"
+import { MoreHorizontal, Trash2 } from "lucide-react"
 import { useState } from "react"
 import { toast } from "sonner"
+import { CursorIcon, VscodeIcon } from "@/components/icons/editor-icons"
 import { SpinnerButton } from "@/components/SpinnerButton"
 import {
   AlertDialog,
@@ -38,6 +39,16 @@ export function PluginActionBar({
   const { toggleMutation, updateMutation, uninstallMutation } =
     usePluginMutations()
   const [pendingUninstall, setPendingUninstall] = useState(false)
+
+  async function handleOpenInEditor(editor: "code" | "cursor") {
+    if (!plugin.installPath) return
+    try {
+      const { openInEditorFn } = await import("@/server/editor")
+      await openInEditorFn({ data: { filePath: plugin.installPath, editor } })
+    } catch {
+      toast.error(`Failed to open in ${editor}`)
+    }
+  }
 
   return (
     <>
@@ -96,14 +107,17 @@ export function PluginActionBar({
             <DropdownMenuContent align="end">
               <DropdownMenuItem
                 disabled={!plugin.installPath}
-                onClick={() => {
-                  if (plugin.installPath) {
-                    window.open(`vscode://file/${plugin.installPath}`, "_blank")
-                  }
-                }}
+                onClick={() => handleOpenInEditor("code")}
               >
-                <Pencil className="size-4" />
-                {m.plugin_edit()}
+                <VscodeIcon className="size-4" />
+                {m.plugin_open_vscode()}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                disabled={!plugin.installPath}
+                onClick={() => handleOpenInEditor("cursor")}
+              >
+                <CursorIcon className="size-4" />
+                {m.plugin_open_cursor()}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
