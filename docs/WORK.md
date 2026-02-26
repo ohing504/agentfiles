@@ -19,10 +19,21 @@
 - [ ] 나머지 유닛 테스트를 `tests/` 에서 소스 파일 옆으로 이동
 - [ ] vitest config에서 include 경로 확인 (src/**/*.test.ts 포함)
 
-### hooks/skills editor 개선
-- [ ] hooks-editor: dynamic import → static import 전환 (`hooks.functions.ts`, `hooks.queries.ts`)
-- [ ] skills-editor: dynamic import → static import 전환 (`skills.functions.ts`, `SkillDetailPanel.tsx`, `AddSkillDialog.tsx`, `SupportingFilePanel.tsx`)
-- [ ] hooks/skills queryFn 파라미터화 — queryKey에 의존성 포함 (plugins-editor 패턴 참고)
+### skills-editor 리팩토링 (plugins-editor 패턴으로 통일)
+- [ ] skills-editor를 plugins-editor 구조에 맞춰 리팩토링 (context, api, components 분리)
+- [ ] 공유 상세 컴포넌트 추출 — `AgentFileDetail`, `HookDetail`, `McpServerDetail`, `LspServerDetail` 등
+  - plugins의 `PluginComponentDetail` 에서 공유 컴포넌트를 재사용하도록 개선 (#16)
+- [ ] **주의**: server function handler 내 `@/services/*` import는 반드시 dynamic import 유지 (Node.js 전용 모듈이 클라이언트 번들에 포함되면 깨짐)
+- [ ] UI 컴포넌트에서만 dynamic → static import 전환 가능 (`SkillDetailPanel.tsx`, `AddSkillDialog.tsx`, `SupportingFilePanel.tsx`)
+- [ ] queryFn 파라미터화 — queryKey에 의존성 포함 (plugins-editor 패턴 참고)
+
+### hooks-editor 리팩토링
+- [ ] **주의**: `hooks.functions.ts` handler 내 dynamic import 유지 필수 (static으로 바꾸면 클라이언트 번들 깨짐)
+- [ ] hooks-editor를 plugins-editor 패턴에 맞춰 구조 개선
+
+### 추후 개선 (Backlog)
+- [ ] AgentFileDetail: synthetic markdown 대신 실제 파일 내용 표시 (#18)
+- [ ] 플러그인 검색 입력에 `useDeferredValue` 적용 (#13)
 
 ## 마켓플레이스
 - 별도 마켓플레이스 페이지 구성 필요 (plugins에서 분리)

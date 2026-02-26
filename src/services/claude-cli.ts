@@ -9,9 +9,10 @@ function execClaude(args: string[]): Promise<string> {
       "claude",
       args,
       { timeout: TIMEOUT_MS },
-      (err, stdout, _stderr) => {
+      (err, stdout, stderr) => {
         if (err) {
-          reject(err)
+          const detail = stderr?.trim() || stdout?.trim() || err.message
+          reject(new Error(detail))
           return
         }
         resolve(stdout)
