@@ -9,15 +9,15 @@
 ### config-service.ts 분리 리팩토링 (계속)
 - [x] `services/plugin-service.ts` — `getPlugins`, `readPluginManifest`, `scanPluginComponents`, `getMarketplaces` + 헬퍼
 - [x] `services/mcp-service.ts` — `getMcpServers`, `parseMcpServers`
-- [ ] `services/agent-file-service.ts` — `scanMdDir`, `scanSkillsDir`, `getAgentFiles`
-- [ ] `services/overview-service.ts` — `getOverview`
-- [ ] `services/config-service.ts` — 경로 헬퍼, `getClaudeMd` (최종 정리)
+- [x] `services/agent-file-service.ts` — `scanMdDir`, `scanSkillsDir`, `getAgentFiles`
+- [x] `services/overview-service.ts` — `getOverview`
+- [x] `services/config-service.ts` — 경로 헬퍼, `getClaudeMd` (최종 정리)
 
 ### 테스트 co-location (계속)
 - [x] `plugin-contents.test.ts` + `config-service.test.ts` plugin 부분 → `src/services/plugin-service.test.ts`
 - [x] `tests/services/hooks-service.test.ts` → `src/services/hooks-service.test.ts`
-- [ ] 나머지 유닛 테스트를 `tests/` 에서 소스 파일 옆으로 이동
-- [ ] vitest config에서 include 경로 확인 (src/**/*.test.ts 포함)
+- [x] 나머지 유닛 테스트를 `tests/` 에서 소스 파일 옆으로 이동
+- [x] vitest config에서 include 경로 확인 (src/**/*.test.ts 포함)
 
 ### 추후 개선 (Backlog)
 - [ ] **i18n 메시지 파일 구조 개선 및 공통 텍스트 최적화**
@@ -47,6 +47,7 @@
 
 ## Shipped
 
+- **config-service 분리 + 테스트 co-location** (2026-02-27) — agent-file-service, overview-service 추출. 전체 유닛 테스트를 `tests/` → 소스 파일 옆으로 co-locate. 235개 테스트 통과.
 - **Files 프로젝트 루트 Claude 파일 표시** (2026-02-27) — project scope에서 `CLAUDE.md`, `AGENTS.md`, `.agents`, `.cursorrules` 등 루트 파일도 트리에 표시. 디렉토리 우선 정렬.
 - **files-editor 리팩토링** (2026-02-27) — `.claude/` 전체 파일 탐색기 + 읽기 전용 뷰어로 전면 재작성. feature-local 서비스, FilesContext, `/files` 단일 라우트 통합.
 - **config-editor** (2026-02-26) — Settings → Configuration 에디터로 교체. VSCode 스타일 3단 레이아웃, 6개 카테고리, 957줄 제거.
