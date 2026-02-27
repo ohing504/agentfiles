@@ -19,11 +19,16 @@ export interface FileContent {
 
 /** Names/patterns to exclude from the file tree. */
 export const EXCLUDED_NAMES = new Set([
-  "cache",
-  "teams",
-  "tasks",
+  // OS artifacts
   ".DS_Store",
   "Thumbs.db",
+  // Large auto-generated dirs (performance)
+  "cache",
+  "debug",
+  "file-history",
+  // Claude internal infrastructure
+  "teams",
+  "tasks",
   "installed_plugins.json",
 ])
 

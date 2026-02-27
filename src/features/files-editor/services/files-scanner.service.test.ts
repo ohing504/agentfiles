@@ -45,6 +45,11 @@ describe("files-scanner.service", () => {
       expect(isExcluded("data.db")).toBe(true)
     })
 
+    it("excludes large auto-generated directories", () => {
+      expect(isExcluded("debug")).toBe(true)
+      expect(isExcluded("file-history")).toBe(true)
+    })
+
     it("allows normal files", () => {
       expect(isExcluded("CLAUDE.md")).toBe(false)
       expect(isExcluded("settings.json")).toBe(false)

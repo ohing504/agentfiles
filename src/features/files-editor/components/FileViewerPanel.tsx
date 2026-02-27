@@ -1,6 +1,7 @@
-import { ExternalLinkIcon, FolderOpenIcon } from "lucide-react"
+import { FolderOpenIcon } from "lucide-react"
 import { toast } from "sonner"
 import { FileViewer } from "@/components/FileViewer"
+import { CursorIcon, VscodeIcon } from "@/components/icons/editor-icons"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -61,22 +62,21 @@ export function FileViewerPanel({ filePath }: FileViewerPanelProps) {
   return (
     <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
       {/* Header bar */}
-      <div className="flex items-center justify-between px-4 h-10 shrink-0 border-b border-border">
-        <span className="text-xs font-medium text-muted-foreground truncate">
-          {fileName}
-        </span>
+      <div className="flex items-center justify-between px-4 h-12 shrink-0 border-b border-border">
+        <h2 className="text-sm font-semibold truncate min-w-0">{fileName}</h2>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs">
-              <ExternalLinkIcon className="size-3" />
-              Open in...
+            <Button variant="outline" size="sm" className="shrink-0">
+              {m.action_edit()}
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem onClick={() => handleOpenInEditor("code")}>
+              <VscodeIcon className="size-4" />
               {m.files_open_vscode()}
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => handleOpenInEditor("cursor")}>
+              <CursorIcon className="size-4" />
               {m.files_open_cursor()}
             </DropdownMenuItem>
           </DropdownMenuContent>

@@ -67,6 +67,14 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
+                <SidebarMenuButton asChild tooltip={m.nav_files()}>
+                  <Link to="/files" activeProps={{ "data-active": true }}>
+                    <FolderOpenIcon />
+                    <span>{m.nav_files()}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
                 <SidebarMenuButton asChild tooltip={m.nav_skills()}>
                   <Link to="/skills" activeProps={{ "data-active": true }}>
                     <ScrollTextIcon />
@@ -106,14 +114,6 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
                   >
                     <SettingsIcon />
                     <span>{m.config_title()}</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild tooltip={m.nav_files()}>
-                  <Link to="/files" activeProps={{ "data-active": true }}>
-                    <FolderOpenIcon />
-                    <span>{m.nav_files()}</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>

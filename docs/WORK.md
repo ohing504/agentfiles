@@ -22,6 +22,7 @@
 ### 추후 개선 (Backlog)
 - [ ] 플러그인 검색 입력에 `useDeferredValue` 적용 (#13)
 - [ ] 추가 공유 컴포넌트 — `McpServerDetailView`, `LspServerDetailView`
+- [ ] Files 뷰어 숨김 패턴 사용자 설정 — `agentfiles.json`에 `files.exclude` 패턴 배열 지원 (`.vscode/settings.json`의 `files.exclude` 같은 방식). 사용자가 보고 싶지 않은 폴더/파일을 직접 설정할 수 있도록
 
 ## 마켓플레이스
 - 별도 마켓플레이스 페이지 구성 필요 (plugins에서 분리)

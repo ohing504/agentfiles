@@ -5,7 +5,7 @@ import { m } from "@/paraglide/messages"
 import { useFileTreeQuery } from "../api/files.queries"
 import { useFilesSelection } from "../context/FilesContext"
 import { FilesScopeTabs } from "./FilesScopeTabs"
-import { FileTree } from "./FileTree"
+import { FileTreeNode } from "./FileTree"
 import { FileViewerPanel } from "./FileViewerPanel"
 
 export function FilesPageContent() {
@@ -41,24 +41,29 @@ export function FilesPageContent() {
       {/* Tree + Viewer */}
       <div className="flex flex-1 min-h-0">
         {/* Left: File tree */}
-        <div className="w-[280px] shrink-0 border-r border-border overflow-y-auto">
-          {isLoading ? (
-            <div className="p-3 space-y-2">
-              <Skeleton className="h-4 w-3/4" />
-              <Skeleton className="h-4 w-1/2" />
-              <Skeleton className="h-4 w-2/3" />
-            </div>
-          ) : tree ? (
-            <FileTree
-              root={tree}
-              selectedPath={selectedPath}
-              onSelect={setSelectedPath}
-            />
-          ) : (
-            <div className="flex items-center justify-center h-32 text-xs text-muted-foreground">
-              {m.files_empty_dir()}
-            </div>
-          )}
+        <div className="w-[280px] shrink-0 border-r border-border flex flex-col">
+          <div className="flex-1 overflow-y-auto p-3 flex flex-col gap-3 [&_li]:list-none">
+            {isLoading ? (
+              <>
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
+                <Skeleton className="h-4 w-2/3" />
+              </>
+            ) : tree?.children?.length ? (
+              tree.children.map((child) => (
+                <FileTreeNode
+                  key={child.path}
+                  node={child}
+                  selectedPath={selectedPath}
+                  onSelect={setSelectedPath}
+                />
+              ))
+            ) : (
+              <div className="flex items-center justify-center h-32 text-xs text-muted-foreground">
+                {m.files_empty_dir()}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Right: File viewer */}
