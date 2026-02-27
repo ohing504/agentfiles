@@ -1,0 +1,20 @@
+{
+  "skills_empty_title": "스킬이 선택되지 않음",
+  "skills_empty_desc": "왼쪽 패널에서 스킬을 선택하여 세부 정보를 확인하세요.",
+  "skills_add_title": "스킬 추가",
+  "skills_add_desc": "SKILL.md 템플릿이 포함된 새 스킬 디렉토리를 생성합니다.",
+  "skills_edit": "편집",
+  "skills_open_vscode": "VS Code",
+  "skills_open_cursor": "Cursor",
+  "skills_open_folder": "폴더에서 보기",
+  "skills_delete": "제거",
+  "skills_delete_title": "스킬 제거",
+  "skills_delete_confirm": "\"{name}\"을(를) 제거하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
+  "skills_duplicate_tooltip": "동일한 이름의 스킬이 존재하여 우선 적용됩니다.",
+  "skills_scope": "스코프",
+  "skills_last_updated": "마지막 업데이트",
+  "skills_description": "설명",
+  "skills_preview": "프리뷰",
+  "skills_source": "소스",
+  "skills_copied": "클립보드에 복사됨"
+}
