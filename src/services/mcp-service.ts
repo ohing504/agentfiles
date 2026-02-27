@@ -123,7 +123,30 @@ export async function getMcpServers(
       )
     : []
 
-  return [...userServers, ...localServers, ...projectServers]
+  // 4) Apply disabled overrides from ~/.claude.json → projects.{path}.disabledMcpServers
+  //    Claude Code stores per-project disable state here (not in .mcp.json's disabled field).
+  const disabledSet = new Set<string>()
+  if (claudeJson.projects) {
+    const projects = claudeJson.projects as Record<string, unknown>
+    const projectEntry = projects[resolvedProjectPath] as
+      | Record<string, unknown>
+      | undefined
+    const disabledArr = projectEntry?.disabledMcpServers
+    if (Array.isArray(disabledArr)) {
+      for (const name of disabledArr) {
+        if (typeof name === "string") disabledSet.add(name)
+      }
+    }
+  }
+
+  const applyDisabled = (server: McpServer): McpServer =>
+    disabledSet.has(server.name) ? { ...server, disabled: true } : server
+
+  return [
+    ...userServers.map(applyDisabled),
+    ...localServers.map(applyDisabled),
+    ...projectServers.map(applyDisabled),
+  ]
 }
 
 export function parseMcpList(
