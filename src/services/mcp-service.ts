@@ -91,10 +91,11 @@ export async function getPluginMcpServers(
       .map(async (plugin) => {
         const mcpJsonPath = path.join(plugin.installPath, ".mcp.json")
         const raw = await readJson(mcpJsonPath)
+        // flat 형식 { serverName: config } 와 래퍼 형식 { mcpServers: { serverName: config } } 모두 지원
         const mcpServersRaw =
           typeof raw.mcpServers === "object" && raw.mcpServers !== null
             ? (raw.mcpServers as Record<string, unknown>)
-            : {}
+            : (raw as Record<string, unknown>)
 
         const scope: Scope = plugin.scope === "project" ? "project" : "global"
 

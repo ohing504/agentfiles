@@ -160,6 +160,35 @@ describe("getPluginMcpServers()", () => {
     expect(result).toEqual([])
   })
 
+  it(".mcp.json이 mcpServers 래퍼 없이 flat 형식인 경우에도 서버 반환", async () => {
+    // 실제 context7 플러그인처럼 { "serverName": { command, args } } 형식
+    const plugin = makePlugin({
+      name: "context7",
+      installPath: "/home/user/.claude/plugins/context7",
+      enabled: true,
+    })
+    mockedGetPlugins.mockResolvedValue([plugin])
+
+    mockedReadFile.mockResolvedValue(
+      JSON.stringify({
+        context7: {
+          command: "npx",
+          args: ["-y", "@upstash/context7-mcp"],
+        },
+      }),
+    )
+
+    const result = await getPluginMcpServers()
+
+    expect(result).toHaveLength(1)
+    expect(result[0]).toMatchObject({
+      name: "context7",
+      fromPlugin: "context7",
+      command: "npx",
+      type: "stdio",
+    })
+  })
+
   it("여러 플러그인에서 서버를 모두 수집", async () => {
     const plugin1 = makePlugin({
       name: "plugin-a",
