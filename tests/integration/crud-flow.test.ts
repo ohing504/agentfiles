@@ -11,8 +11,9 @@ import os from "node:os"
 import path from "node:path"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { getAgentFiles, scanMdDir } from "@/services/agent-file-service"
-import { getClaudeMd, getOverview } from "@/services/config-service"
+import { getClaudeMd } from "@/services/config-service"
 import { deleteFile, writeMarkdown } from "@/services/file-writer"
+import { getOverview } from "@/services/overview-service"
 
 // ── tmp 디렉토리 헬퍼 ──
 

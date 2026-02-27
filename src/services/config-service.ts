@@ -2,7 +2,7 @@ import type { Dirent } from "node:fs"
 import fs from "node:fs/promises"
 import os from "node:os"
 import path from "node:path"
-import type { AgentFile, ClaudeMd, Overview, Scope } from "@/shared/types"
+import type { ClaudeMd, Scope } from "@/shared/types"
 
 // ── 경로 헬퍼 ──
 
@@ -81,106 +81,6 @@ export async function readProjectLocalSettings(
     return JSON.parse(content) as Record<string, unknown>
   } catch {
     return {}
-  }
-}
-
-// ── Overview 생성 ──
-
-export async function getOverview(projectPath?: string): Promise<Overview> {
-  const { getPlugins } = await import("@/services/plugin-service")
-  const { getMcpServers } = await import("@/services/mcp-service")
-  const { scanMdDir } = await import("@/services/agent-file-service")
-
-  async function scanMdDirWithScope(
-    basePath: string,
-    type: AgentFile["type"],
-    scope: Scope,
-  ): Promise<AgentFile[]> {
-    const files = await scanMdDir(basePath, type)
-    return files.map((f) => ({ ...f, scope }))
-  }
-  const globalBase = getGlobalConfigPath()
-  const projectBase = getProjectConfigPath(projectPath)
-
-  const [
-    globalClaudeMd,
-    projectClaudeMd,
-    plugins,
-    mcpServers,
-    globalAgents,
-    projectAgents,
-    globalCommands,
-    projectCommands,
-    globalSkills,
-    projectSkills,
-  ] = await Promise.all([
-    getClaudeMd("global"),
-    getClaudeMd("project", projectPath),
-    getPlugins(projectPath),
-    getMcpServers(projectPath),
-    scanMdDirWithScope(path.join(globalBase, "agents"), "agent", "global"),
-    scanMdDirWithScope(path.join(projectBase, "agents"), "agent", "project"),
-    scanMdDirWithScope(path.join(globalBase, "commands"), "command", "global"),
-    scanMdDirWithScope(
-      path.join(projectBase, "commands"),
-      "command",
-      "project",
-    ),
-    scanMdDirWithScope(path.join(globalBase, "skills"), "skill", "global"),
-    scanMdDirWithScope(path.join(projectBase, "skills"), "skill", "project"),
-  ])
-
-  // 충돌 감지: 양쪽에 동일 name이 있는 항목 수
-  function countConflicts(
-    globalFiles: AgentFile[],
-    projectFiles: AgentFile[],
-  ): number {
-    const globalNames = new Set(globalFiles.map((f) => f.name))
-    return projectFiles.filter((f) => globalNames.has(f.name)).length
-  }
-
-  const conflictCount =
-    countConflicts(globalAgents, projectAgents) +
-    countConflicts(globalCommands, projectCommands) +
-    countConflicts(globalSkills, projectSkills)
-
-  const globalMcpCount = mcpServers.filter((s) => s.scope === "global").length
-  const projectMcpCount = mcpServers.filter((s) => s.scope === "project").length
-
-  const userPluginCount = plugins.filter((p) => p.scope === "user").length
-  const projectPluginCount = plugins.filter((p) => p.scope === "project").length
-
-  return {
-    claudeMd: {
-      global: globalClaudeMd ?? undefined,
-      project: projectClaudeMd ?? undefined,
-    },
-    plugins: {
-      total: plugins.length,
-      user: userPluginCount,
-      project: projectPluginCount,
-    },
-    mcpServers: {
-      total: mcpServers.length,
-      global: globalMcpCount,
-      project: projectMcpCount,
-    },
-    agents: {
-      total: globalAgents.length + projectAgents.length,
-      global: globalAgents.length,
-      project: projectAgents.length,
-    },
-    commands: {
-      total: globalCommands.length + projectCommands.length,
-      global: globalCommands.length,
-      project: projectCommands.length,
-    },
-    skills: {
-      total: globalSkills.length + projectSkills.length,
-      global: globalSkills.length,
-      project: projectSkills.length,
-    },
-    conflictCount,
   }
 }
 

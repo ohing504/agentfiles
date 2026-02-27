@@ -113,7 +113,7 @@ export async function scanMdDir(
 
 // ── AgentFile 목록 + 스코프 자동 설정 ──
 
-async function scanMdDirWithScope(
+export async function scanMdDirWithScope(
   basePath: string,
   type: AgentFile["type"],
   scope: Scope,
