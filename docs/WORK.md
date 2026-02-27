@@ -20,6 +20,15 @@
 - [ ] vitest config에서 include 경로 확인 (src/**/*.test.ts 포함)
 
 ### 추후 개선 (Backlog)
+- [ ] **i18n 메시지 파일 구조 개선 및 공통 텍스트 최적화**
+  - 현황: `messages/en.json` 단일 파일에 257개 키가 flat 구조로 관리 (`hooks_*` 52개, `plugin_*` 47개, `mcp_*` 34개 등)
+  - 문제: feature가 늘수록 파일이 비대해지고, 유사한 공통 텍스트가 feature별로 중복됨
+    - 예) `*_scope_global/project`, `*_no_selection`, `*_loading`, `*_delete` 등이 feature마다 반복
+    - `scope`, `detail`, `editor`, `action` prefix(각 5개 이하)는 공유 키로 통합 가능
+  - 개선 방향:
+    - 공통 키 분리: `common_*` namespace로 scope 탭 레이블·empty state·로딩·삭제 확인 등 재사용 텍스트 통합
+    - Feature별 네임스페이스 정리: `hooks_`, `plugin_`, `mcp_`, `skills_`, `files_`, `config_` — feature 모듈 구조와 1:1 대응
+    - 장기적으로 paraglide 네임스페이스 또는 feature별 메시지 파일 분리 검토
 - [ ] 플러그인 검색 입력에 `useDeferredValue` 적용 (#13)
 - [ ] 추가 공유 컴포넌트 — `McpServerDetailView`, `LspServerDetailView`
 - [ ] Files 뷰어 숨김 패턴 사용자 설정 — `agentfiles.json`에 `files.exclude` 패턴 배열 지원 (`.vscode/settings.json`의 `files.exclude` 같은 방식). 사용자가 보고 싶지 않은 폴더/파일을 직접 설정할 수 있도록
