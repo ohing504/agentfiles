@@ -101,6 +101,10 @@ export function McpPageContent() {
             onSelectServer={handleSelectServer}
             onAddClick={() => handleAddClick("global")}
             statusMap={statusMap}
+            onDeleteServer={handleDeleteServer}
+            onEditServer={(server) => {
+              if (!server.fromPlugin) setEditingServer(server)
+            }}
           />
 
           {activeProjectPath && (
@@ -113,6 +117,10 @@ export function McpPageContent() {
               onSelectServer={handleSelectServer}
               onAddClick={() => handleAddClick("project")}
               statusMap={statusMap}
+              onDeleteServer={handleDeleteServer}
+              onEditServer={(server) => {
+                if (!server.fromPlugin) setEditingServer(server)
+              }}
             />
           )}
         </div>
