@@ -8,7 +8,7 @@
 
 ### config-service.ts 분리 리팩토링 (계속)
 - [x] `services/plugin-service.ts` — `getPlugins`, `readPluginManifest`, `scanPluginComponents`, `getMarketplaces` + 헬퍼
-- [ ] `services/mcp-service.ts` — `getMcpServers`, `parseMcpServers`
+- [x] `services/mcp-service.ts` — `getMcpServers`, `parseMcpServers`
 - [ ] `services/agent-file-service.ts` — `scanMdDir`, `scanSkillsDir`, `getAgentFiles`
 - [ ] `services/overview-service.ts` — `getOverview`
 - [ ] `services/config-service.ts` — 경로 헬퍼, `getClaudeMd` (최종 정리)
