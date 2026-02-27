@@ -6,19 +6,6 @@
 
 ## Next Up
 
-### config-service.ts 분리 리팩토링 (계속)
-- [x] `services/plugin-service.ts` — `getPlugins`, `readPluginManifest`, `scanPluginComponents`, `getMarketplaces` + 헬퍼
-- [x] `services/mcp-service.ts` — `getMcpServers`, `parseMcpServers`
-- [x] `services/agent-file-service.ts` — `scanMdDir`, `scanSkillsDir`, `getAgentFiles`
-- [x] `services/overview-service.ts` — `getOverview`
-- [x] `services/config-service.ts` — 경로 헬퍼, `getClaudeMd` (최종 정리)
-
-### 테스트 co-location (계속)
-- [x] `plugin-contents.test.ts` + `config-service.test.ts` plugin 부분 → `src/services/plugin-service.test.ts`
-- [x] `tests/services/hooks-service.test.ts` → `src/services/hooks-service.test.ts`
-- [x] 나머지 유닛 테스트를 `tests/` 에서 소스 파일 옆으로 이동
-- [x] vitest config에서 include 경로 확인 (src/**/*.test.ts 포함)
-
 ### 추후 개선 (Backlog)
 - [ ] **i18n 메시지 파일 구조 개선 및 공통 텍스트 최적화**
   - 현황: `messages/en.json` 단일 파일에 257개 키가 flat 구조로 관리 (`hooks_*` 52개, `plugin_*` 47개, `mcp_*` 34개 등)
