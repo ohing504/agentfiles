@@ -83,6 +83,8 @@ export interface McpServer {
   configPath?: string
   /** Plugin short name if provided by a plugin (read-only, cannot be edited/deleted) */
   fromPlugin?: string
+  /** 동일 이름의 서버가 다른 소스(직접 추가 vs 플러그인)에도 존재할 때 true */
+  isDuplicate?: boolean
 }
 
 // ── Agent / Command / Skill ──
