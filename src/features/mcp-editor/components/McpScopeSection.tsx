@@ -8,7 +8,31 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible"
 import { ListItem } from "@/components/ui/list-item"
-import type { McpServer, Scope } from "@/shared/types"
+import { m } from "@/paraglide/messages"
+import type { McpConnectionStatus, McpServer, Scope } from "@/shared/types"
+
+const STATUS_ICON_CLASS: Record<McpConnectionStatus, string> = {
+  connected: "text-emerald-500",
+  needs_authentication: "text-amber-500",
+  failed: "text-red-500",
+  disabled: "text-muted-foreground/40",
+  unknown: "text-muted-foreground",
+}
+
+function getStatusTooltip(status: McpConnectionStatus): string {
+  switch (status) {
+    case "connected":
+      return m.mcp_status_connected()
+    case "needs_authentication":
+      return m.mcp_status_needs_auth()
+    case "failed":
+      return m.mcp_status_failed()
+    case "disabled":
+      return m.mcp_status_disabled()
+    default:
+      return ""
+  }
+}
 
 interface McpScopeSectionProps {
   label: string
@@ -18,6 +42,7 @@ interface McpScopeSectionProps {
   selectedServer: McpServer | null
   onSelectServer: (name: string, scope: Scope) => void
   onAddClick: () => void
+  statusMap?: Record<string, McpConnectionStatus>
 }
 
 export const McpScopeSection = memo(function McpScopeSection({
@@ -28,6 +53,7 @@ export const McpScopeSection = memo(function McpScopeSection({
   selectedServer,
   onSelectServer,
   onAddClick,
+  statusMap,
 }: McpScopeSectionProps) {
   const filtered = searchQuery
     ? servers.filter((s) =>
@@ -59,36 +85,33 @@ export const McpScopeSection = memo(function McpScopeSection({
               {searchQuery ? "No results" : "No servers"}
             </p>
           ) : (
-            filtered.map((server) => (
-              <ListItem
-                key={`${server.name}-${server.scope}`}
-                icon={ServerIcon}
-                label={server.name}
-                selected={
-                  selectedServer?.name === server.name &&
-                  selectedServer?.scope === scope
-                }
-                onClick={() => onSelectServer(server.name, scope)}
-                trailing={
-                  <div className="flex items-center gap-1">
-                    {server.disabled && (
-                      <Badge
-                        variant="outline"
-                        className="text-[10px] px-1 py-0 text-muted-foreground"
-                      >
-                        off
-                      </Badge>
-                    )}
+            filtered.map((server) => {
+              const status: McpConnectionStatus = server.disabled
+                ? "disabled"
+                : (statusMap?.[server.name] ?? "unknown")
+              return (
+                <ListItem
+                  key={`${server.name}-${server.scope}`}
+                  icon={ServerIcon}
+                  iconClassName={STATUS_ICON_CLASS[status]}
+                  label={server.name}
+                  tooltip={getStatusTooltip(status)}
+                  selected={
+                    selectedServer?.name === server.name &&
+                    selectedServer?.scope === scope
+                  }
+                  onClick={() => onSelectServer(server.name, scope)}
+                  trailing={
                     <Badge
                       variant="secondary"
                       className="text-[10px] px-1 py-0"
                     >
                       {server.type}
                     </Badge>
-                  </div>
-                }
-              />
-            ))
+                  }
+                />
+              )
+            })
           )}
         </div>
       </CollapsibleContent>

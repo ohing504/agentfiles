@@ -21,7 +21,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { m } from "@/paraglide/messages"
-import type { McpServer } from "@/shared/types"
+import type { McpConnectionStatus, McpServer } from "@/shared/types"
 import { McpDetailView } from "./McpDetailView"
 
 interface McpDetailPanelProps {
@@ -32,6 +32,7 @@ interface McpDetailPanelProps {
   onEdit?: () => void
   /** When provided, shows "Delete" menu item with confirmation */
   onDelete?: () => void
+  status?: McpConnectionStatus
 }
 
 export function McpDetailPanel({
@@ -39,6 +40,7 @@ export function McpDetailPanel({
   filePath,
   onEdit,
   onDelete,
+  status,
 }: McpDetailPanelProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
@@ -110,7 +112,7 @@ export function McpDetailPanel({
       </div>
 
       {/* Content */}
-      <McpDetailView server={server} />
+      <McpDetailView server={server} status={status} />
 
       {/* Delete confirmation */}
       {onDelete && (

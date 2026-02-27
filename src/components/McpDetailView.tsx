@@ -2,13 +2,42 @@ import { DetailField } from "@/components/DetailField"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { m } from "@/paraglide/messages"
-import type { McpServer } from "@/shared/types"
+import type { McpConnectionStatus, McpServer } from "@/shared/types"
+
+const STATUS_BADGE_CLASS: Record<
+  Exclude<McpConnectionStatus, "unknown">,
+  string
+> = {
+  connected: "border-emerald-500/30 text-emerald-600",
+  needs_authentication: "border-amber-500/30 text-amber-600",
+  failed: "border-red-500/30 text-red-600",
+  disabled: "text-muted-foreground",
+}
+
+function getStatusLabel(
+  status: Exclude<McpConnectionStatus, "unknown">,
+): string {
+  switch (status) {
+    case "connected":
+      return m.mcp_status_connected()
+    case "needs_authentication":
+      return m.mcp_status_needs_auth()
+    case "failed":
+      return m.mcp_status_failed()
+    case "disabled":
+      return m.mcp_status_disabled()
+  }
+}
 
 interface McpDetailViewProps {
   server: McpServer
+  status?: McpConnectionStatus
 }
 
-export function McpDetailView({ server }: McpDetailViewProps) {
+export function McpDetailView({ server, status }: McpDetailViewProps) {
+  const resolvedStatus: McpConnectionStatus = server.disabled
+    ? "disabled"
+    : (status ?? "unknown")
   return (
     <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-6">
       <dl className="grid grid-cols-2 gap-x-6 gap-y-4">
@@ -30,10 +59,13 @@ export function McpDetailView({ server }: McpDetailViewProps) {
             <span className="font-mono text-xs break-all">{server.url}</span>
           </DetailField>
         )}
-        {server.disabled && (
+        {resolvedStatus !== "unknown" && (
           <DetailField label={m.mcp_field_status()}>
-            <Badge variant="outline" className="text-xs text-muted-foreground">
-              disabled
+            <Badge
+              variant="outline"
+              className={`text-xs ${STATUS_BADGE_CLASS[resolvedStatus]}`}
+            >
+              {getStatusLabel(resolvedStatus)}
             </Badge>
           </DetailField>
         )}

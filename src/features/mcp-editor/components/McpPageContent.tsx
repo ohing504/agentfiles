@@ -13,7 +13,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
 import { m } from "@/paraglide/messages"
-import { useMcpMutations } from "../api/mcp.queries"
+import { useMcpMutations, useMcpStatusQuery } from "../api/mcp.queries"
 import { useMcpSelection } from "../context/McpContext"
 import { AddMcpDialog } from "./AddMcpDialog"
 import { McpScopeSection } from "./McpScopeSection"
@@ -36,6 +36,7 @@ export function McpPageContent() {
     setEditingServer,
   } = useMcpSelection()
   const { removeMutation } = useMcpMutations()
+  const { data: statusMap } = useMcpStatusQuery()
 
   function handleDeleteServer() {
     if (!selectedServer) return
@@ -99,6 +100,7 @@ export function McpPageContent() {
             selectedServer={selectedServer}
             onSelectServer={handleSelectServer}
             onAddClick={() => handleAddClick("global")}
+            statusMap={statusMap}
           />
 
           {activeProjectPath && (
@@ -110,6 +112,7 @@ export function McpPageContent() {
               selectedServer={selectedServer}
               onSelectServer={handleSelectServer}
               onAddClick={() => handleAddClick("project")}
+              statusMap={statusMap}
             />
           )}
         </div>
@@ -123,6 +126,7 @@ export function McpPageContent() {
             filePath={selectedServer.configPath}
             onEdit={() => setEditingServer(selectedServer)}
             onDelete={handleDeleteServer}
+            status={statusMap?.[selectedServer.name]}
           />
         ) : (
           <div className="flex-1 flex items-center justify-center">
