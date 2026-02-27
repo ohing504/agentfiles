@@ -121,3 +121,7 @@ export async function marketplaceRemove(name: string): Promise<void> {
 export async function marketplaceUpdate(name: string): Promise<void> {
   await execClaude(["plugin", "marketplace", "update", name])
 }
+
+export async function mcpListStatus(): Promise<string> {
+  return execClaude(["mcp", "list"])
+}

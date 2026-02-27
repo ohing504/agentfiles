@@ -2,7 +2,7 @@ import fs from "node:fs/promises"
 import os from "node:os"
 import path from "node:path"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import { getMcpServers } from "./mcp-service"
+import { getMcpServers, parseMcpList } from "./mcp-service"
 
 async function createTmpDir(): Promise<string> {
   return fs.mkdtemp(path.join(os.tmpdir(), "mcp-service-test-"))

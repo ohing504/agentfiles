@@ -1,7 +1,7 @@
 import fs from "node:fs/promises"
 import os from "node:os"
 import path from "node:path"
-import type { McpServer, Scope } from "@/shared/types"
+import type { McpConnectionStatus, McpServer, Scope } from "@/shared/types"
 
 /**
  * MCP 서버 설정 읽기 서비스

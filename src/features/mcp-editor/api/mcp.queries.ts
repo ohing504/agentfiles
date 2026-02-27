@@ -2,10 +2,11 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useProjectContext } from "@/components/ProjectContext"
 import { INFREQUENT_REFETCH } from "@/hooks/use-config"
 import { queryKeys } from "@/lib/query-keys"
-import type { Scope } from "@/shared/types"
+import type { McpConnectionStatus, Scope } from "@/shared/types"
 import {
   addMcpServerFn,
   getMcpServersFn,
+  getMcpStatusFn,
   removeMcpServerFn,
 } from "./mcp.functions"
 
@@ -61,4 +62,18 @@ export function useMcpMutations() {
   })
 
   return { addMutation, removeMutation }
+}
+
+const mcpStatusKeys = {
+  all: ["mcp-status"] as const,
+}
+
+export function useMcpStatusQuery() {
+  return useQuery<Record<string, McpConnectionStatus>>({
+    queryKey: mcpStatusKeys.all,
+    queryFn: () => getMcpStatusFn(),
+    staleTime: 60_000,
+    refetchInterval: 60_000,
+    refetchOnWindowFocus: true,
+  })
 }

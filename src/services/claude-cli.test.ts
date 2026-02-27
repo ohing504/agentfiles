@@ -6,6 +6,7 @@ import { execFile } from "node:child_process"
 import {
   checkCliAvailable,
   mcpAdd,
+  mcpListStatus,
   mcpRemove,
   pluginToggle,
 } from "@/services/claude-cli"
@@ -142,5 +143,21 @@ describe("pluginToggle", () => {
       expect.any(Object),
       expect.any(Function),
     )
+  })
+})
+
+describe("mcpListStatus", () => {
+  it("mcp list args로 claude CLI를 호출하고 stdout을 반환한다", async () => {
+    const output =
+      "Checking MCP server health...\ncontext7: npx -y @upstash/context7-mcp - ✓ Connected"
+    mockSuccess(output)
+    const result = await mcpListStatus()
+    expect(mockExecFile).toHaveBeenCalledWith(
+      "claude",
+      ["mcp", "list"],
+      expect.any(Object),
+      expect.any(Function),
+    )
+    expect(result).toBe(output)
   })
 })

@@ -44,3 +44,16 @@ export const removeMcpServerFn = createServerFn({ method: "POST" })
     await mcpRemove(data.name, data.scope)
     return { success: true }
   })
+
+export const getMcpStatusFn = createServerFn({ method: "GET" }).handler(
+  async () => {
+    const { mcpListStatus } = await import("@/services/claude-cli")
+    const { parseMcpList } = await import("@/services/mcp-service")
+    try {
+      const stdout = await mcpListStatus()
+      return parseMcpList(stdout)
+    } catch {
+      return {} as Record<string, import("@/shared/types").McpConnectionStatus>
+    }
+  },
+)

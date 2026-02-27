@@ -227,3 +227,11 @@ export type HookEventName =
   | "SessionEnd"
 
 export type HooksSettings = Partial<Record<HookEventName, HookMatcherGroup[]>>
+
+// ── MCP Connection Status ──
+export type McpConnectionStatus =
+  | "connected"
+  | "needs_authentication"
+  | "failed"
+  | "disabled"
+  | "unknown"
