@@ -40,6 +40,7 @@ export function McpPageContent() {
 
   function handleDeleteServer() {
     if (!selectedServer) return
+    if (selectedServer.fromPlugin) return
     removeMutation.mutate(
       { name: selectedServer.name, scope: selectedServer.scope },
       {
