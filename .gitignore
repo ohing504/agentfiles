@@ -24,6 +24,10 @@ dist-ssr/
 # paraglide generated
 src/paraglide/
 
+# merged message files (generated from messages/{locale}/*.json)
+messages/en.json
+messages/ko.json
+
 # claude local settings
 .claude/settings.local.json
 
