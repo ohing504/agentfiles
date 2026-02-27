@@ -26,6 +26,7 @@ src/features/{name}-editor/
 - `constants.tsx` 금지 — 컴포넌트는 `components/`에, 상수는 `constants.ts`에 분리
 - `types.ts`에 feature 로컬 타입 정의 (공유 타입은 `src/shared/types.ts`)
 - 상세 패널(Header + DetailView + Actions)은 **공유 컴포넌트**로 추출 — feature 내부에 ActionBar/DetailPanel을 두지 않음 (섹션 7 참조)
+- `Add{Name}Dialog`는 `editXxx` prop으로 편집 모드도 겸용 (섹션 5 참조)
 
 ## 2. Server Functions (⚠️ 핵심 규칙)
 
@@ -272,6 +273,10 @@ interface DetailPanelProps {
 }
 ```
 
+**더보기 버튼 규격:**
+- 아이콘: `MoreHorizontalIcon` (가로 ⋯) — 모든 에디터에서 통일
+- 버튼: `variant="ghost" size="icon" className="size-8"`
+
 **사용 예시:**
 
 ```tsx
@@ -285,19 +290,28 @@ interface DetailPanelProps {
   onDelete={handleDeleteHook}
 />
 
-// plugins-editor: 읽기 전용 (콜백 없음 → 버튼 없음)
-<HookDetailPanel
-  hook={hook}
-  event={event}
-  matcher={group.matcher}
-  filePath={resolvedPath}
+// mcp-editor: 편집 + 삭제 가능
+<McpDetailPanel
+  server={selectedServer}
+  filePath={selectedServer.configPath}
+  onEdit={() => setEditingServer(selectedServer)}
+  onDelete={handleDeleteServer}
 />
 
-// skills-editor: 삭제만 가능
-<SkillDetailPanel skill={selectedSkill} onDelete={handleDeleteSkill} />
-
-// plugins-editor: 읽기 전용
+// plugins-editor: 읽기 전용 (filePath만 → 에디터 열기만 가능)
+<HookDetailPanel hook={hook} event={event} matcher={group.matcher} filePath={resolvedPath} />
+<McpDetailPanel server={server} filePath={pluginInstallPath} />
 <SkillDetailPanel skill={file} />
+```
+
+**AddDialog 편집 모드 (Add/Edit 겸용):**
+
+```tsx
+// AddMcpDialog — editServer prop으로 편집 모드 활성화
+<AddMcpDialog scope={addDialogScope} onClose={handleAddClose} />                    // 추가
+<AddMcpDialog scope={server.scope} onClose={...} editServer={selectedServer} />     // 편집
+
+// 편집 시 동작: remove old → add new (CLI 제약 — 직접 수정 불가)
 ```
 
 **Mutation 소유권:** 부모 컴포넌트(Page)가 mutation을 소유하고, 콜백으로 패널에 전달한다. 패널은 삭제 확인 AlertDialog UI만 내부 관리.
@@ -378,6 +392,19 @@ export const FOO_TYPE_META: Record<FooType, {
 }> = { ... }
 ```
 
+### lucide-react 아이콘
+
+- import 시 항상 `Icon` 접미사 사용: `MoreHorizontalIcon`, `Trash2Icon`, `SearchIcon` 등
+- 커스텀 아이콘 (`VscodeIcon`, `CursorIcon`)은 `@/components/icons/`에서 import
+
+```typescript
+// ✅ 올바른 패턴
+import { MoreHorizontalIcon, PencilIcon, Trash2Icon } from "lucide-react"
+
+// ❌ 금지 패턴
+import { MoreHorizontal, Pencil, Trash2 } from "lucide-react"
+```
+
 ### i18n
 
 - 모든 UI 텍스트는 `m.xxx()` 함수 사용 (`@/paraglide/messages`)
@@ -443,12 +470,15 @@ async function handleOpenInEditor(editor: "code" | "cursor") {
 src/components/
   HookDetailPanel.tsx      ← Hook 상세 패널 (Header + Actions + HookDetailView + 삭제 확인)
   HookDetailView.tsx       ← Hook 상세 뷰 (메타 필드 + 스크립트 프리뷰)
+  McpDetailPanel.tsx       ← MCP 서버 상세 패널 (Header + Actions + McpDetailView + 삭제 확인)
+  McpDetailView.tsx        ← MCP 서버 상세 뷰 (타입, 명령어, args, env 표시)
   SkillDetailPanel.tsx     ← Skill/Agent/Command 상세 패널 (Header + Actions + SkillDetailView + 삭제 확인)
   SkillDetailView.tsx      ← self-fetching, AgentFile의 메타+콘텐츠 표시
 ```
 
 **사용처:**
 - `HookDetailPanel` → hooks-editor (편집+삭제), plugins-editor (읽기 전용)
+- `McpDetailPanel` → mcp-editor (편집+삭제), plugins-editor (에디터 열기만)
 - `SkillDetailPanel` → skills-editor (삭제), plugins-editor (읽기 전용, commands/skills/agents/outputStyles)
 
 ### 상세 뷰 컴포넌트
@@ -488,11 +518,76 @@ src/lib/
 ```text
 plugins-editor ──→ skills-editor     ✅ 허용
 plugins-editor ──→ hooks-editor      ✅ 허용
+plugins-editor ──→ mcp-editor        ✅ 허용
 skills-editor  ──→ plugins-editor    ❌ 금지
 hooks-editor   ──→ plugins-editor    ❌ 금지
+mcp-editor     ──→ plugins-editor    ❌ 금지
+config-editor  ──→ 다른 feature      ❌ 금지 (독립)
+다른 feature   ──→ config-editor     ❌ 금지 (독립)
+files-editor   ──→ 다른 feature      ❌ 금지 (독립)
+다른 feature   ──→ files-editor      ❌ 금지 (독립)
 ```
 
 plugins가 상위 그룹(skill, hook, mcp 등을 번들)이므로 하위 참조 허용, 역방향 금지.
+config-editor는 다른 feature에 의존하지 않으며, 다른 feature도 config-editor에 의존하지 않는다.
+
+### config-editor 구조 (Settings → Configuration 전면 교체)
+
+```text
+src/features/config-editor/
+├── api/
+│   ├── config.functions.ts        # Server Functions (getConfigSettingsFn, updateConfigSettingFn, deleteConfigSettingFn)
+│   └── config.queries.ts          # React Query 훅 (useConfigQuery, useConfigMutations) + configKeys
+├── components/
+│   ├── ConfigPage.tsx             # ErrorBoundary + ConfigProvider
+│   ├── ConfigPageContent.tsx      # 3단 레이아웃 (Scope 탭 + 카테고리 nav + 설정 폼)
+│   ├── ConfigScopeTabs.tsx        # User/Project/Local 스코프 탭
+│   ├── ConfigCategoryNav.tsx      # 6개 카테고리 좌측 네비게이션
+│   ├── ConfigSettingsPanel.tsx    # 카테고리별 분기 (CategorySettingsProps export)
+│   └── categories/
+│       ├── GeneralSettings.tsx    # model, language, alwaysThinkingEnabled 등
+│       ├── PermissionsSettings.tsx # permissions.allow/ask/deny/defaultMode
+│       ├── EnvironmentSettings.tsx # env key-value 편집기
+│       ├── SandboxSettings.tsx    # sandbox.* 중첩 설정
+│       ├── DisplaySettings.tsx    # statusLine, spinner, UI 토글
+│       └── AuthSettings.tsx       # apiKeyHelper, AWS 인증
+├── services/
+│   └── config-settings.service.ts # settings.json 파싱/쓰기 (dot-notation 중첩 키)
+├── context/
+│   └── ConfigContext.tsx          # scope + category 선택 상태
+└── constants.ts                   # CONFIG_CATEGORIES, CategoryId, ConfigScope
+```
+
+**특이사항:**
+- VSCode 스타일 레이아웃: 상단 Scope 탭 + 좌측 카테고리 nav + 우측 설정 폼
+- `config-settings.service.ts`는 feature-local (공유 서비스가 아님)
+- dot-notation 중첩 키 지원 (`sandbox.network.allowedDomains` 등)
+- 개별 키 단위 저장 (`onUpdate(key, value)`) — 전체 덮어쓰기 방지
+
+### files-editor 구조 (.claude/ 디렉토리 파일 탐색기)
+
+```text
+src/features/files-editor/
+├── api/
+│   ├── files.functions.ts           # Server Functions (getFileTreeFn, getFileContentFn)
+│   └── files.queries.ts             # React Query 훅 (useFileTreeQuery, useFileContentQuery) + fileKeys
+├── components/
+│   ├── FilesPage.tsx                # ErrorBoundary + FilesProvider
+│   ├── FilesPageContent.tsx         # 헤더 + 스코프 탭 + 트리 + 뷰어
+│   ├── FilesScopeTabs.tsx           # Global/Project 스코프 탭
+│   ├── FileTree.tsx                 # 재귀 디렉토리 트리
+│   └── FileViewerPanel.tsx          # 마크다운/코드 뷰어 + Open in Editor
+├── services/
+│   └── files-scanner.service.ts     # scanClaudeDir, readFileContent, isExcluded
+├── context/
+│   └── FilesContext.tsx             # scope + selectedPath 상태
+└── constants.ts                     # FilesScope, EXTENSION_ICONS, KNOWN_ITEMS
+```
+
+**특이사항:**
+- `.claude/` 디렉토리 재귀 스캔 (EXCLUDED_NAMES로 캐시/내부 파일 제외)
+- 읽기 전용 뷰어 — 인라인 편집 없음, Open in Editor로 외부 편집기 위임
+- 내부 스코프 탭으로 Global(`~/.claude/`) / Project(`.claude/`) 전환
 
 ## 8. 금지 사항 (Anti-patterns)
 
@@ -507,6 +602,7 @@ plugins가 상위 그룹(skill, hook, mcp 등을 번들)이므로 하위 참조 
 | feature 내부에 ActionBar/DetailPanel 중복 생성 | 로직 분산, 동작 불일치 | 공유 DetailPanel 사용 (섹션 7) |
 | `editable`/`deletable` boolean prop으로 버튼 표시 제어 | prop 과다, 의도 불명확 | Flutter-style 콜백 유무로 제어 (섹션 5) |
 | isFilePath 등 판별 로직을 컴포넌트에 인라인 | 중복, 불일치 | `src/lib/` 공유 유틸리티 추출 |
+| lucide-react 아이콘 `Icon` 접미사 없이 import | 네이밍 불일치 | `MoreHorizontalIcon`, `Trash2Icon` 등 `Icon` 접미사 사용 |
 
 ## 9. 체크리스트
 

@@ -8,7 +8,7 @@ export const FREQUENT_REFETCH = {
   refetchInterval: 5000,
 } as const
 
-const INFREQUENT_REFETCH = {
+export const INFREQUENT_REFETCH = {
   refetchOnWindowFocus: true,
   refetchInterval: 30_000,
 } as const
@@ -96,57 +96,6 @@ export function useClaudeMdGlobalMeta() {
   })
 }
 
-// ── MCP Servers ───────────────────────────────────────────────────────────────
-
-export function useMcpServers() {
-  const { activeProjectPath } = useProjectContext()
-  const queryClient = useQueryClient()
-
-  const query = useQuery({
-    queryKey: queryKeys.mcpServers.byProject(activeProjectPath),
-    queryFn: async () => {
-      const { getMcpServersFn } = await import("@/server/mcp")
-      return getMcpServersFn({ data: { projectPath: activeProjectPath } })
-    },
-    ...INFREQUENT_REFETCH,
-  })
-
-  const addMutation = useMutation({
-    mutationFn: async (params: {
-      name: string
-      command?: string
-      args?: string[]
-      url?: string
-      env?: Record<string, string>
-      scope: Scope
-    }) => {
-      const { addMcpServerFn } = await import("@/server/mcp")
-      return addMcpServerFn({
-        data: { ...params, projectPath: activeProjectPath },
-      })
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.mcpServers.all })
-      queryClient.invalidateQueries({ queryKey: queryKeys.overview.all })
-    },
-  })
-
-  const removeMutation = useMutation({
-    mutationFn: async (params: { name: string; scope: Scope }) => {
-      const { removeMcpServerFn } = await import("@/server/mcp")
-      return removeMcpServerFn({
-        data: { ...params, projectPath: activeProjectPath },
-      })
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.mcpServers.all })
-      queryClient.invalidateQueries({ queryKey: queryKeys.overview.all })
-    },
-  })
-
-  return { query, addMutation, removeMutation }
-}
-
 // ── Agent Files ───────────────────────────────────────────────────────────────
 
 export function useAgentFiles(type: AgentFile["type"]) {
@@ -213,75 +162,5 @@ export function useCliStatus() {
     staleTime: 60_000,
     refetchInterval: 300_000,
     refetchOnWindowFocus: true,
-  })
-}
-
-// ── Settings ─────────────────────────────────────────────────────────────────
-
-export function useSettings(scope: Scope) {
-  const { activeProjectPath } = useProjectContext()
-  const queryClient = useQueryClient()
-
-  const query = useQuery({
-    queryKey: queryKeys.settings.byScope(
-      scope,
-      scope === "project" ? activeProjectPath : undefined,
-    ),
-    queryFn: async () => {
-      const { getSettingsFn } = await import("@/server/settings")
-      return getSettingsFn({
-        data: { scope, projectPath: activeProjectPath },
-      })
-    },
-    ...FREQUENT_REFETCH,
-  })
-
-  const mutation = useMutation({
-    mutationFn: async (settings: Record<string, unknown>) => {
-      const { saveSettingsFn } = await import("@/server/settings")
-      return saveSettingsFn({
-        data: { scope, projectPath: activeProjectPath, settings },
-      })
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.settings.byScope(
-          scope,
-          scope === "project" ? activeProjectPath : undefined,
-        ),
-      })
-    },
-  })
-
-  return { query, mutation }
-}
-
-// ── Claude App JSON (read-only) ──────────────────────────────────────────────
-
-export function useClaudeAppJson() {
-  return useQuery({
-    queryKey: queryKeys.claudeAppJson.all,
-    queryFn: async () => {
-      const { getClaudeAppJsonFn } = await import("@/server/settings")
-      return getClaudeAppJsonFn()
-    },
-    ...INFREQUENT_REFETCH,
-  })
-}
-
-// ── Project Local Settings ───────────────────────────────────────────────────
-
-export function useProjectLocalSettings() {
-  const { activeProjectPath } = useProjectContext()
-
-  return useQuery({
-    queryKey: queryKeys.projectLocalSettings.byProject(activeProjectPath),
-    queryFn: async () => {
-      const { getProjectLocalSettingsFn } = await import("@/server/settings")
-      return getProjectLocalSettingsFn({
-        data: { projectPath: activeProjectPath },
-      })
-    },
-    ...INFREQUENT_REFETCH,
   })
 }

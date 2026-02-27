@@ -3,6 +3,7 @@ import { DetailField } from "@/components/DetailField"
 import { FileViewer } from "@/components/FileViewer"
 import { HookDetailPanel } from "@/components/HookDetailPanel"
 import { CursorIcon, VscodeIcon } from "@/components/icons/editor-icons"
+import { McpDetailPanel } from "@/components/McpDetailPanel"
 import { SkillDetailPanel } from "@/components/SkillDetailPanel"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -118,48 +119,7 @@ export function PluginComponentDetail({
     case "mcpServers": {
       const server = contents.mcpServers.find((s) => s.name === itemId)
       if (!server) return <EmptyDetail />
-      return (
-        <>
-          <DetailHeader name={server.name} />
-          <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-6">
-            <dl className="grid grid-cols-2 gap-x-6 gap-y-4">
-              <DetailField label={m.plugin_field_name()}>
-                <span className="text-sm font-medium">{server.name}</span>
-              </DetailField>
-              <DetailField label="Type">
-                <Badge variant="secondary" className="text-xs">
-                  {server.type}
-                </Badge>
-              </DetailField>
-              {server.command && (
-                <DetailField label={m.plugin_field_command()}>
-                  <span className="font-mono text-xs">{server.command}</span>
-                </DetailField>
-              )}
-              {server.url && (
-                <DetailField label={m.plugin_field_url()}>
-                  <span className="font-mono text-xs">{server.url}</span>
-                </DetailField>
-              )}
-            </dl>
-            {(server.args || server.env) && (
-              <>
-                <Separator />
-                <FileViewer
-                  rawContent={JSON.stringify(
-                    { args: server.args, env: server.env },
-                    null,
-                    2,
-                  )}
-                  isMarkdown={false}
-                  lang="json"
-                  className="flex-1"
-                />
-              </>
-            )}
-          </div>
-        </>
-      )
+      return <McpDetailPanel server={server} filePath={pluginInstallPath} />
     }
     case "lspServers": {
       const server = contents.lspServers.find((s) => s.name === itemId)

@@ -79,6 +79,8 @@ export interface McpServer {
   url?: string
   env?: Record<string, string>
   disabled?: boolean
+  /** Config file path for "Open in Editor" */
+  configPath?: string
 }
 
 // ── Agent / Command / Skill ──

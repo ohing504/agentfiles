@@ -1,11 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router"
-import { McpDetailContent } from "@/components/pages/McpDetailContent"
+import { createFileRoute, redirect } from "@tanstack/react-router"
 
 export const Route = createFileRoute("/project/mcp/$name")({
-  component: ProjectMcpDetail,
+  beforeLoad: () => {
+    throw redirect({ to: "/mcp" })
+  },
+  component: () => null,
 })
-
-function ProjectMcpDetail() {
-  const { name } = Route.useParams()
-  return <McpDetailContent name={name} scope="project" />
-}

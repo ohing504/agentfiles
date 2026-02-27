@@ -6,7 +6,6 @@ import matter from "gray-matter"
 import type {
   AgentFile,
   ClaudeMd,
-  McpServer,
   Overview,
   Scope,
   SupportingFile,
@@ -293,74 +292,11 @@ export async function readProjectLocalSettings(
   }
 }
 
-// ── MCP 서버 목록 ──
-
-function parseMcpServers(
-  mcpServersRaw: Record<string, unknown>,
-  scope: Scope,
-): McpServer[] {
-  const servers: McpServer[] = []
-
-  for (const [name, config] of Object.entries(mcpServersRaw)) {
-    if (typeof config !== "object" || config === null) continue
-
-    const c = config as Record<string, unknown>
-
-    let type: McpServer["type"]
-    if (c.command) {
-      type = "stdio"
-    } else if (c.url) {
-      // streamable-http vs sse 구분: transportType 필드가 있으면 사용
-      const transportType = c.transportType as string | undefined
-      type = transportType === "streamable-http" ? "streamable-http" : "sse"
-    } else {
-      type = "stdio"
-    }
-
-    servers.push({
-      name,
-      scope,
-      type,
-      command: c.command as string | undefined,
-      args: c.args as string[] | undefined,
-      url: c.url as string | undefined,
-      env: c.env as Record<string, string> | undefined,
-      disabled: c.disabled as boolean | undefined,
-    })
-  }
-
-  return servers
-}
-
-export async function getMcpServers(
-  projectPath?: string,
-): Promise<McpServer[]> {
-  const [globalSettings, projectSettings] = await Promise.all([
-    readSettingsJson(getGlobalConfigPath()),
-    readSettingsJson(getProjectConfigPath(projectPath)),
-  ])
-
-  const globalServers = globalSettings.mcpServers
-    ? parseMcpServers(
-        globalSettings.mcpServers as Record<string, unknown>,
-        "global",
-      )
-    : []
-
-  const projectServers = projectSettings.mcpServers
-    ? parseMcpServers(
-        projectSettings.mcpServers as Record<string, unknown>,
-        "project",
-      )
-    : []
-
-  return [...globalServers, ...projectServers]
-}
-
 // ── Overview 생성 ──
 
 export async function getOverview(projectPath?: string): Promise<Overview> {
   const { getPlugins } = await import("@/services/plugin-service")
+  const { getMcpServers } = await import("@/services/mcp-service")
   const globalBase = getGlobalConfigPath()
   const projectBase = getProjectConfigPath(projectPath)
 

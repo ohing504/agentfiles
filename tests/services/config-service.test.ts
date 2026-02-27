@@ -6,7 +6,6 @@ import {
   getAgentFiles,
   getClaudeMd,
   getGlobalConfigPath,
-  getMcpServers,
   getOverview,
   getProjectConfigPath,
   scanMdDir,
@@ -218,115 +217,6 @@ describe("scanMdDir", () => {
   })
 })
 
-// ── getMcpServers ──
-
-describe("getMcpServers", () => {
-  it("settings.json 없으면 빈 배열", async () => {
-    const result = await getMcpServers()
-    expect(result).toEqual([])
-  })
-
-  it("글로벌 stdio MCP 서버 파싱", async () => {
-    const settings = {
-      mcpServers: {
-        context7: {
-          command: "npx",
-          args: ["-y", "@upstash/context7-mcp@latest"],
-        },
-      },
-    }
-    await writeJson(path.join(tmpGlobal, ".claude", "settings.json"), settings)
-
-    const result = await getMcpServers()
-
-    expect(result).toHaveLength(1)
-    expect(result[0].name).toBe("context7")
-    expect(result[0].scope).toBe("global")
-    expect(result[0].type).toBe("stdio")
-    expect(result[0].command).toBe("npx")
-    expect(result[0].args).toEqual(["-y", "@upstash/context7-mcp@latest"])
-  })
-
-  it("SSE MCP 서버 파싱 (url 기반)", async () => {
-    const settings = {
-      mcpServers: {
-        "sse-server": {
-          url: "https://example.com/mcp/sse",
-        },
-      },
-    }
-    await writeJson(path.join(tmpGlobal, ".claude", "settings.json"), settings)
-
-    const result = await getMcpServers()
-
-    expect(result[0].type).toBe("sse")
-    expect(result[0].url).toBe("https://example.com/mcp/sse")
-  })
-
-  it("streamable-http MCP 서버 파싱", async () => {
-    const settings = {
-      mcpServers: {
-        "http-server": {
-          url: "https://example.com/mcp",
-          transportType: "streamable-http",
-        },
-      },
-    }
-    await writeJson(path.join(tmpGlobal, ".claude", "settings.json"), settings)
-
-    const result = await getMcpServers()
-
-    expect(result[0].type).toBe("streamable-http")
-  })
-
-  it("글로벌 + 프로젝트 MCP 서버 합산", async () => {
-    const globalSettings = {
-      mcpServers: {
-        "global-mcp": { command: "node", args: ["global.js"] },
-      },
-    }
-    const projectSettings = {
-      mcpServers: {
-        "project-mcp": { command: "node", args: ["project.js"] },
-      },
-    }
-
-    await writeJson(
-      path.join(tmpGlobal, ".claude", "settings.json"),
-      globalSettings,
-    )
-    await writeJson(
-      path.join(tmpProject, ".claude", "settings.json"),
-      projectSettings,
-    )
-
-    const result = await getMcpServers()
-
-    expect(result).toHaveLength(2)
-    const globalMcp = result.find((s) => s.name === "global-mcp")
-    const projectMcp = result.find((s) => s.name === "project-mcp")
-    expect(globalMcp?.scope).toBe("global")
-    expect(projectMcp?.scope).toBe("project")
-  })
-
-  it("env 필드 포함 파싱", async () => {
-    const settings = {
-      mcpServers: {
-        "env-mcp": {
-          command: "node",
-          args: ["server.js"],
-          env: { API_KEY: "secret", DEBUG: "1" },
-        },
-      },
-    }
-    await writeJson(path.join(tmpGlobal, ".claude", "settings.json"), settings)
-
-    const result = await getMcpServers()
-
-    expect(result[0].env).toEqual({ API_KEY: "secret", DEBUG: "1" })
-  })
-})
-
 // ── getOverview ──
 
 describe("getOverview", () => {
@@ -461,25 +351,18 @@ describe("getOverview", () => {
   })
 
   it("MCP 서버 카운트 포함", async () => {
-    const globalSettings = {
+    // mcp-service는 ~/.claude.json과 .mcp.json에서 읽음
+    await writeJson(path.join(tmpGlobal, ".claude.json"), {
       mcpServers: {
         "g-mcp-1": { command: "node", args: [] },
         "g-mcp-2": { command: "python", args: [] },
       },
-    }
-    const projectSettings = {
+    })
+    await writeJson(path.join(tmpProject, ".mcp.json"), {
       mcpServers: {
         "p-mcp-1": { command: "deno", args: [] },
       },
-    }
-    await writeJson(
-      path.join(tmpGlobal, ".claude", "settings.json"),
-      globalSettings,
-    )
-    await writeJson(
-      path.join(tmpProject, ".claude", "settings.json"),
-      projectSettings,
-    )
+    })
 
     const result = await getOverview()
 

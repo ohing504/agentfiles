@@ -3,11 +3,7 @@ import os from "node:os"
 import path from "node:path"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { validateItemName } from "@/server/validation"
-import {
-  getClaudeMd,
-  getMcpServers,
-  scanMdDir,
-} from "@/services/config-service"
+import { getClaudeMd, scanMdDir } from "@/services/config-service"
 import { writeMarkdown } from "@/services/file-writer"
 import { getPlugins } from "@/services/plugin-service"
 
@@ -103,16 +99,6 @@ describe("존재하지 않는 리소스 처리", () => {
 // ── 3. 잘못된 JSON 파일 graceful 처리 ──
 
 describe("잘못된 JSON 파일 graceful 처리", () => {
-  it("getMcpServers - settings.json 깨진 JSON → 빈 배열 반환", async () => {
-    // readSettingsJson은 에러 시 {} 반환하므로 mcpServers가 없어 빈 배열
-    await writeFile(
-      path.join(tmpGlobal, ".claude", "settings.json"),
-      "{ this is not valid json !!!",
-    )
-    const result = await getMcpServers()
-    expect(result).toEqual([])
-  })
-
   it("getPlugins - installed_plugins.json 깨진 JSON → graceful 처리", async () => {
     // ENOENT가 아닌 JSON 파싱 에러는 throw되어야 한다 (config-service 구현 확인)
     await writeFile(
@@ -122,28 +108,6 @@ describe("잘못된 JSON 파일 graceful 처리", () => {
     // JSON.parse 에러가 throw되는지, 또는 빈 배열이 반환되는지 확인
     // config-service.ts의 getPlugins 구현에서 ENOENT가 아닌 에러는 throw
     await expect(getPlugins()).rejects.toThrow()
-  })
-
-  it("getMcpServers - 프로젝트 settings.json 깨진 JSON → 글로벌 서버만 반환", async () => {
-    const globalSettings = {
-      mcpServers: {
-        "valid-mcp": { command: "node", args: ["server.js"] },
-      },
-    }
-    await writeFile(
-      path.join(tmpGlobal, ".claude", "settings.json"),
-      JSON.stringify(globalSettings),
-    )
-    await writeFile(
-      path.join(tmpProject, ".claude", "settings.json"),
-      "{ invalid json }",
-    )
-
-    // 프로젝트 settings.json이 깨져도 글로벌 서버는 정상 반환
-    const result = await getMcpServers()
-    expect(result).toHaveLength(1)
-    expect(result[0].name).toBe("valid-mcp")
-    expect(result[0].scope).toBe("global")
   })
 })
 

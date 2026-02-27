@@ -46,6 +46,7 @@ describe("i18n messages", () => {
       "action",
       "app",
       "claude",
+      "config",
       "detail",
       "editor",
       "files",
