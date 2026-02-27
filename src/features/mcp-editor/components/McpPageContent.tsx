@@ -38,6 +38,10 @@ export function McpPageContent() {
   const { removeMutation } = useMcpMutations()
   const { data: statusMap } = useMcpStatusQuery()
 
+  // Filter out plugin-provided servers — they are visible in the Dashboard Plugins panel
+  const displayGlobalServers = globalServers.filter((s) => !s.fromPlugin)
+  const displayProjectServers = projectServers.filter((s) => !s.fromPlugin)
+
   function handleDeleteServer() {
     if (!selectedServer) return
     if (selectedServer.fromPlugin) return
@@ -95,12 +99,12 @@ export function McpPageContent() {
 
           <McpScopeSection
             label="User"
-            scope="global"
-            servers={globalServers}
+            scope="user"
+            servers={displayGlobalServers}
             searchQuery={searchQuery}
             selectedServer={selectedServer}
             onSelectServer={handleSelectServer}
-            onAddClick={() => handleAddClick("global")}
+            onAddClick={() => handleAddClick("user")}
             statusMap={statusMap}
             onDeleteServer={handleDeleteServer}
             onEditServer={(server) => {
@@ -112,7 +116,7 @@ export function McpPageContent() {
             <McpScopeSection
               label="Project"
               scope="project"
-              servers={projectServers}
+              servers={displayProjectServers}
               searchQuery={searchQuery}
               selectedServer={selectedServer}
               onSelectServer={handleSelectServer}
