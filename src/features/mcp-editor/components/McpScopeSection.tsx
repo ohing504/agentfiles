@@ -98,9 +98,15 @@ export const McpScopeSection = memo(function McpScopeSection({
                 <ItemContextMenu
                   key={`${server.name}-${server.scope}`}
                   filePath={server.configPath}
-                  onEdit={onEditServer ? () => onEditServer(server) : undefined}
+                  onEdit={
+                    !server.fromPlugin && onEditServer
+                      ? () => onEditServer(server)
+                      : undefined
+                  }
                   onDelete={
-                    onDeleteServer ? () => onDeleteServer(server) : undefined
+                    !server.fromPlugin && onDeleteServer
+                      ? () => onDeleteServer(server)
+                      : undefined
                   }
                   deleteTitle={m.mcp_delete_title()}
                   deleteDescription={m.mcp_delete_confirm({
