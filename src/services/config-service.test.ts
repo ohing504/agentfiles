@@ -1,13 +1,18 @@
 import fs from "node:fs/promises"
 import os from "node:os"
 import path from "node:path"
-import { afterEach, beforeEach, describe, expect, it } from "vitest"
-import { scanClaudeMdFiles } from "@/services/config-service"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import {
+  getClaudeMd,
+  getGlobalConfigPath,
+  getProjectConfigPath,
+  scanClaudeMdFiles,
+} from "./config-service"
 
-// ── tmp 디렉토리 기반 테스트 헬퍼 ──
+// ── 공통 헬퍼 ──
 
 async function createTmpDir(): Promise<string> {
-  return fs.mkdtemp(path.join(os.tmpdir(), "agentfiles-scan-test-"))
+  return fs.mkdtemp(path.join(os.tmpdir(), "agentfiles-test-"))
 }
 
 async function removeTmpDir(dir: string): Promise<void> {
@@ -19,17 +24,91 @@ async function writeFile(filePath: string, content: string): Promise<void> {
   await fs.writeFile(filePath, content, "utf-8")
 }
 
-let tmpDir: string
+// ── 모킹: process.cwd() + os.homedir() ──
+// (getGlobalConfigPath, getProjectConfigPath, getClaudeMd 테스트에서 사용)
+
+let tmpGlobal: string
+let tmpProject: string
 
 beforeEach(async () => {
-  tmpDir = await createTmpDir()
+  tmpGlobal = await createTmpDir()
+  tmpProject = await createTmpDir()
+
+  vi.spyOn(os, "homedir").mockReturnValue(tmpGlobal)
+  vi.spyOn(process, "cwd").mockReturnValue(tmpProject)
 })
 
 afterEach(async () => {
-  await removeTmpDir(tmpDir)
+  vi.restoreAllMocks()
+  await Promise.all([removeTmpDir(tmpGlobal), removeTmpDir(tmpProject)])
 })
 
+// ── 경로 헬퍼 ──
+// (tests/services/config-service.test.ts에서 이동)
+
+describe("getGlobalConfigPath / getProjectConfigPath", () => {
+  it("글로벌 경로: homedir/.claude 반환", () => {
+    expect(getGlobalConfigPath()).toBe(path.join(tmpGlobal, ".claude"))
+  })
+
+  it("프로젝트 경로: cwd/.claude 반환", () => {
+    expect(getProjectConfigPath()).toBe(path.join(tmpProject, ".claude"))
+  })
+})
+
+// ── getClaudeMd ──
+// (tests/services/config-service.test.ts에서 이동)
+
+describe("getClaudeMd", () => {
+  it("글로벌 CLAUDE.md 정상 읽기", async () => {
+    const claudePath = path.join(tmpGlobal, ".claude", "CLAUDE.md")
+    await writeFile(claudePath, "# Global Claude\nHello world")
+
+    const result = await getClaudeMd("global")
+
+    expect(result).not.toBeNull()
+    expect(result?.scope).toBe("global")
+    expect(result?.path).toBe(claudePath)
+    expect(result?.content).toBe("# Global Claude\nHello world")
+    expect(result?.size).toBeGreaterThan(0)
+    expect(result?.lastModified).toMatch(/^\d{4}-\d{2}-\d{2}T/)
+  })
+
+  it("프로젝트 CLAUDE.md 정상 읽기", async () => {
+    const claudePath = path.join(tmpProject, ".claude", "CLAUDE.md")
+    await writeFile(claudePath, "# Project Claude")
+
+    const result = await getClaudeMd("project")
+
+    expect(result?.scope).toBe("project")
+    expect(result?.content).toBe("# Project Claude")
+  })
+
+  it("파일 없으면 null 반환", async () => {
+    const result = await getClaudeMd("global")
+    expect(result).toBeNull()
+  })
+
+  it("프로젝트 파일 없으면 null 반환", async () => {
+    const result = await getClaudeMd("project")
+    expect(result).toBeNull()
+  })
+})
+
+// ── scanClaudeMdFiles ──
+// (tests/unit/scan-claude-md.test.ts에서 이동, 별도 tmpDir 사용)
+
 describe("scanClaudeMdFiles", () => {
+  let tmpDir: string
+
+  beforeEach(async () => {
+    tmpDir = await createTmpDir()
+  })
+
+  afterEach(async () => {
+    await removeTmpDir(tmpDir)
+  })
+
   it("루트의 CLAUDE.md를 찾는다", async () => {
     await writeFile(path.join(tmpDir, "CLAUDE.md"), "# Root Claude MD")
 
@@ -150,7 +229,6 @@ describe("scanClaudeMdFiles", () => {
   })
 
   it("CLAUDE.md가 없으면 빈 배열을 반환한다", async () => {
-    // tmpDir은 존재하지만 CLAUDE.md가 없음
     await writeFile(path.join(tmpDir, "README.md"), "# Readme")
     await writeFile(path.join(tmpDir, "src", "index.ts"), "export {}")
 
@@ -179,7 +257,6 @@ describe("scanClaudeMdFiles", () => {
 
     expect(results).toHaveLength(1)
     expect(results[0].size).toBe(Buffer.byteLength(content, "utf-8"))
-    // ISO 날짜 형식인지 확인
     expect(new Date(results[0].lastModified).toISOString()).toBe(
       results[0].lastModified,
     )
