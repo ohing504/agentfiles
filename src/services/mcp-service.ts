@@ -180,11 +180,27 @@ export async function getMcpServers(
   const applyDisabled = (server: McpServer): McpServer =>
     disabledSet.has(server.name) ? { ...server, disabled: true } : server
 
-  return [
+  // 5) Plugin MCP 서버 로드
+  const pluginServers = await getPluginMcpServers(projectPath)
+
+  const directServers = [
     ...userServers.map(applyDisabled),
     ...localServers.map(applyDisabled),
     ...projectServers.map(applyDisabled),
   ]
+
+  // 6) 중복 감지: 직접 추가 서버 이름 Set
+  const directNames = new Set(directServers.map((s) => s.name))
+  const pluginNames = new Set(pluginServers.map((s) => s.name))
+
+  const markedDirect = directServers.map((s) =>
+    pluginNames.has(s.name) ? { ...s, isDuplicate: true } : s,
+  )
+  const markedPlugin = pluginServers.map((s) =>
+    directNames.has(s.name) ? { ...s, isDuplicate: true } : s,
+  )
+
+  return [...markedDirect, ...markedPlugin]
 }
 
 export function parseMcpList(
