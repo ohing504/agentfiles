@@ -27,5 +27,11 @@
   "detail_skill": "Skill: {name}",
   "detail_plugin": "Plugin: {name}",
   "action_edit": "Edit",
-  "action_delete": "Delete"
+  "action_delete": "Delete",
+  "common_cancel": "Cancel",
+  "common_docs": "Docs",
+  "common_open_vscode": "VS Code",
+  "common_open_cursor": "Cursor",
+  "common_open_error": "Failed to open in {editor}",
+  "common_no_results": "No results"
 }
