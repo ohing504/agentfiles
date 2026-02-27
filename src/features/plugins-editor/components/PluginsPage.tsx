@@ -1,5 +1,5 @@
 import { AlertTriangle, ExternalLink, Plug2Icon, Search } from "lucide-react"
-import { useState } from "react"
+import { useDeferredValue, useState } from "react"
 import { ErrorBoundary } from "@/components/ErrorBoundary"
 import { useProjectContext } from "@/components/ProjectContext"
 import {
@@ -102,6 +102,7 @@ function PluginsRightPanel() {
 function PluginsPageInner() {
   const { activeProjectPath } = useProjectContext()
   const [searchQuery, setSearchQuery] = useState("")
+  const deferredSearchQuery = useDeferredValue(searchQuery)
 
   const { isLoading } = usePluginsQuery(activeProjectPath ?? undefined)
 
@@ -155,7 +156,7 @@ function PluginsPageInner() {
             />
           </div>
 
-          <PluginList searchQuery={searchQuery} />
+          <PluginList searchQuery={deferredSearchQuery} />
         </div>
       </div>
 

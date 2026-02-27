@@ -16,7 +16,7 @@
     - 공통 키 분리: `common_*` namespace로 scope 탭 레이블·empty state·로딩·삭제 확인 등 재사용 텍스트 통합
     - Feature별 네임스페이스 정리: `hooks_`, `plugin_`, `mcp_`, `skills_`, `files_`, `config_` — feature 모듈 구조와 1:1 대응
     - 장기적으로 paraglide 네임스페이스 또는 feature별 메시지 파일 분리 검토
-- [ ] 플러그인 검색 입력에 `useDeferredValue` 적용 (#13)
+- [x] 플러그인 검색 입력에 `useDeferredValue` 적용 (#13)
 - [ ] 추가 공유 컴포넌트 — `McpServerDetailView`, `LspServerDetailView`
 - [ ] Files 뷰어 숨김 패턴 사용자 설정 — `agentfiles.json`에 `files.exclude` 패턴 배열 지원 (`.vscode/settings.json`의 `files.exclude` 같은 방식). 사용자가 보고 싶지 않은 폴더/파일을 직접 설정할 수 있도록
 
