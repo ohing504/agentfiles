@@ -12,7 +12,7 @@ function loadMessages(locale: string): Record<string, string> {
       const content = JSON.parse(
         readFileSync(path.join(localeDir, file), "utf-8"),
       )
-      return { ...acc, ...content }
+      return Object.assign(acc, content)
     },
     {} as Record<string, string>,
   )
