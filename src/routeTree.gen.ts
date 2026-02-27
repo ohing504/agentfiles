@@ -16,6 +16,7 @@ import { Route as McpRouteRouteImport } from './routes/mcp/route'
 import { Route as HooksRouteRouteImport } from './routes/hooks/route'
 import { Route as GlobalRouteRouteImport } from './routes/global/route'
 import { Route as FilesRouteRouteImport } from './routes/files/route'
+import { Route as AgentsRouteRouteImport } from './routes/agents/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as ProjectSettingsRouteRouteImport } from './routes/project/settings/route'
@@ -66,6 +67,11 @@ const GlobalRouteRoute = GlobalRouteRouteImport.update({
 const FilesRouteRoute = FilesRouteRouteImport.update({
   id: '/files',
   path: '/files',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AgentsRouteRoute = AgentsRouteRouteImport.update({
+  id: '/agents',
+  path: '/agents',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -151,6 +157,7 @@ const GlobalMcpNameRouteRoute = GlobalMcpNameRouteRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/agents': typeof AgentsRouteRoute
   '/files': typeof FilesRouteRoute
   '/global': typeof GlobalRouteRouteWithChildren
   '/hooks': typeof HooksRouteRoute
@@ -176,6 +183,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/agents': typeof AgentsRouteRoute
   '/files': typeof FilesRouteRoute
   '/global': typeof GlobalRouteRouteWithChildren
   '/hooks': typeof HooksRouteRoute
@@ -202,6 +210,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/agents': typeof AgentsRouteRoute
   '/files': typeof FilesRouteRoute
   '/global': typeof GlobalRouteRouteWithChildren
   '/hooks': typeof HooksRouteRoute
@@ -229,6 +238,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/agents'
     | '/files'
     | '/global'
     | '/hooks'
@@ -254,6 +264,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/agents'
     | '/files'
     | '/global'
     | '/hooks'
@@ -279,6 +290,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/agents'
     | '/files'
     | '/global'
     | '/hooks'
@@ -305,6 +317,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AgentsRouteRoute: typeof AgentsRouteRoute
   FilesRouteRoute: typeof FilesRouteRoute
   GlobalRouteRoute: typeof GlobalRouteRouteWithChildren
   HooksRouteRoute: typeof HooksRouteRoute
@@ -364,6 +377,13 @@ declare module '@tanstack/react-router' {
       path: '/files'
       fullPath: '/files'
       preLoaderRoute: typeof FilesRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/agents': {
+      id: '/agents'
+      path: '/agents'
+      fullPath: '/agents'
+      preLoaderRoute: typeof AgentsRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -551,6 +571,7 @@ const ProjectRouteRouteWithChildren = ProjectRouteRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AgentsRouteRoute: AgentsRouteRoute,
   FilesRouteRoute: FilesRouteRoute,
   GlobalRouteRoute: GlobalRouteRouteWithChildren,
   HooksRouteRoute: HooksRouteRoute,

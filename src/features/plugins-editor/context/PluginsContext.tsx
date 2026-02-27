@@ -9,6 +9,7 @@ import {
 import { useProjectContext } from "@/components/ProjectContext"
 import type { Plugin } from "@/shared/types"
 import { usePluginsQuery } from "../api/plugins.queries"
+import { getComponentItems } from "../components/PluginComponentList"
 import { SCOPE_LABELS, SCOPE_ORDER } from "../constants"
 import type { PluginComponentType } from "../types"
 
@@ -110,7 +111,12 @@ export function PluginsProvider({
     (plugin: Plugin, componentType: PluginComponentType) => {
       setSelectedPluginId(plugin.id)
       setSelectedComponentType(componentType)
-      setSelectedItemId(null)
+      if (plugin.contents) {
+        const firstItem = getComponentItems(plugin.contents, componentType)[0]
+        setSelectedItemId(firstItem?.id ?? null)
+      } else {
+        setSelectedItemId(null)
+      }
       onSelect?.()
     },
     [onSelect],

@@ -7,6 +7,7 @@ import {
   ScrollTextIcon,
   ServerIcon,
   SettingsIcon,
+  WorkflowIcon,
   ZapIcon,
 } from "lucide-react"
 
@@ -79,6 +80,14 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
                   <Link to="/skills" activeProps={{ "data-active": true }}>
                     <ScrollTextIcon />
                     <span>{m.nav_skills()}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild tooltip="Agents">
+                  <Link to="/agents" activeProps={{ "data-active": true }}>
+                    <WorkflowIcon />
+                    <span>Agents</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>

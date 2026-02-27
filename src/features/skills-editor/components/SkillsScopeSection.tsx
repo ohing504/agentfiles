@@ -218,7 +218,12 @@ export function SkillsScopeSection({
                     </span>
                   }
                   open={true}
-                  onClick={() => {}}
+                  onClick={() => {
+                    if (item.commands.length > 0) {
+                      onSelectSkill(item.commands[0])
+                      onSelectSupportingFile(null)
+                    }
+                  }}
                 >
                   {item.commands.map((f) => {
                     const isDup = skillNames.has(f.name)

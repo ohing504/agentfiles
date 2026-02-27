@@ -29,19 +29,19 @@ describe("constants", () => {
   })
 
   it("general category contains official settings keys", () => {
-    const general = getCategoryById("general")!
-    expect(general.keys).toContain("model")
-    expect(general.keys).toContain("language")
-    expect(general.keys).toContain("alwaysThinkingEnabled")
+    const general = getCategoryById("general")
+    expect(general?.keys).toContain("model")
+    expect(general?.keys).toContain("language")
+    expect(general?.keys).toContain("alwaysThinkingEnabled")
   })
 
   it("permissions category contains permissions key", () => {
-    const perms = getCategoryById("permissions")!
-    expect(perms.keys).toContain("permissions")
+    const perms = getCategoryById("permissions")
+    expect(perms?.keys).toContain("permissions")
   })
 
   it("sandbox category contains sandbox key", () => {
-    const sandbox = getCategoryById("sandbox")!
-    expect(sandbox.keys).toContain("sandbox")
+    const sandbox = getCategoryById("sandbox")
+    expect(sandbox?.keys).toContain("sandbox")
   })
 })
