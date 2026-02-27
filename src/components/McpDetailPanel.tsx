@@ -44,7 +44,9 @@ export function McpDetailPanel({
 }: McpDetailPanelProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
-  const hasAnyAction = !!filePath || !!onEdit || !!onDelete
+  const isFromPlugin = !!server.fromPlugin
+  const hasAnyAction =
+    !!filePath || (!isFromPlugin && !!onEdit) || (!isFromPlugin && !!onDelete)
 
   async function handleOpenInEditor(editor: "code" | "cursor") {
     if (!filePath) return
@@ -85,7 +87,7 @@ export function McpDetailPanel({
                   </DropdownMenuItem>
                 </>
               )}
-              {onEdit && (
+              {onEdit && !isFromPlugin && (
                 <>
                   {filePath && <DropdownMenuSeparator />}
                   <DropdownMenuItem onClick={onEdit}>
@@ -94,7 +96,7 @@ export function McpDetailPanel({
                   </DropdownMenuItem>
                 </>
               )}
-              {onDelete && (
+              {onDelete && !isFromPlugin && (
                 <>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
@@ -114,8 +116,28 @@ export function McpDetailPanel({
       {/* Content */}
       <McpDetailView server={server} status={status} />
 
+      {/* Plugin 서버 안내 */}
+      {isFromPlugin && (
+        <div className="px-4 py-3 border-t border-border">
+          <p className="text-xs text-muted-foreground">
+            This server is provided by plugin{" "}
+            <span className="font-medium text-foreground">
+              {server.fromPlugin}
+            </span>
+            . To manage it, go to the{" "}
+            <a
+              href="/global/plugins"
+              className="text-primary underline-offset-2 hover:underline"
+            >
+              Plugins page
+            </a>
+            .
+          </p>
+        </div>
+      )}
+
       {/* Delete confirmation */}
-      {onDelete && (
+      {onDelete && !isFromPlugin && (
         <AlertDialog
           open={showDeleteConfirm}
           onOpenChange={setShowDeleteConfirm}
