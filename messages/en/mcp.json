@@ -1,6 +1,5 @@
 {
   "mcp_title": "MCP Servers",
-  "mcp_docs": "Docs",
   "mcp_search_placeholder": "Search servers...",
   "mcp_empty_title": "No Server Selected",
   "mcp_empty_desc": "Select a server from the left panel to view its details.",
@@ -26,9 +25,6 @@
   "mcp_add_error_name": "Name is required",
   "mcp_add_error_command": "Command is required for stdio type",
   "mcp_add_error_url": "URL is required for SSE/HTTP type",
-  "mcp_open_vscode": "VS Code",
-  "mcp_open_cursor": "Cursor",
-  "mcp_open_error": "Failed to open in {editor}",
   "mcp_edit_title": "Edit MCP Server",
   "mcp_render_error": "Failed to load MCP Servers editor",
   "mcp_render_error_desc": "Please try refreshing the page.",

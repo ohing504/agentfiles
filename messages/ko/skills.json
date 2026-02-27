@@ -4,8 +4,6 @@
   "skills_add_title": "스킬 추가",
   "skills_add_desc": "SKILL.md 템플릿이 포함된 새 스킬 디렉토리를 생성합니다.",
   "skills_edit": "편집",
-  "skills_open_vscode": "VS Code",
-  "skills_open_cursor": "Cursor",
   "skills_open_folder": "폴더에서 보기",
   "skills_delete": "제거",
   "skills_delete_title": "스킬 제거",

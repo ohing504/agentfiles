@@ -4,8 +4,6 @@
   "skills_add_title": "Add Skill",
   "skills_add_desc": "Creates a new skill directory with SKILL.md template.",
   "skills_edit": "Edit",
-  "skills_open_vscode": "VS Code",
-  "skills_open_cursor": "Cursor",
   "skills_open_folder": "Open in Folder",
   "skills_delete": "Delete",
   "skills_delete_title": "Delete Skill",

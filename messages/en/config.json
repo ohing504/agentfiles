@@ -1,6 +1,5 @@
 {
   "config_title": "Configuration",
-  "config_docs": "Docs",
   "config_docs_url": "https://code.claude.com/docs/en/settings",
   "config_render_error": "Failed to render configuration editor",
   "config_scope_user": "User",

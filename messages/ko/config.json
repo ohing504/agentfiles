@@ -1,6 +1,5 @@
 {
   "config_title": "설정",
-  "config_docs": "문서",
   "config_docs_url": "https://code.claude.com/docs/en/settings",
   "config_render_error": "설정 에디터 렌더링 실패",
   "config_scope_user": "사용자",
