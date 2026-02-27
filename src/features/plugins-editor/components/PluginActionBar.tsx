@@ -83,6 +83,7 @@ export function PluginActionBar({
                   id: plugin.id,
                   enable: checked,
                   scope: plugin.scope,
+                  projectPath: plugin.projectPath,
                 },
                 {
                   onError: (e) =>
@@ -145,7 +146,11 @@ export function PluginActionBar({
             <AlertDialogAction
               onClick={() => {
                 uninstallMutation.mutate(
-                  { id: plugin.id, scope: plugin.scope },
+                  {
+                    id: plugin.id,
+                    scope: plugin.scope,
+                    projectPath: plugin.projectPath,
+                  },
                   {
                     onSuccess: () => {
                       setPendingUninstall(false)
