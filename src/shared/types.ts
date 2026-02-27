@@ -81,6 +81,8 @@ export interface McpServer {
   disabled?: boolean
   /** Config file path for "Open in Editor" */
   configPath?: string
+  /** Plugin short name if provided by a plugin (read-only, cannot be edited/deleted) */
+  fromPlugin?: string
 }
 
 // ── Agent / Command / Skill ──

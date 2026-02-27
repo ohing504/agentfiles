@@ -1,14 +1,18 @@
 import { execFile as execFileCb } from "node:child_process"
+import os from "node:os"
 import type { CliStatus, McpServer, PluginScope, Scope } from "@/shared/types"
 
 const TIMEOUT_MS = 30_000
 
-function execClaude(args: string[]): Promise<string> {
+function execClaude(
+  args: string[],
+  options?: { cwd?: string },
+): Promise<string> {
   return new Promise((resolve, reject) => {
     execFileCb(
       "claude",
       args,
-      { timeout: TIMEOUT_MS },
+      { timeout: TIMEOUT_MS, cwd: options?.cwd },
       (err, stdout, stderr) => {
         if (err) {
           const detail = stderr?.trim() || stdout?.trim() || err.message
@@ -122,6 +126,9 @@ export async function marketplaceUpdate(name: string): Promise<void> {
   await execClaude(["plugin", "marketplace", "update", name])
 }
 
-export async function mcpListStatus(): Promise<string> {
-  return execClaude(["mcp", "list"])
+export async function mcpListStatus(projectPath?: string): Promise<string> {
+  // Run from the active project dir to include project-scoped servers.
+  // Falls back to home dir when no project is selected (global-only view).
+  const cwd = projectPath ?? os.homedir()
+  return execClaude(["mcp", "list"], { cwd })
 }

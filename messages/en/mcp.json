@@ -28,5 +28,9 @@
   "mcp_edit_title": "Edit MCP Server",
   "mcp_render_error": "Failed to load MCP Servers editor",
   "mcp_render_error_desc": "Please try refreshing the page.",
-  "mcp_docs_url": "https://code.claude.com/docs/en/mcp"
+  "mcp_docs_url": "https://code.claude.com/docs/en/mcp",
+  "mcp_status_connected": "Connected",
+  "mcp_status_needs_auth": "Needs authentication",
+  "mcp_status_failed": "Failed to connect",
+  "mcp_status_disabled": "Disabled"
 }

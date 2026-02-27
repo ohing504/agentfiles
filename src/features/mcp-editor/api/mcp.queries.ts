@@ -66,15 +66,21 @@ export function useMcpMutations() {
 
 const mcpStatusKeys = {
   all: ["mcp-status"] as const,
+  byProject: (projectPath?: string | null) =>
+    [...mcpStatusKeys.all, projectPath] as const,
 }
 
 export function useMcpStatusQuery() {
+  const { activeProjectPath } = useProjectContext()
   // 60s interval instead of INFREQUENT_REFETCH (30s): `claude mcp list` spawns
   // subprocesses for each server health check, so polling less aggressively
   // reduces CLI overhead.
   return useQuery<Record<string, McpConnectionStatus>>({
-    queryKey: mcpStatusKeys.all,
-    queryFn: () => getMcpStatusFn(),
+    queryKey: mcpStatusKeys.byProject(activeProjectPath),
+    queryFn: () =>
+      getMcpStatusFn({
+        data: { projectPath: activeProjectPath ?? undefined },
+      }),
     staleTime: 60_000,
     refetchInterval: 60_000,
     refetchOnWindowFocus: true,

@@ -45,15 +45,17 @@ export const removeMcpServerFn = createServerFn({ method: "POST" })
     return { success: true }
   })
 
-export const getMcpStatusFn = createServerFn({ method: "GET" }).handler(
-  async () => {
+export const getMcpStatusFn = createServerFn({ method: "GET" })
+  .inputValidator(z.object({ projectPath: z.string().optional() }))
+  .handler(async ({ data }) => {
     const { mcpListStatus } = await import("@/services/claude-cli")
     const { parseMcpList } = await import("@/services/mcp-service")
     try {
-      const stdout = await mcpListStatus()
+      // Run `claude mcp list` from the active project dir so it picks up
+      // project-scoped servers. Falls back to home dir if no project selected.
+      const stdout = await mcpListStatus(data.projectPath)
       return parseMcpList(stdout)
     } catch {
       return {} as Record<string, import("@/shared/types").McpConnectionStatus>
     }
-  },
-)
+  })
