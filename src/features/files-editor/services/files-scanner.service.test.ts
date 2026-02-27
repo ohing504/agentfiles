@@ -72,15 +72,18 @@ describe("files-scanner.service", () => {
 
       const result = await scanClaudeDir("project", tmpDir)
       expect(result.type).toBe("directory")
-      expect(result.name).toBe(".claude")
       expect(result.children).toBeDefined()
 
-      const names = result.children?.map((c) => c.name).sort()
+      // 루트 children 에 .claude 서브디렉토리가 있어야 함
+      const claudeSubDir = result.children?.find((c) => c.name === ".claude")
+      expect(claudeSubDir?.type).toBe("directory")
+
+      const names = claudeSubDir?.children?.map((c) => c.name).sort()
       expect(names).toContain("CLAUDE.md")
       expect(names).toContain("settings.json")
       expect(names).toContain("agents")
 
-      const agentsDir = result.children?.find((c) => c.name === "agents")
+      const agentsDir = claudeSubDir?.children?.find((c) => c.name === "agents")
       expect(agentsDir?.type).toBe("directory")
       expect(agentsDir?.children?.length).toBe(1)
       expect(agentsDir?.children?.[0].name).toBe("commit.md")
@@ -98,8 +101,10 @@ describe("files-scanner.service", () => {
       )
 
       const result = await scanClaudeDir("project", tmpDir)
-      const pluginsDir = result.children?.find((c) => c.name === "plugins")
-      // plugins dir exists but cache inside is excluded
+      const claudeSubDir = result.children?.find((c) => c.name === ".claude")
+      const pluginsDir = claudeSubDir?.children?.find(
+        (c) => c.name === "plugins",
+      )
       if (pluginsDir) {
         const cacheDir = pluginsDir.children?.find((c) => c.name === "cache")
         expect(cacheDir).toBeUndefined()
@@ -113,10 +118,55 @@ describe("files-scanner.service", () => {
       await fs.writeFile(path.join(claudeDir, "settings.json"), "b")
 
       const result = await scanClaudeDir("project", tmpDir)
-      const types = result.children?.map((c) => c.type) ?? []
+      const claudeSubDir = result.children?.find((c) => c.name === ".claude")
+      const types = claudeSubDir?.children?.map((c) => c.type) ?? []
       const dirIdx = types.indexOf("directory")
       const fileIdx = types.indexOf("file")
       expect(dirIdx).toBeLessThan(fileIdx)
+    })
+
+    it("includes root-level Claude files before .claude dir (project scope)", async () => {
+      const claudeDir = path.join(tmpDir, ".claude")
+      await fs.mkdir(claudeDir, { recursive: true })
+      await fs.writeFile(path.join(tmpDir, "CLAUDE.md"), "# Root CLAUDE")
+      await fs.writeFile(path.join(tmpDir, "AGENTS.md"), "# Agents")
+      await fs.writeFile(path.join(tmpDir, ".agents"), "agents file")
+      await fs.writeFile(path.join(tmpDir, ".cursorrules"), "rules")
+      await fs.writeFile(path.join(claudeDir, "settings.json"), "{}")
+
+      const result = await scanClaudeDir("project", tmpDir)
+      const childNames = result.children?.map((c) => c.name) ?? []
+
+      expect(childNames).toContain("CLAUDE.md")
+      expect(childNames).toContain("AGENTS.md")
+      expect(childNames).toContain(".agents")
+      expect(childNames).toContain(".cursorrules")
+      expect(childNames).toContain(".claude")
+
+      // 루트 파일들이 .claude 디렉토리보다 앞에 위치해야 함
+      const claudeIdx = childNames.indexOf(".claude")
+      const claudeMdIdx = childNames.indexOf("CLAUDE.md")
+      expect(claudeMdIdx).toBeLessThan(claudeIdx)
+    })
+
+    it("omits root-level Claude files that don't exist", async () => {
+      const claudeDir = path.join(tmpDir, ".claude")
+      await fs.mkdir(claudeDir, { recursive: true })
+      await fs.writeFile(path.join(tmpDir, "CLAUDE.md"), "# Root")
+
+      const result = await scanClaudeDir("project", tmpDir)
+      const childNames = result.children?.map((c) => c.name) ?? []
+
+      expect(childNames).toContain("CLAUDE.md")
+      expect(childNames).not.toContain("AGENTS.md")
+      expect(childNames).not.toContain(".cursorrules")
+      expect(childNames).not.toContain(".agents")
+    })
+
+    it("returns empty children when no root files and no .claude dir (project scope)", async () => {
+      const result = await scanClaudeDir("project", tmpDir)
+      expect(result.type).toBe("directory")
+      expect(result.children).toEqual([])
     })
   })
 
