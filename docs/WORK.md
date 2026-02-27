@@ -47,6 +47,14 @@
 
 ## Shipped
 
+### Files 프로젝트 루트 Claude 파일 표시 (2026-02-27)
+- project scope Files 페이지에서 `.claude/` 내부만 보이던 것을 프로젝트 루트 Claude 파일도 포함하도록 개선
+- 표시 대상: `CLAUDE.md`, `AGENTS.md`, `.agents`, `.cursorrules` (있는 것만)
+- `.agents`가 디렉토리인 경우도 지원 (재귀 스캔)
+- 디렉토리 우선 정렬 적용 (`.claude/` → 파일 순)
+- `scanProjectClaudeFiles()` 함수 추가, `scanClaudeDir()`에 project scope 분기
+- 테스트 추가 (총 17개)
+
 ### files-editor 리팩토링 (2026-02-27)
 - 기존 Files 페이지를 `.claude/` 디렉토리 전체 파일 탐색기 + 읽기 전용 뷰어로 전면 리팩토링
 - feature-local 서비스 (`files-scanner.service.ts`) — 디렉토리 재귀 스캔 + 제외 패턴
