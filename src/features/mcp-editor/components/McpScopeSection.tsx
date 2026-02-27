@@ -7,6 +7,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible"
+import { ItemContextMenu } from "@/components/ui/item-context-menu"
 import { ListItem } from "@/components/ui/list-item"
 import { m } from "@/paraglide/messages"
 import type { McpConnectionStatus, McpServer, Scope } from "@/shared/types"
@@ -43,6 +44,8 @@ interface McpScopeSectionProps {
   onSelectServer: (name: string, scope: Scope) => void
   onAddClick: () => void
   statusMap?: Record<string, McpConnectionStatus>
+  onDeleteServer?: (server: McpServer) => void
+  onEditServer?: (server: McpServer) => void
 }
 
 export const McpScopeSection = memo(function McpScopeSection({
@@ -54,6 +57,8 @@ export const McpScopeSection = memo(function McpScopeSection({
   onSelectServer,
   onAddClick,
   statusMap,
+  onDeleteServer,
+  onEditServer,
 }: McpScopeSectionProps) {
   const filtered = searchQuery
     ? servers.filter((s) =>
@@ -90,26 +95,52 @@ export const McpScopeSection = memo(function McpScopeSection({
                 ? "disabled"
                 : (statusMap?.[server.name] ?? "unknown")
               return (
-                <ListItem
+                <ItemContextMenu
                   key={`${server.name}-${server.scope}`}
-                  icon={ServerIcon}
-                  iconClassName={STATUS_ICON_CLASS[status]}
-                  label={server.name}
-                  tooltip={getStatusTooltip(status)}
-                  selected={
-                    selectedServer?.name === server.name &&
-                    selectedServer?.scope === scope
+                  filePath={server.configPath}
+                  onEdit={onEditServer ? () => onEditServer(server) : undefined}
+                  onDelete={
+                    onDeleteServer ? () => onDeleteServer(server) : undefined
                   }
-                  onClick={() => onSelectServer(server.name, scope)}
-                  trailing={
-                    <Badge
-                      variant="secondary"
-                      className="text-[10px] px-1 py-0"
-                    >
-                      {server.type}
-                    </Badge>
-                  }
-                />
+                  deleteTitle={m.mcp_delete_title()}
+                  deleteDescription={m.mcp_delete_confirm({
+                    name: server.name,
+                  })}
+                >
+                  <ListItem
+                    icon={ServerIcon}
+                    iconClassName={STATUS_ICON_CLASS[status]}
+                    label={server.name}
+                    tooltip={getStatusTooltip(status)}
+                    selected={
+                      selectedServer?.name === server.name &&
+                      selectedServer?.scope === scope
+                    }
+                    onClick={() => onSelectServer(server.name, scope)}
+                    trailing={
+                      server.fromPlugin || server.isDuplicate ? (
+                        <span className="flex items-center gap-1">
+                          {server.fromPlugin && (
+                            <Badge
+                              variant="secondary"
+                              className="text-[10px] px-1 py-0 font-normal"
+                            >
+                              Plugin: {server.fromPlugin}
+                            </Badge>
+                          )}
+                          {server.isDuplicate && (
+                            <Badge
+                              variant="outline"
+                              className="text-[10px] px-1 py-0 text-amber-600 border-amber-300"
+                            >
+                              ⚠ duplicate
+                            </Badge>
+                          )}
+                        </span>
+                      ) : undefined
+                    }
+                  />
+                </ItemContextMenu>
               )
             })
           )}
