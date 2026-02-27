@@ -75,7 +75,7 @@ function parseMcpServers(
  * 플러그인이 제공하는 MCP 서버 목록 조회
  *
  * 활성화된 플러그인의 installPath/.mcp.json을 읽어 반환한다.
- * - user scope 플러그인 → scope: "global"
+ * - user scope 플러그인 → scope: "user"
  * - project scope 플러그인 → scope: "project"
  * 각 서버에 fromPlugin: pluginName 설정
  */
@@ -97,7 +97,7 @@ export async function getPluginMcpServers(
             ? (raw.mcpServers as Record<string, unknown>)
             : (raw as Record<string, unknown>)
 
-        const scope: Scope = plugin.scope === "project" ? "project" : "global"
+        const scope: Scope = plugin.scope === "project" ? "project" : "user"
 
         const servers = parseMcpServers(mcpServersRaw, scope, mcpJsonPath)
         for (const server of servers) {
@@ -132,7 +132,7 @@ export async function getMcpServers(
   const userServers = claudeJson.mcpServers
     ? parseMcpServers(
         claudeJson.mcpServers as Record<string, unknown>,
-        "global",
+        "user",
         claudeJsonPath,
       )
     : []
@@ -147,7 +147,7 @@ export async function getMcpServers(
     if (projectEntry?.mcpServers) {
       localServers = parseMcpServers(
         projectEntry.mcpServers as Record<string, unknown>,
-        "global", // local scope도 user 개인 설정이므로 global로 표시
+        "user", // local scope도 user 개인 설정이므로 user로 표시
         claudeJsonPath,
       )
     }

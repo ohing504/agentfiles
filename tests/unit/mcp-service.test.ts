@@ -86,7 +86,7 @@ describe("getPluginMcpServers()", () => {
     expect(result[0]).toMatchObject<Partial<McpServer>>({
       name: "my-server",
       fromPlugin: "superpowers",
-      scope: "global",
+      scope: "user",
       type: "stdio",
       command: "node",
       args: ["server.js"],
@@ -105,7 +105,7 @@ describe("getPluginMcpServers()", () => {
 
     const result = await getPluginMcpServers()
 
-    expect(result[0].scope).toBe("global")
+    expect(result[0].scope).toBe("user")
   })
 
   it("project scope 플러그인은 scope: project로 변환", async () => {

@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start"
 import { z } from "zod"
+import { scopeSchema } from "@/shared/types"
 
 export const readSupportingFileFn = createServerFn({ method: "GET" })
   .inputValidator(
@@ -52,7 +53,7 @@ export const createSkillFn = createServerFn({ method: "POST" })
         .min(1)
         .max(64)
         .regex(/^[a-z0-9-]+$/),
-      scope: z.enum(["global", "project"]),
+      scope: scopeSchema,
       description: z.string().optional(),
       projectPath: z.string().optional(),
     }),
@@ -65,7 +66,7 @@ export const createSkillFn = createServerFn({ method: "POST" })
     )
 
     const basePath =
-      data.scope === "global"
+      data.scope === "user"
         ? path.join(getGlobalConfigPath(), "skills", data.name)
         : path.join(getProjectConfigPath(data.projectPath), "skills", data.name)
 

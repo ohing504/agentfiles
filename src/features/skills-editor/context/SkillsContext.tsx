@@ -48,7 +48,7 @@ export function SkillsProvider({
     null,
   )
   const [addDialogOpen, setAddDialogOpen] = useState(false)
-  const [addDialogScope, setAddDialogScope] = useState<Scope>("global")
+  const [addDialogScope, setAddDialogScope] = useState<Scope>("user")
 
   const { data: skills } = useSkillsQuery()
 

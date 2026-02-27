@@ -94,25 +94,25 @@ async function scanProjectClaudeFiles(projectPath: string): Promise<FileNode> {
 }
 
 export function resolveClaudeDir(
-  scope: "global" | "project",
+  scope: "user" | "project",
   projectPath?: string,
 ): string {
-  if (scope === "global") {
+  if (scope === "user") {
     return path.join(os.homedir(), ".claude")
   }
   return path.join(projectPath ?? process.cwd(), ".claude")
 }
 
 export async function scanClaudeDir(
-  scope: "global" | "project",
+  scope: "user" | "project",
   projectPath?: string,
 ): Promise<FileNode> {
   if (scope === "project") {
     return scanProjectClaudeFiles(projectPath ?? process.cwd())
   }
 
-  // global scope: 기존 동작 유지 (~/.claude 스캔)
-  const dirPath = resolveClaudeDir("global")
+  // user scope: 기존 동작 유지 (~/.claude 스캔)
+  const dirPath = resolveClaudeDir("user")
   const rootName = ".claude"
 
   try {

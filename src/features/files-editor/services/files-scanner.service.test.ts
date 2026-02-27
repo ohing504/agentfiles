@@ -21,8 +21,8 @@ describe("files-scanner.service", () => {
   })
 
   describe("resolveClaudeDir", () => {
-    it("returns ~/.claude for global scope", () => {
-      const result = resolveClaudeDir("global")
+    it("returns ~/.claude for user scope", () => {
+      const result = resolveClaudeDir("user")
       expect(result).toBe(path.join(os.homedir(), ".claude"))
     })
 

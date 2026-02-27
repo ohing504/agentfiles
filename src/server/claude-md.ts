@@ -98,7 +98,7 @@ export const saveClaudeMdFn = createServerFn({ method: "POST" })
     const path = await import("node:path")
 
     const basePath =
-      data.scope === "global"
+      data.scope === "user"
         ? getGlobalConfigPath()
         : getProjectConfigPath(data.projectPath)
     const filePath = path.join(basePath, "CLAUDE.md")

@@ -12,7 +12,7 @@ const SCOPES: {
   id: FilesScope
   labelKey: "files_scope_global" | "files_scope_project"
 }[] = [
-  { id: "global", labelKey: "files_scope_global" },
+  { id: "user", labelKey: "files_scope_global" },
   { id: "project", labelKey: "files_scope_project" },
 ]
 

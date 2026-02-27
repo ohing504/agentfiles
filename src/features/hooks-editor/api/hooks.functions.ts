@@ -3,7 +3,7 @@ import { z } from "zod"
 
 // ── Zod 스키마 ──
 
-const hookScopeSchema = z.enum(["global", "project", "local"])
+const hookScopeSchema = z.enum(["user", "project", "local"])
 
 const hookTypeSchema = z.enum(["command", "prompt", "agent"])
 
@@ -56,7 +56,7 @@ async function resolveSettingsFilePath(
   const os = await import("node:os")
 
   switch (scope) {
-    case "global":
+    case "user":
       return path.join(os.homedir(), ".claude", "settings.json")
     case "project":
       return path.join(projectPath ?? process.cwd(), ".claude", "settings.json")

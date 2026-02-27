@@ -1,5 +1,5 @@
-export type FilesScope = "global" | "project"
-export const DEFAULT_SCOPE: FilesScope = "global"
+export type FilesScope = "user" | "project"
+export const DEFAULT_SCOPE: FilesScope = "user"
 
 /**
  * Map file extensions to lucide-react icon names.

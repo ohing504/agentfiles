@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { FREQUENT_REFETCH } from "@/hooks/use-config"
 import { queryKeys } from "@/lib/query-keys"
-import type { PluginScope } from "@/shared/types"
+import type { Scope } from "@/shared/types"
 import {
   getPluginsFn,
   togglePluginFn,
@@ -34,13 +34,14 @@ export function usePluginMutations() {
     mutationFn: (params: {
       id: string
       enable: boolean
-      scope?: PluginScope
+      scope?: Scope
+      projectPath?: string
     }) => togglePluginFn({ data: params }),
     onSuccess: invalidate,
   })
 
   const uninstallMutation = useMutation({
-    mutationFn: (params: { id: string; scope?: PluginScope }) =>
+    mutationFn: (params: { id: string; scope?: Scope; projectPath?: string }) =>
       uninstallPluginFn({ data: params }),
     onSuccess: invalidate,
   })

@@ -64,10 +64,10 @@ describe("getClaudeMd", () => {
     const claudePath = path.join(tmpGlobal, ".claude", "CLAUDE.md")
     await writeFile(claudePath, "# Global Claude\nHello world")
 
-    const result = await getClaudeMd("global")
+    const result = await getClaudeMd("user")
 
     expect(result).not.toBeNull()
-    expect(result?.scope).toBe("global")
+    expect(result?.scope).toBe("user")
     expect(result?.path).toBe(claudePath)
     expect(result?.content).toBe("# Global Claude\nHello world")
     expect(result?.size).toBeGreaterThan(0)
@@ -85,7 +85,7 @@ describe("getClaudeMd", () => {
   })
 
   it("파일 없으면 null 반환", async () => {
-    const result = await getClaudeMd("global")
+    const result = await getClaudeMd("user")
     expect(result).toBeNull()
   })
 

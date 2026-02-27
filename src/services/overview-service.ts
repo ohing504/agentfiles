@@ -25,19 +25,19 @@ export async function getOverview(projectPath?: string): Promise<Overview> {
     globalSkills,
     projectSkills,
   ] = await Promise.all([
-    getClaudeMd("global"),
+    getClaudeMd("user"),
     getClaudeMd("project", projectPath),
     getPlugins(projectPath),
     getMcpServers(projectPath),
-    scanMdDirWithScope(path.join(globalBase, "agents"), "agent", "global"),
+    scanMdDirWithScope(path.join(globalBase, "agents"), "agent", "user"),
     scanMdDirWithScope(path.join(projectBase, "agents"), "agent", "project"),
-    scanMdDirWithScope(path.join(globalBase, "commands"), "command", "global"),
+    scanMdDirWithScope(path.join(globalBase, "commands"), "command", "user"),
     scanMdDirWithScope(
       path.join(projectBase, "commands"),
       "command",
       "project",
     ),
-    scanMdDirWithScope(path.join(globalBase, "skills"), "skill", "global"),
+    scanMdDirWithScope(path.join(globalBase, "skills"), "skill", "user"),
     scanMdDirWithScope(path.join(projectBase, "skills"), "skill", "project"),
   ])
 
@@ -55,7 +55,7 @@ export async function getOverview(projectPath?: string): Promise<Overview> {
     countConflicts(globalCommands, projectCommands) +
     countConflicts(globalSkills, projectSkills)
 
-  const globalMcpCount = mcpServers.filter((s) => s.scope === "global").length
+  const globalMcpCount = mcpServers.filter((s) => s.scope === "user").length
   const projectMcpCount = mcpServers.filter((s) => s.scope === "project").length
 
   const userPluginCount = plugins.filter((p) => p.scope === "user").length

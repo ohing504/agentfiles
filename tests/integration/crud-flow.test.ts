@@ -54,10 +54,10 @@ describe("CLAUDE.md CRUD 흐름", () => {
     await writeMarkdown(claudePath, content)
 
     // Read
-    const result = await getClaudeMd("global")
+    const result = await getClaudeMd("user")
 
     expect(result).not.toBeNull()
-    expect(result?.scope).toBe("global")
+    expect(result?.scope).toBe("user")
     expect(result?.path).toBe(claudePath)
     expect(result?.content).toBe(content)
     expect(result?.size).toBeGreaterThan(0)
@@ -86,11 +86,11 @@ describe("CLAUDE.md CRUD 흐름", () => {
     const updated = "# 업데이트된 내용\n\n새로운 규칙 추가"
 
     await writeMarkdown(claudePath, initial)
-    const before = await getClaudeMd("global")
+    const before = await getClaudeMd("user")
     expect(before?.content).toBe(initial)
 
     await writeMarkdown(claudePath, updated)
-    const after = await getClaudeMd("global")
+    const after = await getClaudeMd("user")
     expect(after?.content).toBe(updated)
   })
 })
@@ -109,7 +109,7 @@ describe("Agent/Command/Skill CRUD 흐름", () => {
     const listAfterCreate = await getAgentFiles("agent")
     const found = listAfterCreate.find((a) => a.name === "my-agent")
     expect(found).toBeDefined()
-    expect(found?.scope).toBe("global")
+    expect(found?.scope).toBe("user")
     expect(found?.type).toBe("agent")
 
     // Delete
@@ -199,7 +199,7 @@ describe("글로벌 + 프로젝트 혼합 및 충돌 감지", () => {
     const list = await getAgentFiles("agent")
     expect(list).toHaveLength(2)
 
-    const globalAgent = list.find((a) => a.scope === "global")
+    const globalAgent = list.find((a) => a.scope === "user")
     const projectAgent = list.find((a) => a.scope === "project")
 
     expect(globalAgent?.name).toBe(name)

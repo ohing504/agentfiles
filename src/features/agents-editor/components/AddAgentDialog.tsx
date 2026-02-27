@@ -71,7 +71,7 @@ export function AddAgentDialog({
           <DialogTitle>Add Agent</DialogTitle>
           <DialogDescription>
             Creates a new agent file in{" "}
-            {scope === "global" ? "~/.claude/agents/" : ".claude/agents/"}.
+            {scope === "user" ? "~/.claude/agents/" : ".claude/agents/"}.
           </DialogDescription>
         </DialogHeader>
         <form

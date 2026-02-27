@@ -49,7 +49,7 @@ export const getItemFn = createServerFn({ method: "GET" })
 
     if (!file) {
       const basePath =
-        data.scope === "global"
+        data.scope === "user"
           ? getGlobalConfigPath()
           : getProjectConfigPath(data.projectPath)
       const dirName = `${data.type}s`
@@ -96,7 +96,7 @@ export const saveItemFn = createServerFn({ method: "POST" })
     validateItemName(data.name)
 
     const basePath =
-      data.scope === "global"
+      data.scope === "user"
         ? getGlobalConfigPath()
         : getProjectConfigPath(data.projectPath)
     const dirName = `${data.type}s`
@@ -125,7 +125,7 @@ export const deleteItemFn = createServerFn({ method: "POST" })
     validateItemName(data.name)
 
     const basePath =
-      data.scope === "global"
+      data.scope === "user"
         ? getGlobalConfigPath()
         : getProjectConfigPath(data.projectPath)
     const dirName = `${data.type}s`

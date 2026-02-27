@@ -52,7 +52,7 @@ export async function scanMdDir(
 
             results.push({
               name,
-              scope: "global",
+              scope: "user",
               path: fullPath,
               namespace,
               frontmatter:
@@ -90,7 +90,7 @@ export async function scanMdDir(
 
           results.push({
             name,
-            scope: "global",
+            scope: "user",
             path: fullPath,
             namespace,
             frontmatter:
@@ -150,7 +150,7 @@ export async function scanSkillsDir(basePath: string): Promise<AgentFile[]> {
 
           results.push({
             name: entry.name,
-            scope: "global", // will be overridden by caller
+            scope: "user", // will be overridden by caller
             path: skillMdPath,
             frontmatter:
               Object.keys(parsed.data).length > 0 ? parsed.data : undefined,
@@ -171,7 +171,7 @@ export async function scanSkillsDir(basePath: string): Promise<AgentFile[]> {
           const parsed = matter(content)
           results.push({
             name: entry.name.replace(/\.md$/, ""),
-            scope: "global",
+            scope: "user",
             path: fullPath,
             frontmatter:
               Object.keys(parsed.data).length > 0 ? parsed.data : undefined,
@@ -221,14 +221,14 @@ export async function getAgentFiles(
   if (type === "skill") {
     // Use skills-aware scanner for directory-based skills
     const globalSkills = await scanSkillsDir(path.join(globalBase, "skills"))
-    for (const f of globalSkills) f.scope = "global"
+    for (const f of globalSkills) f.scope = "user"
 
     // Also include legacy commands
     const globalCommands = await scanMdDir(
       path.join(globalBase, "commands"),
       "command",
     )
-    for (const f of globalCommands) f.scope = "global"
+    for (const f of globalCommands) f.scope = "user"
 
     const projectSkills = await scanSkillsDir(path.join(projectBase, "skills"))
     for (const f of projectSkills) f.scope = "project"
@@ -250,7 +250,7 @@ export async function getAgentFiles(
   const dirName = `${type}s` // 'agent' → 'agents', 'command' → 'commands'
 
   const [globalFiles, projectFiles] = await Promise.all([
-    scanMdDirWithScope(path.join(globalBase, dirName), type, "global"),
+    scanMdDirWithScope(path.join(globalBase, dirName), type, "user"),
     scanMdDirWithScope(path.join(projectBase, dirName), type, "project"),
   ])
 

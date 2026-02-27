@@ -46,7 +46,7 @@ export function McpProvider({
   const { data: servers, isLoading } = useMcpQuery()
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [addDialogOpen, setAddDialogOpen] = useState(false)
-  const [addDialogScope, setAddDialogScope] = useState<Scope>("global")
+  const [addDialogScope, setAddDialogScope] = useState<Scope>("user")
   const [editingServer, setEditingServer] = useState<McpServer | null>(null)
 
   // Stale selection cleanup
@@ -60,7 +60,7 @@ export function McpProvider({
   }, [servers, selectedId])
 
   const globalServers = useMemo(
-    () => (servers ?? []).filter((s) => s.scope === "global"),
+    () => (servers ?? []).filter((s) => s.scope === "user"),
     [servers],
   )
   const projectServers = useMemo(

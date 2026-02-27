@@ -100,7 +100,7 @@ describe("checkCliAvailable", () => {
 describe("mcpAdd", () => {
   it("stdio MCP를 올바른 args로 호출한다", async () => {
     mockSuccess("")
-    await mcpAdd("my-server", { command: "npx", args: ["my-pkg"] }, "global")
+    await mcpAdd("my-server", { command: "npx", args: ["my-pkg"] }, "user")
     expect(mockSpawn).toHaveBeenCalledWith(
       "claude",
       ["mcp", "add", "my-server", "-s", "user", "--", "npx", "my-pkg"],
@@ -127,7 +127,7 @@ describe("mcpAdd", () => {
     await mcpAdd(
       "env-server",
       { command: "run", args: [], env: { TOKEN: "abc", PORT: "3000" } },
-      "global",
+      "user",
     )
     const callArgs = mockSpawn.mock.calls[0][1] as string[]
     expect(callArgs).toContain("-e")
@@ -139,7 +139,7 @@ describe("mcpAdd", () => {
 describe("mcpRemove", () => {
   it("global scope는 -s user로 매핑한다", async () => {
     mockSuccess("")
-    await mcpRemove("my-server", "global")
+    await mcpRemove("my-server", "user")
     expect(mockSpawn).toHaveBeenCalledWith(
       "claude",
       ["mcp", "remove", "my-server", "-s", "user"],

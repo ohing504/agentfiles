@@ -21,9 +21,7 @@ export async function getClaudeMd(
   projectPath?: string,
 ): Promise<ClaudeMd | null> {
   const basePath =
-    scope === "global"
-      ? getGlobalConfigPath()
-      : getProjectConfigPath(projectPath)
+    scope === "user" ? getGlobalConfigPath() : getProjectConfigPath(projectPath)
   const filePath = path.join(basePath, "CLAUDE.md")
 
   try {

@@ -57,7 +57,7 @@ describe("getMcpServers", () => {
 
     expect(result).toHaveLength(1)
     expect(result[0].name).toBe("context7")
-    expect(result[0].scope).toBe("global")
+    expect(result[0].scope).toBe("user")
     expect(result[0].type).toBe("stdio")
     expect(result[0].command).toBe("npx")
     expect(result[0].args).toEqual(["-y", "@upstash/context7-mcp@latest"])
@@ -103,7 +103,7 @@ describe("getMcpServers", () => {
     const result = await getMcpServers(tmpProject)
     expect(result).toHaveLength(1)
     expect(result[0].name).toBe("local-server")
-    expect(result[0].scope).toBe("global")
+    expect(result[0].scope).toBe("user")
   })
 
   it("project scope — .mcp.json 파싱", async () => {
@@ -141,8 +141,8 @@ describe("getMcpServers", () => {
     const result = await getMcpServers(tmpProject)
 
     expect(result).toHaveLength(3)
-    expect(result.find((s) => s.name === "user-mcp")?.scope).toBe("global")
-    expect(result.find((s) => s.name === "local-mcp")?.scope).toBe("global")
+    expect(result.find((s) => s.name === "user-mcp")?.scope).toBe("user")
+    expect(result.find((s) => s.name === "local-mcp")?.scope).toBe("user")
     expect(result.find((s) => s.name === "project-mcp")?.scope).toBe("project")
   })
 
@@ -191,7 +191,7 @@ describe("깨진 JSON graceful 처리", () => {
     const result = await getMcpServers(tmpProject)
     expect(result).toHaveLength(1)
     expect(result[0].name).toBe("valid-mcp")
-    expect(result[0].scope).toBe("global")
+    expect(result[0].scope).toBe("user")
   })
 })
 

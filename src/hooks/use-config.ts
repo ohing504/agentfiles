@@ -34,7 +34,7 @@ export function useOverview() {
 
 function toFileKey(fileId: ClaudeMdFileId): string {
   return "global" in fileId
-    ? "global"
+    ? "user"
     : `${fileId.projectPath}/${fileId.relativePath}`
 }
 
@@ -86,7 +86,7 @@ export function useClaudeMdFile(fileId: ClaudeMdFileId) {
 
 export function useClaudeMdGlobalMeta() {
   return useQuery({
-    queryKey: queryKeys.claudeMd.file("global"),
+    queryKey: queryKeys.claudeMd.file("user"),
     queryFn: async () => {
       const { readClaudeMdFileFn } = await import("@/server/claude-md")
       return readClaudeMdFileFn({ data: { global: true } })

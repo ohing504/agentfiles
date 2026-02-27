@@ -75,7 +75,7 @@ describe("validateItemName - Path Traversal 방어", () => {
 
 describe("존재하지 않는 리소스 처리", () => {
   it("getClaudeMd - 파일 없으면 null 반환", async () => {
-    const result = await getClaudeMd("global")
+    const result = await getClaudeMd("user")
     expect(result).toBeNull()
   })
 

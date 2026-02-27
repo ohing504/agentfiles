@@ -38,11 +38,11 @@ export function HooksPageContent() {
     handleAddClose,
   } = useHooksSelection()
 
-  const { removeMutation: removeGlobalMutation } = useHooksMutations("global")
+  const { removeMutation: removeGlobalMutation } = useHooksMutations("user")
   const { removeMutation: removeProjectMutation } = useHooksMutations("project")
   const { removeMutation: removeLocalMutation } = useHooksMutations("local")
 
-  function getRemoveMutation(scope: "global" | "project" | "local") {
+  function getRemoveMutation(scope: "user" | "project" | "local") {
     if (scope === "project") return removeProjectMutation
     if (scope === "local") return removeLocalMutation
     return removeGlobalMutation
@@ -136,12 +136,12 @@ export function HooksPageContent() {
           </div>
           <HooksScopeSection
             label="User"
-            scope="global"
+            scope="user"
             hooks={globalHooks}
             searchQuery={searchQuery}
             selectedHook={selectedHook}
             onSelectHook={handleSelectHook}
-            onAddClick={() => handleAddClick("global")}
+            onAddClick={() => handleAddClick("user")}
             onDeleteHook={handleDeleteSpecificHook}
             onEditHook={(hook: SelectedHook) => setEditingHook(hook)}
           />

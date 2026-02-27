@@ -39,7 +39,7 @@ export function AgentsProvider({
 }) {
   const [selectedAgent, setSelectedAgent] = useState<AgentFile | null>(null)
   const [addDialogOpen, setAddDialogOpen] = useState(false)
-  const [addDialogScope, setAddDialogScope] = useState<Scope>("global")
+  const [addDialogScope, setAddDialogScope] = useState<Scope>("user")
 
   const { data: agents } = useAgentsQuery()
 

@@ -45,7 +45,7 @@ export function HooksProvider({
   const [editingHook, setEditingHook] = useState<SelectedHook | null>(null)
   const [addDialogScope, setAddDialogScope] = useState<HookScope | null>(null)
 
-  const globalQuery = useHooksQuery("global")
+  const globalQuery = useHooksQuery("user")
   const projectQuery = useHooksQuery("project")
   const localQuery = useHooksQuery("local")
 

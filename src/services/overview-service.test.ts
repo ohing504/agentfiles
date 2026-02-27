@@ -65,7 +65,7 @@ describe("getOverview", () => {
 
     expect(result.claudeMd.global).toBeDefined()
     expect(result.claudeMd.project).toBeDefined()
-    expect(result.claudeMd.global?.scope).toBe("global")
+    expect(result.claudeMd.global?.scope).toBe("user")
     expect(result.claudeMd.project?.scope).toBe("project")
   })
 

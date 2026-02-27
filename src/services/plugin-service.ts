@@ -244,7 +244,7 @@ async function readMcpJson(filePath: string): Promise<McpServer[]> {
   const raw = await readJsonFile<Record<string, unknown>>(filePath, {})
   const mcpServersRaw = raw.mcpServers ?? raw
   if (typeof mcpServersRaw !== "object" || mcpServersRaw === null) return []
-  return parseMcpServers(mcpServersRaw as Record<string, unknown>, "global")
+  return parseMcpServers(mcpServersRaw as Record<string, unknown>, "user")
 }
 
 async function readLspJson(filePath: string): Promise<LspServer[]> {

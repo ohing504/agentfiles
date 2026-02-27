@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start"
 import { z } from "zod"
 
-const filesScopeSchema = z.enum(["global", "project"])
+const filesScopeSchema = z.enum(["user", "project"])
 
 export const getFileTreeFn = createServerFn({ method: "GET" })
   .inputValidator(

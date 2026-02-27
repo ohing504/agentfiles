@@ -62,7 +62,7 @@ export function AddSkillDialog({
           <DialogTitle>Add Skill</DialogTitle>
           <DialogDescription>
             Creates a new skill directory with SKILL.md template in{" "}
-            {scope === "global" ? "~/.claude/skills/" : ".claude/skills/"}.
+            {scope === "user" ? "~/.claude/skills/" : ".claude/skills/"}.
           </DialogDescription>
         </DialogHeader>
         <form

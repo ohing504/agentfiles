@@ -1,7 +1,7 @@
 import { z } from "zod"
 
 // ── Zod 스키마 ──
-export const scopeSchema = z.enum(["global", "project"])
+export const scopeSchema = z.enum(["user", "project", "local", "managed"])
 export const agentFileTypeSchema = z.enum(["agent", "command", "skill"])
 
 // ── 스코프 ──
@@ -22,8 +22,6 @@ export interface ClaudeMd {
 }
 
 // ── Plugin ──
-export type PluginScope = "user" | "project" | "local" | "managed"
-
 export interface PluginAuthor {
   name: string
   email?: string
@@ -52,7 +50,7 @@ export interface Plugin {
   id: string // "superpowers@claude-plugins-official"
   name: string
   marketplace: string
-  scope: PluginScope
+  scope: Scope
   projectPath?: string
   version: string
   installedAt: string
@@ -190,7 +188,7 @@ export interface ClaudeAppJson {
 }
 
 // ── Hooks ──
-export type HookScope = "global" | "project" | "local"
+export type HookScope = "user" | "project" | "local"
 
 export type HookType = "command" | "prompt" | "agent"
 

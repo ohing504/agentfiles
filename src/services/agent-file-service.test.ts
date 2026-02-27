@@ -174,7 +174,7 @@ describe("getAgentFiles", () => {
     expect(result).toHaveLength(2)
     const globalAgent = result.find((a) => a.name === "g-agent")
     const projectAgent = result.find((a) => a.name === "p-agent")
-    expect(globalAgent?.scope).toBe("global")
+    expect(globalAgent?.scope).toBe("user")
     expect(projectAgent?.scope).toBe("project")
   })
 

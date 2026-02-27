@@ -1,6 +1,6 @@
 import { spawn } from "node:child_process"
 import os from "node:os"
-import type { CliStatus, McpServer, PluginScope, Scope } from "@/shared/types"
+import type { CliStatus, McpServer, Scope } from "@/shared/types"
 
 const TIMEOUT_MS = 30_000
 
@@ -84,7 +84,7 @@ export async function mcpAdd(
   config: Pick<McpServer, "command" | "args" | "env">,
   scope: Scope,
 ): Promise<void> {
-  const cliScope = scope === "global" ? "user" : "project"
+  const cliScope = scope === "user" ? "user" : "project"
 
   const args: string[] = ["mcp", "add", name, "-s", cliScope]
 
@@ -106,33 +106,37 @@ export async function mcpAdd(
 }
 
 export async function mcpRemove(name: string, scope: Scope): Promise<void> {
-  const cliScope = scope === "global" ? "user" : "project"
+  const cliScope = scope === "user" ? "user" : "project"
   await execClaude(["mcp", "remove", name, "-s", cliScope])
 }
 
 export async function pluginToggle(
   id: string,
   enable: boolean,
-  scope?: PluginScope,
+  scope?: Scope,
+  projectPath?: string,
 ): Promise<void> {
   const action = enable ? "enable" : "disable"
   const args = ["plugin", action, id]
   if (scope) args.push("-s", scope)
-  await execClaude(args)
+  await execClaude(args, { cwd: projectPath })
 }
 
 export async function pluginInstall(
   name: string,
-  scope: PluginScope = "user",
+  scope: Scope = "user",
 ): Promise<void> {
   await execClaude(["plugin", "install", name, "-s", scope])
 }
 
 export async function pluginUninstall(
   name: string,
-  scope: PluginScope = "user",
+  scope: Scope = "user",
+  projectPath?: string,
 ): Promise<void> {
-  await execClaude(["plugin", "uninstall", name, "-s", scope])
+  await execClaude(["plugin", "uninstall", name, "-s", scope], {
+    cwd: projectPath,
+  })
 }
 
 export async function pluginUpdate(name: string): Promise<void> {

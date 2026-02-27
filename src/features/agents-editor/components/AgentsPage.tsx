@@ -76,8 +76,8 @@ function AgentsPageInner() {
         <div className="flex-1 overflow-y-auto p-3 flex flex-col gap-3">
           <AgentsScopeSection
             label="User"
-            scope="global"
-            onAddClick={() => handleAddClick("global")}
+            scope="user"
+            onAddClick={() => handleAddClick("user")}
             onDeleteAgent={handleDeleteAgent}
           />
 

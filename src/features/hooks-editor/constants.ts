@@ -209,7 +209,7 @@ export const HOOK_HANDLER_DESC: Record<HookType, () => string> = {
 }
 
 export const HOOK_SCOPE_DESC: Record<HookScope, () => string> = {
-  global: () => m.claude_hook_scope_global(),
+  user: () => m.claude_hook_scope_global(),
   project: () => m.claude_hook_scope_project(),
   local: () => m.claude_hook_scope_local(),
 }

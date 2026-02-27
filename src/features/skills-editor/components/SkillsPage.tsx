@@ -92,9 +92,9 @@ function SkillsPageInner() {
 
           <SkillsScopeSection
             label="User"
-            scope="global"
+            scope="user"
             searchQuery={searchQuery}
-            onAddClick={() => handleAddClick("global")}
+            onAddClick={() => handleAddClick("user")}
             onDeleteSkill={handleDeleteSkill}
           />
 
