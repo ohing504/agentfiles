@@ -113,7 +113,7 @@ export const HooksScopeSection = memo(function HooksScopeSection({
         </p>
       ) : filteredEvents.length === 0 ? (
         <p className="text-xs text-muted-foreground px-2 py-1.5">
-          {m.hooks_no_results()}
+          {m.common_no_results()}
         </p>
       ) : (
         <div className="flex flex-col gap-0.5">

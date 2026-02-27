@@ -75,7 +75,7 @@ export function McpPageContent() {
             rel="noopener noreferrer"
             className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
           >
-            {m.mcp_docs()}
+            {m.common_docs()}
             <ExternalLinkIcon className="size-3" />
           </a>
         </div>

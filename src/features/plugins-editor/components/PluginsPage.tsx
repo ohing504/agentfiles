@@ -138,7 +138,7 @@ function PluginsPageInner() {
             rel="noopener noreferrer"
             className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
           >
-            {m.plugin_docs()}
+            {m.common_docs()}
             <ExternalLink className="size-3" />
           </a>
         </div>

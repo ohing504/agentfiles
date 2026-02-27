@@ -50,7 +50,7 @@ export function McpDetailPanel({
       const { openInEditorFn } = await import("@/server/editor")
       await openInEditorFn({ data: { filePath, editor } })
     } catch {
-      toast.error(m.mcp_open_error({ editor }))
+      toast.error(m.common_open_error({ editor }))
     }
   }
 
@@ -73,13 +73,13 @@ export function McpDetailPanel({
                 <>
                   <DropdownMenuItem onClick={() => handleOpenInEditor("code")}>
                     <VscodeIcon className="size-4" />
-                    {m.mcp_open_vscode()}
+                    {m.common_open_vscode()}
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={() => handleOpenInEditor("cursor")}
                   >
                     <CursorIcon className="size-4" />
-                    {m.mcp_open_cursor()}
+                    {m.common_open_cursor()}
                   </DropdownMenuItem>
                 </>
               )}
@@ -126,7 +126,7 @@ export function McpDetailPanel({
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>{m.hooks_cancel()}</AlertDialogCancel>
+              <AlertDialogCancel>{m.common_cancel()}</AlertDialogCancel>
               <AlertDialogAction
                 onClick={() => {
                   onDelete()

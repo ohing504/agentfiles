@@ -43,11 +43,11 @@ function DetailHeader({ name, filePath }: { name: string; filePath?: string }) {
           <DropdownMenuContent align="end">
             <DropdownMenuItem onClick={() => handleOpenInEditor("code")}>
               <VscodeIcon className="size-4" />
-              {m.plugin_open_vscode()}
+              {m.common_open_vscode()}
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => handleOpenInEditor("cursor")}>
               <CursorIcon className="size-4" />
-              {m.plugin_open_cursor()}
+              {m.common_open_cursor()}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

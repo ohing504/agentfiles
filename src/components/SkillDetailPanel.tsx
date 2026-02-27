@@ -73,13 +73,13 @@ export function SkillDetailPanel({ skill, onDelete }: SkillDetailPanelProps) {
                 <>
                   <DropdownMenuItem onClick={() => handleOpenInEditor("code")}>
                     <VscodeIcon className="size-4" />
-                    {m.skills_open_vscode()}
+                    {m.common_open_vscode()}
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={() => handleOpenInEditor("cursor")}
                   >
                     <CursorIcon className="size-4" />
-                    {m.skills_open_cursor()}
+                    {m.common_open_cursor()}
                   </DropdownMenuItem>
                   {skill.isSkillDir && (
                     <DropdownMenuItem onClick={handleOpenFolder}>
@@ -123,7 +123,7 @@ export function SkillDetailPanel({ skill, onDelete }: SkillDetailPanelProps) {
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>{m.hooks_cancel()}</AlertDialogCancel>
+              <AlertDialogCancel>{m.common_cancel()}</AlertDialogCancel>
               <AlertDialogAction
                 onClick={() => {
                   onDelete()

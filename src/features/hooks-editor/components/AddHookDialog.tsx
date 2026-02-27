@@ -470,7 +470,7 @@ export function AddHookDialog({
 
           <DialogFooter className="mt-4">
             <Button type="button" variant="outline" onClick={onClose}>
-              {m.hooks_cancel()}
+              {m.common_cancel()}
             </Button>
             <Button type="submit" disabled={addMutation.isPending}>
               {addMutation.isPending

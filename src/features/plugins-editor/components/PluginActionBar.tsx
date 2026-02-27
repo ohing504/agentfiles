@@ -110,14 +110,14 @@ export function PluginActionBar({
                 onClick={() => handleOpenInEditor("code")}
               >
                 <VscodeIcon className="size-4" />
-                {m.plugin_open_vscode()}
+                {m.common_open_vscode()}
               </DropdownMenuItem>
               <DropdownMenuItem
                 disabled={!plugin.installPath}
                 onClick={() => handleOpenInEditor("cursor")}
               >
                 <CursorIcon className="size-4" />
-                {m.plugin_open_cursor()}
+                {m.common_open_cursor()}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
@@ -141,7 +141,7 @@ export function PluginActionBar({
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>{m.plugin_cancel()}</AlertDialogCancel>
+            <AlertDialogCancel>{m.common_cancel()}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
                 uninstallMutation.mutate(

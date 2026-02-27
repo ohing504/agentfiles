@@ -217,7 +217,7 @@ export function AddMcpDialog({
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>
-              {m.hooks_cancel()}
+              {m.common_cancel()}
             </Button>
             <Button type="submit" disabled={isPending}>
               {isPending
