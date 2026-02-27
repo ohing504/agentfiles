@@ -119,7 +119,11 @@ src/
     AddProjectDialog.tsx     ← 프로젝트 추가 다이얼로그
     LanguageSwitcher.tsx     ← 언어 전환 (en/ko)
   services/                  ← 서버 사이드 서비스
-    config-service.ts        ← 파일 읽기 (md 스캔 + json 파싱 + settings 읽기)
+    config-service.ts        ← 경로 헬퍼, getClaudeMd, settings 파싱, scanClaudeMdFiles
+    agent-file-service.ts    ← scanMdDir, scanSkillsDir, getAgentFiles
+    overview-service.ts      ← getOverview (여러 서비스 조합)
+    plugin-service.ts        ← getPlugins, readPluginManifest, getMarketplaces
+    mcp-service.ts           ← getMcpServers, parseMcpServers
     file-writer.ts           ← 마크다운/JSON 쓰기
     claude-cli.ts            ← CLI 위임 + npm registry 최신 버전 조회
     hooks-service.ts         ← settings.json hooks 섹션 CRUD
