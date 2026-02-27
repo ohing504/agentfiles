@@ -2,13 +2,12 @@ import fs from "node:fs/promises"
 import os from "node:os"
 import path from "node:path"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import { getAgentFiles, scanMdDir } from "@/services/agent-file-service"
 import {
-  getAgentFiles,
   getClaudeMd,
   getGlobalConfigPath,
   getOverview,
   getProjectConfigPath,
-  scanMdDir,
 } from "@/services/config-service"
 
 // ── tmp 디렉토리 기반 테스트 헬퍼 ──

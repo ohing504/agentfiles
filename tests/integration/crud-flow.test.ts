@@ -10,12 +10,8 @@ import fs from "node:fs/promises"
 import os from "node:os"
 import path from "node:path"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import {
-  getAgentFiles,
-  getClaudeMd,
-  getOverview,
-  scanMdDir,
-} from "@/services/config-service"
+import { getAgentFiles, scanMdDir } from "@/services/agent-file-service"
+import { getClaudeMd, getOverview } from "@/services/config-service"
 import { deleteFile, writeMarkdown } from "@/services/file-writer"
 
 // ── tmp 디렉토리 헬퍼 ──

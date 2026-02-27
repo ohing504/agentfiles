@@ -1,12 +1,11 @@
 import type { Dirent } from "node:fs"
 import fs from "node:fs/promises"
 import path from "node:path"
+import { scanMdDir, scanSkillsDir } from "@/services/agent-file-service"
 import {
   getGlobalConfigPath,
   getProjectConfigPath,
   readSettingsJson,
-  scanMdDir,
-  scanSkillsDir,
 } from "@/services/config-service"
 import type {
   HooksSettings,

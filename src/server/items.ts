@@ -10,7 +10,7 @@ export const getItemsFn = createServerFn({ method: "GET" })
     }),
   )
   .handler(async ({ data }) => {
-    const { getAgentFiles } = await import("@/services/config-service")
+    const { getAgentFiles } = await import("@/services/agent-file-service")
     return getAgentFiles(data.type, data.projectPath)
   })
 
@@ -34,8 +34,10 @@ export const getItemFn = createServerFn({ method: "GET" })
   .handler(async ({ data }) => {
     const fs = await import("node:fs/promises")
     const path = await import("node:path")
-    const { getGlobalConfigPath, getProjectConfigPath, getAgentFiles } =
-      await import("@/services/config-service")
+    const { getGlobalConfigPath, getProjectConfigPath } = await import(
+      "@/services/config-service"
+    )
+    const { getAgentFiles } = await import("@/services/agent-file-service")
     const { validateItemName } = await import("@/server/validation")
 
     validateItemName(data.name)
