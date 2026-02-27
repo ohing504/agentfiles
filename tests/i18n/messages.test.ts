@@ -1,12 +1,21 @@
-import { readFileSync } from "node:fs"
+import { readdirSync, readFileSync } from "node:fs"
 import path from "node:path"
 import { describe, expect, it } from "vitest"
 
 const messagesDir = path.resolve(__dirname, "../../messages")
 
 function loadMessages(locale: string): Record<string, string> {
-  const filePath = path.join(messagesDir, `${locale}.json`)
-  return JSON.parse(readFileSync(filePath, "utf-8"))
+  const localeDir = path.join(messagesDir, locale)
+  const files = readdirSync(localeDir).filter((f) => f.endsWith(".json"))
+  return files.reduce(
+    (acc, file) => {
+      const content = JSON.parse(
+        readFileSync(path.join(localeDir, file), "utf-8"),
+      )
+      return { ...acc, ...content }
+    },
+    {} as Record<string, string>,
+  )
 }
 
 describe("i18n messages", () => {
@@ -46,6 +55,7 @@ describe("i18n messages", () => {
       "action",
       "app",
       "claude",
+      "common",
       "config",
       "detail",
       "editor",
