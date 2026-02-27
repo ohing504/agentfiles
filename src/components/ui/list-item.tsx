@@ -30,6 +30,7 @@ interface ListItemProps {
   open?: boolean
   children?: React.ReactNode
   className?: string
+  iconClassName?: string
 }
 
 export function ListItem({
@@ -43,6 +44,7 @@ export function ListItem({
   open,
   children,
   className,
+  iconClassName,
 }: ListItemProps) {
   // Item (Slot.Root when asChild) properly forwards ref via ...props spread,
   // so TooltipTrigger/CollapsibleTrigger asChild can chain through it.
@@ -59,7 +61,7 @@ export function ListItem({
     >
       <button type="button" onClick={onClick} className="text-left">
         <ItemMedia>
-          <Icon className="text-muted-foreground" />
+          <Icon className={iconClassName ?? "text-muted-foreground"} />
         </ItemMedia>
         <ItemContent>
           <ItemTitle className="font-normal leading-tight">{label}</ItemTitle>
