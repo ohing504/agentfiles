@@ -78,6 +78,7 @@ function AgentsPageInner() {
             label="User"
             scope="global"
             onAddClick={() => handleAddClick("global")}
+            onDeleteAgent={handleDeleteAgent}
           />
 
           {activeProjectPath && (
@@ -85,6 +86,7 @@ function AgentsPageInner() {
               label="Project"
               scope="project"
               onAddClick={() => handleAddClick("project")}
+              onDeleteAgent={handleDeleteAgent}
             />
           )}
         </div>

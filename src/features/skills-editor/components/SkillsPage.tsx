@@ -95,6 +95,7 @@ function SkillsPageInner() {
             scope="global"
             searchQuery={searchQuery}
             onAddClick={() => handleAddClick("global")}
+            onDeleteSkill={handleDeleteSkill}
           />
 
           {activeProjectPath && (
@@ -103,6 +104,7 @@ function SkillsPageInner() {
               scope="project"
               searchQuery={searchQuery}
               onAddClick={() => handleAddClick("project")}
+              onDeleteSkill={handleDeleteSkill}
             />
           )}
         </div>

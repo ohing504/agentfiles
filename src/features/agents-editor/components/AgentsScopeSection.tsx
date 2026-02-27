@@ -1,16 +1,19 @@
 import { Plus, WorkflowIcon } from "lucide-react"
+import { ItemContextMenu } from "@/components/ui/item-context-menu"
 import { ListItem } from "@/components/ui/list-item"
-import type { Scope } from "@/shared/types"
+import type { AgentFile, Scope } from "@/shared/types"
 import { useAgentsSelection } from "../context/AgentsContext"
 
 export function AgentsScopeSection({
   label,
   scope,
   onAddClick,
+  onDeleteAgent,
 }: {
   label: string
   scope: Scope
   onAddClick: () => void
+  onDeleteAgent?: (agent: AgentFile) => void
 }) {
   const {
     agents: allAgents,
@@ -45,13 +48,20 @@ export function AgentsScopeSection({
       ) : (
         <div className="flex flex-col gap-0.5">
           {agents.map((agent) => (
-            <ListItem
+            <ItemContextMenu
               key={agent.path}
-              icon={WorkflowIcon}
-              label={agent.name}
-              selected={selectedAgent?.path === agent.path}
-              onClick={() => handleSelectAgent(agent)}
-            />
+              filePath={agent.path}
+              onDelete={onDeleteAgent ? () => onDeleteAgent(agent) : undefined}
+              deleteTitle="Delete Agent"
+              deleteDescription={`Are you sure you want to delete "${agent.name}"? This action cannot be undone.`}
+            >
+              <ListItem
+                icon={WorkflowIcon}
+                label={agent.name}
+                selected={selectedAgent?.path === agent.path}
+                onClick={() => handleSelectAgent(agent)}
+              />
+            </ItemContextMenu>
           ))}
         </div>
       )}

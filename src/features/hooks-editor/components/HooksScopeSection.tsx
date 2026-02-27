@@ -1,6 +1,9 @@
 import { ChevronRight, Plus, Zap } from "lucide-react"
 import { memo, useMemo, useState } from "react"
+import { useProjectContext } from "@/components/ProjectContext"
+import { SubItemContextMenu } from "@/components/ui/item-context-menu"
 import { ListItem, ListSubItem } from "@/components/ui/list-item"
+import { isHookFilePath, resolveHookFilePath } from "@/lib/hook-utils"
 import { cn } from "@/lib/utils"
 import { m } from "@/paraglide/messages"
 import type {
@@ -25,6 +28,8 @@ export const HooksScopeSection = memo(function HooksScopeSection({
   selectedHook,
   onSelectHook,
   onAddClick,
+  onDeleteHook,
+  onEditHook,
 }: {
   label: string
   scope: HookScope
@@ -33,7 +38,10 @@ export const HooksScopeSection = memo(function HooksScopeSection({
   selectedHook: SelectedHook | null
   onSelectHook: (hook: SelectedHook) => void
   onAddClick: () => void
+  onDeleteHook?: (hook: SelectedHook) => void
+  onEditHook?: (hook: SelectedHook) => void
 }) {
+  const { activeProjectPath } = useProjectContext()
   // Track which events are CLOSED (empty = all open by default)
   const [closedEvents, setClosedEvents] = useState<Set<string>>(new Set())
 
@@ -154,23 +162,44 @@ export const HooksScopeSection = memo(function HooksScopeSection({
                       selectedHook.groupIndex === groupIndex &&
                       selectedHook.hookIndex === hookIndex
 
+                    const selectedHookObj: SelectedHook = {
+                      scope,
+                      event,
+                      groupIndex,
+                      hookIndex,
+                      hook,
+                      matcher: group.matcher,
+                    }
+                    const hookFilePath = isHookFilePath(hook)
+                      ? resolveHookFilePath(hook.command ?? "", {
+                          projectPath: activeProjectPath,
+                        })
+                      : undefined
+
                     return (
-                      <ListSubItem
+                      <SubItemContextMenu
                         key={`${groupIndex}-${hookIndex}`}
-                        icon={Icon}
-                        label={name}
-                        selected={isSelected}
-                        onClick={() =>
-                          onSelectHook({
-                            scope,
-                            event,
-                            groupIndex,
-                            hookIndex,
-                            hook,
-                            matcher: group.matcher,
-                          })
+                        filePath={hookFilePath}
+                        onEdit={
+                          onEditHook
+                            ? () => onEditHook(selectedHookObj)
+                            : undefined
                         }
-                      />
+                        onDelete={
+                          onDeleteHook
+                            ? () => onDeleteHook(selectedHookObj)
+                            : undefined
+                        }
+                        deleteTitle={m.hooks_delete_title()}
+                        deleteDescription={m.hooks_delete_confirm()}
+                      >
+                        <ListSubItem
+                          icon={Icon}
+                          label={name}
+                          selected={isSelected}
+                          onClick={() => onSelectHook(selectedHookObj)}
+                        />
+                      </SubItemContextMenu>
                     )
                   }),
                 )}

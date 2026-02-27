@@ -15,6 +15,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { isHookFilePath, resolveHookFilePath } from "@/lib/hook-utils"
 import { m } from "@/paraglide/messages"
 import { useHooksMutations } from "../api/hooks.queries"
+import type { SelectedHook } from "../constants"
 import { useHooksSelection } from "../context/HooksContext"
 import { AddHookDialog } from "./AddHookDialog"
 import { HooksScopeSection } from "./HooksScopeSection"
@@ -37,11 +38,19 @@ export function HooksPageContent() {
     handleAddClose,
   } = useHooksSelection()
 
-  const { removeMutation } = useHooksMutations(selectedHook?.scope ?? "global")
+  const { removeMutation: removeGlobalMutation } = useHooksMutations("global")
+  const { removeMutation: removeProjectMutation } = useHooksMutations("project")
+  const { removeMutation: removeLocalMutation } = useHooksMutations("local")
+
+  function getRemoveMutation(scope: "global" | "project" | "local") {
+    if (scope === "project") return removeProjectMutation
+    if (scope === "local") return removeLocalMutation
+    return removeGlobalMutation
+  }
 
   function handleDeleteHook() {
     if (!selectedHook) return
-    removeMutation.mutate(
+    getRemoveMutation(selectedHook.scope).mutate(
       {
         event: selectedHook.event,
         groupIndex: selectedHook.groupIndex,
@@ -49,6 +58,29 @@ export function HooksPageContent() {
       },
       {
         onSuccess: handleClearSelection,
+        onError: (e) => toast.error(e.message || m.hooks_delete_error()),
+      },
+    )
+  }
+
+  function handleDeleteSpecificHook(hook: SelectedHook) {
+    getRemoveMutation(hook.scope).mutate(
+      {
+        event: hook.event,
+        groupIndex: hook.groupIndex,
+        hookIndex: hook.hookIndex,
+      },
+      {
+        onSuccess: () => {
+          if (
+            selectedHook?.scope === hook.scope &&
+            selectedHook?.event === hook.event &&
+            selectedHook?.groupIndex === hook.groupIndex &&
+            selectedHook?.hookIndex === hook.hookIndex
+          ) {
+            handleClearSelection()
+          }
+        },
         onError: (e) => toast.error(e.message || m.hooks_delete_error()),
       },
     )
@@ -110,6 +142,8 @@ export function HooksPageContent() {
             selectedHook={selectedHook}
             onSelectHook={handleSelectHook}
             onAddClick={() => handleAddClick("global")}
+            onDeleteHook={handleDeleteSpecificHook}
+            onEditHook={(hook: SelectedHook) => setEditingHook(hook)}
           />
           {activeProjectPath && (
             <>
@@ -121,6 +155,8 @@ export function HooksPageContent() {
                 selectedHook={selectedHook}
                 onSelectHook={handleSelectHook}
                 onAddClick={() => handleAddClick("project")}
+                onDeleteHook={handleDeleteSpecificHook}
+                onEditHook={(hook: SelectedHook) => setEditingHook(hook)}
               />
               <HooksScopeSection
                 label="Local"
@@ -130,6 +166,8 @@ export function HooksPageContent() {
                 selectedHook={selectedHook}
                 onSelectHook={handleSelectHook}
                 onAddClick={() => handleAddClick("local")}
+                onDeleteHook={handleDeleteSpecificHook}
+                onEditHook={(hook: SelectedHook) => setEditingHook(hook)}
               />
             </>
           )}

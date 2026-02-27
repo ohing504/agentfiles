@@ -5,9 +5,10 @@ import {
   ScrollText,
   SquareTerminal,
 } from "lucide-react"
+import { ItemContextMenu } from "@/components/ui/item-context-menu"
 import { ListItem, ListSubItem } from "@/components/ui/list-item"
 import { m } from "@/paraglide/messages"
-import type { Scope } from "@/shared/types"
+import type { AgentFile, Scope } from "@/shared/types"
 import { useSkillsSelection } from "../context/SkillsContext"
 
 export function SkillsScopeSection({
@@ -15,11 +16,13 @@ export function SkillsScopeSection({
   scope,
   searchQuery,
   onAddClick,
+  onDeleteSkill,
 }: {
   label: string
   scope: Scope
   searchQuery: string
   onAddClick: () => void
+  onDeleteSkill?: (skill: AgentFile) => void
 }) {
   const {
     skills: allFiles,
@@ -138,71 +141,94 @@ export function SkillsScopeSection({
               if (hasSupportingFiles) {
                 const isExpanded = expandedSkillPath === item.file.path
                 return (
-                  <ListItem
+                  <ItemContextMenu
                     key={item.file.path}
+                    filePath={item.file.path}
+                    isDir={item.file.isSkillDir}
+                    onDelete={
+                      onDeleteSkill ? () => onDeleteSkill(item.file) : undefined
+                    }
+                    deleteTitle={m.skills_delete_title()}
+                    deleteDescription={m.skills_delete_confirm({
+                      name: item.file.name,
+                    })}
+                  >
+                    <ListItem
+                      icon={ScrollText}
+                      label={item.file.name}
+                      selected={
+                        selectedSkill?.path === item.file.path &&
+                        !selectedSupportingFile
+                      }
+                      open={isExpanded}
+                      onClick={() => {
+                        onSelectSkill(item.file)
+                        onSelectSupportingFile(null)
+                        onExpandSkill(item.file.path)
+                      }}
+                    >
+                      <ListSubItem
+                        icon={FileText}
+                        label="SKILL.md"
+                        selected={
+                          selectedSkill?.path === item.file.path &&
+                          selectedSupportingFile?.relativePath === "SKILL.md"
+                        }
+                        onClick={() => {
+                          onSelectSkill(item.file)
+                          onSelectSupportingFile({
+                            name: "SKILL.md",
+                            relativePath: "SKILL.md",
+                            size: item.file.size,
+                          })
+                        }}
+                      />
+                      {item.file.supportingFiles?.map((sf) => (
+                        <ListSubItem
+                          key={sf.relativePath}
+                          icon={FileText}
+                          label={sf.relativePath}
+                          selected={
+                            selectedSkill?.path === item.file.path &&
+                            selectedSupportingFile?.relativePath ===
+                              sf.relativePath
+                          }
+                          onClick={() => {
+                            onSelectSkill(item.file)
+                            onSelectSupportingFile(sf)
+                          }}
+                        />
+                      ))}
+                    </ListItem>
+                  </ItemContextMenu>
+                )
+              }
+
+              return (
+                <ItemContextMenu
+                  key={item.file.path}
+                  filePath={item.file.path}
+                  onDelete={
+                    onDeleteSkill ? () => onDeleteSkill(item.file) : undefined
+                  }
+                  deleteTitle={m.skills_delete_title()}
+                  deleteDescription={m.skills_delete_confirm({
+                    name: item.file.name,
+                  })}
+                >
+                  <ListItem
                     icon={ScrollText}
                     label={item.file.name}
                     selected={
                       selectedSkill?.path === item.file.path &&
                       !selectedSupportingFile
                     }
-                    open={isExpanded}
                     onClick={() => {
                       onSelectSkill(item.file)
                       onSelectSupportingFile(null)
-                      onExpandSkill(item.file.path)
                     }}
-                  >
-                    <ListSubItem
-                      icon={FileText}
-                      label="SKILL.md"
-                      selected={
-                        selectedSkill?.path === item.file.path &&
-                        selectedSupportingFile?.relativePath === "SKILL.md"
-                      }
-                      onClick={() => {
-                        onSelectSkill(item.file)
-                        onSelectSupportingFile({
-                          name: "SKILL.md",
-                          relativePath: "SKILL.md",
-                          size: item.file.size,
-                        })
-                      }}
-                    />
-                    {item.file.supportingFiles?.map((sf) => (
-                      <ListSubItem
-                        key={sf.relativePath}
-                        icon={FileText}
-                        label={sf.relativePath}
-                        selected={
-                          selectedSkill?.path === item.file.path &&
-                          selectedSupportingFile?.relativePath ===
-                            sf.relativePath
-                        }
-                        onClick={() => {
-                          onSelectSkill(item.file)
-                          onSelectSupportingFile(sf)
-                        }}
-                      />
-                    ))}
-                  </ListItem>
-                )
-              }
-
-              return (
-                <ListItem
-                  key={item.file.path}
-                  icon={ScrollText}
-                  label={item.file.name}
-                  selected={
-                    selectedSkill?.path === item.file.path &&
-                    !selectedSupportingFile
-                  }
-                  onClick={() => {
-                    onSelectSkill(item.file)
-                    onSelectSupportingFile(null)
-                  }}
-                />
+                  />
+                </ItemContextMenu>
               )
             }
 
@@ -228,14 +254,25 @@ export function SkillsScopeSection({
                   {item.commands.map((f) => {
                     const isDup = skillNames.has(f.name)
                     return (
-                      <ListSubItem
+                      <ItemContextMenu
                         key={f.path}
-                        icon={SquareTerminal}
-                        label={f.name}
-                        className={isDup ? "opacity-50" : undefined}
-                        selected={selectedSkill?.path === f.path}
-                        onClick={() => onSelectSkill(f)}
-                      />
+                        filePath={f.path}
+                        onDelete={
+                          onDeleteSkill ? () => onDeleteSkill(f) : undefined
+                        }
+                        deleteTitle={m.skills_delete_title()}
+                        deleteDescription={m.skills_delete_confirm({
+                          name: f.name,
+                        })}
+                      >
+                        <ListSubItem
+                          icon={SquareTerminal}
+                          label={f.name}
+                          className={isDup ? "opacity-50" : undefined}
+                          selected={selectedSkill?.path === f.path}
+                          onClick={() => onSelectSkill(f)}
+                        />
+                      </ItemContextMenu>
                     )
                   })}
                 </ListItem>
@@ -244,15 +281,26 @@ export function SkillsScopeSection({
 
             const isDup = skillNames.has(item.file.name)
             return (
-              <ListItem
+              <ItemContextMenu
                 key={item.file.path}
-                icon={SquareTerminal}
-                label={item.file.name}
-                tooltip={isDup ? m.skills_duplicate_tooltip() : undefined}
-                className={isDup ? "opacity-50" : undefined}
-                selected={selectedSkill?.path === item.file.path}
-                onClick={() => onSelectSkill(item.file)}
-              />
+                filePath={item.file.path}
+                onDelete={
+                  onDeleteSkill ? () => onDeleteSkill(item.file) : undefined
+                }
+                deleteTitle={m.skills_delete_title()}
+                deleteDescription={m.skills_delete_confirm({
+                  name: item.file.name,
+                })}
+              >
+                <ListItem
+                  icon={SquareTerminal}
+                  label={item.file.name}
+                  tooltip={isDup ? m.skills_duplicate_tooltip() : undefined}
+                  className={isDup ? "opacity-50" : undefined}
+                  selected={selectedSkill?.path === item.file.path}
+                  onClick={() => onSelectSkill(item.file)}
+                />
+              </ItemContextMenu>
             )
           })}
         </div>

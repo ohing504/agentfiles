@@ -38,7 +38,7 @@ export function ProjectSwitcher() {
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">
-                    {activeProject?.name ?? "Global Only"}
+                    {activeProject?.name ?? "User Only"}
                   </span>
                   <span className="truncate text-xs text-muted-foreground">
                     {activeProject
@@ -60,7 +60,7 @@ export function ProjectSwitcher() {
                 className="gap-2 p-2"
               >
                 <Globe className="size-4 shrink-0" />
-                <span>Global Only</span>
+                <span>User Only</span>
                 {!activeProject && (
                   <Check className="size-4 ml-auto shrink-0" />
                 )}

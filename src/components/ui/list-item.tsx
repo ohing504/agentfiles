@@ -121,6 +121,7 @@ interface ListSubItemProps {
   selected?: boolean
   onClick?: () => void
   className?: string
+  onContextMenu?: React.MouseEventHandler<HTMLLIElement>
 }
 
 export function ListSubItem({
@@ -130,9 +131,10 @@ export function ListSubItem({
   selected,
   onClick,
   className,
+  onContextMenu,
 }: ListSubItemProps) {
   return (
-    <li>
+    <li onContextMenu={onContextMenu}>
       <Item
         asChild
         variant="default"
