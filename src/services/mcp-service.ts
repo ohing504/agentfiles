@@ -125,3 +125,35 @@ export async function getMcpServers(
 
   return [...userServers, ...localServers, ...projectServers]
 }
+
+export function parseMcpList(
+  stdout: string,
+): Record<string, McpConnectionStatus> {
+  const result: Record<string, McpConnectionStatus> = {}
+
+  for (const line of stdout.split("\n")) {
+    const trimmed = line.trim()
+    if (!trimmed || trimmed.startsWith("Checking")) continue
+
+    const match = trimmed.match(/^(.+?):\s+.+\s+-\s+(.+)$/)
+    if (!match) continue
+
+    const name = match[1].trim()
+    const statusPart = match[2].trim()
+
+    let status: McpConnectionStatus
+    if (statusPart.startsWith("✓")) {
+      status = "connected"
+    } else if (statusPart.startsWith("!")) {
+      status = "needs_authentication"
+    } else if (statusPart.startsWith("✗")) {
+      status = "failed"
+    } else {
+      status = "unknown"
+    }
+
+    result[name] = status
+  }
+
+  return result
+}

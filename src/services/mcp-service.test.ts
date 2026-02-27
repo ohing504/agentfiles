@@ -194,3 +194,46 @@ describe("깨진 JSON graceful 처리", () => {
     expect(result[0].scope).toBe("global")
   })
 })
+
+describe("parseMcpList", () => {
+  it("connected 상태를 파싱한다", () => {
+    const stdout = `Checking MCP server health...\ncontext7: npx -y @upstash/context7-mcp - ✓ Connected`
+    expect(parseMcpList(stdout)).toEqual({ context7: "connected" })
+  })
+
+  it("needs_authentication 상태를 파싱한다", () => {
+    const stdout = `Checking MCP server health...\nsupabase: https://mcp.supabase.com/rest (HTTP) - ! Needs authentication`
+    expect(parseMcpList(stdout)).toEqual({ supabase: "needs_authentication" })
+  })
+
+  it("failed 상태를 파싱한다", () => {
+    const stdout = `Checking MCP server health...\ngithub: docker run ghcr.io/github/github-mcp-server - ✗ Failed to connect`
+    expect(parseMcpList(stdout)).toEqual({ github: "failed" })
+  })
+
+  it("여러 서버 상태를 한번에 파싱한다", () => {
+    const stdout = [
+      "Checking MCP server health...",
+      "context7: npx -y @upstash/context7-mcp - ✓ Connected",
+      "supabase: https://mcp.supabase.com/rest (HTTP) - ! Needs authentication",
+      "github: docker run ghcr.io/github/github-mcp-server - ✗ Failed to connect",
+    ].join("\n")
+    expect(parseMcpList(stdout)).toEqual({
+      context7: "connected",
+      supabase: "needs_authentication",
+      github: "failed",
+    })
+  })
+
+  it("plugin prefix 포함 이름을 파싱한다", () => {
+    const stdout = `Checking MCP server health...\nplugin:context7:context7: npx -y @upstash/context7-mcp - ✓ Connected`
+    expect(parseMcpList(stdout)).toEqual({
+      "plugin:context7:context7": "connected",
+    })
+  })
+
+  it("빈 출력은 빈 객체 반환", () => {
+    expect(parseMcpList("")).toEqual({})
+    expect(parseMcpList("Checking MCP server health...")).toEqual({})
+  })
+})
