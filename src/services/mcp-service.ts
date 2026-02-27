@@ -1,6 +1,7 @@
 import fs from "node:fs/promises"
 import os from "node:os"
 import path from "node:path"
+import { getPlugins } from "@/services/plugin-service"
 import type { McpConnectionStatus, McpServer, Scope } from "@/shared/types"
 
 /**
@@ -69,6 +70,43 @@ function parseMcpServers(
 }
 
 // ── Public API ──
+
+/**
+ * 플러그인이 제공하는 MCP 서버 목록 조회
+ *
+ * 활성화된 플러그인의 installPath/.mcp.json을 읽어 반환한다.
+ * - user scope 플러그인 → scope: "global"
+ * - project scope 플러그인 → scope: "project"
+ * 각 서버에 fromPlugin: pluginName 설정
+ */
+export async function getPluginMcpServers(
+  projectPath?: string,
+): Promise<McpServer[]> {
+  const plugins = await getPlugins(projectPath)
+  const results: McpServer[] = []
+
+  await Promise.all(
+    plugins
+      .filter((plugin) => plugin.enabled && plugin.installPath)
+      .map(async (plugin) => {
+        const mcpJsonPath = path.join(plugin.installPath, ".mcp.json")
+        const raw = await readJson(mcpJsonPath)
+        const mcpServersRaw =
+          typeof raw.mcpServers === "object" && raw.mcpServers !== null
+            ? (raw.mcpServers as Record<string, unknown>)
+            : {}
+
+        const scope: Scope = plugin.scope === "project" ? "project" : "global"
+
+        const servers = parseMcpServers(mcpServersRaw, scope, mcpJsonPath)
+        for (const server of servers) {
+          results.push({ ...server, fromPlugin: plugin.name })
+        }
+      }),
+  )
+
+  return results
+}
 
 /**
  * 모든 MCP 서버 목록 조회
