@@ -42,6 +42,47 @@ export function isExcluded(name: string): boolean {
   return false
 }
 
+/** 프로젝트 루트에서 탐색할 Claude 관련 파일 목록 (순서 = 표시 순서) */
+const ROOT_CLAUDE_FILES = ["CLAUDE.md", "AGENTS.md", ".agents", ".cursorrules"]
+
+async function scanProjectClaudeFiles(projectPath: string): Promise<FileNode> {
+  const children: FileNode[] = []
+
+  // 1. 루트 레벨 Claude 파일 (존재하는 것만)
+  for (const filename of ROOT_CLAUDE_FILES) {
+    const filePath = path.join(projectPath, filename)
+    try {
+      const stat = await fs.stat(filePath)
+      children.push({
+        name: filename,
+        path: filePath,
+        type: "file",
+        size: stat.size,
+        extension: path.extname(filename).toLowerCase() || undefined,
+      })
+    } catch {
+      // 파일 없음 → 스킵
+    }
+  }
+
+  // 2. .claude 디렉토리 (존재하면 서브노드로 추가)
+  const claudeDirPath = path.join(projectPath, ".claude")
+  try {
+    await fs.access(claudeDirPath)
+    const claudeDir = await scanDir(claudeDirPath, ".claude")
+    children.push(claudeDir)
+  } catch {
+    // .claude 없음 → 스킵
+  }
+
+  return {
+    name: path.basename(projectPath),
+    path: projectPath,
+    type: "directory",
+    children,
+  }
+}
+
 export function resolveClaudeDir(
   scope: "global" | "project",
   projectPath?: string,
@@ -56,7 +97,12 @@ export async function scanClaudeDir(
   scope: "global" | "project",
   projectPath?: string,
 ): Promise<FileNode> {
-  const dirPath = resolveClaudeDir(scope, projectPath)
+  if (scope === "project") {
+    return scanProjectClaudeFiles(projectPath ?? process.cwd())
+  }
+
+  // global scope: 기존 동작 유지 (~/.claude 스캔)
+  const dirPath = resolveClaudeDir("global")
   const rootName = ".claude"
 
   try {
