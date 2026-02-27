@@ -1,4 +1,4 @@
-import { execFile as execFileCb } from "node:child_process"
+import { spawn } from "node:child_process"
 import os from "node:os"
 import type { CliStatus, McpServer, PluginScope, Scope } from "@/shared/types"
 
@@ -6,22 +6,47 @@ const TIMEOUT_MS = 30_000
 
 function execClaude(
   args: string[],
-  options?: { cwd?: string },
+  options?: { cwd?: string; timeout?: number },
 ): Promise<string> {
   return new Promise((resolve, reject) => {
-    execFileCb(
-      "claude",
-      args,
-      { timeout: TIMEOUT_MS, cwd: options?.cwd },
-      (err, stdout, stderr) => {
-        if (err) {
-          const detail = stderr?.trim() || stdout?.trim() || err.message
-          reject(new Error(detail))
-          return
-        }
+    // stdin: "ignore" to prevent the process from blocking on interactive input
+    // when running without a TTY (e.g. from the Nitro dev server).
+    const child = spawn("claude", args, {
+      cwd: options?.cwd,
+      stdio: ["ignore", "pipe", "pipe"],
+      env: { ...process.env },
+    })
+
+    let stdout = ""
+    let stderr = ""
+
+    child.stdout.on("data", (chunk: Buffer) => {
+      stdout += chunk.toString()
+    })
+    child.stderr.on("data", (chunk: Buffer) => {
+      stderr += chunk.toString()
+    })
+
+    const timeoutMs = options?.timeout ?? TIMEOUT_MS
+    const timer = setTimeout(() => {
+      child.kill()
+      reject(new Error(`claude ${args[0]} timed out after ${timeoutMs}ms`))
+    }, timeoutMs)
+
+    child.on("close", (code) => {
+      clearTimeout(timer)
+      if (code !== 0 && code !== null) {
+        const detail = stderr.trim() || stdout.trim() || `exit code ${code}`
+        reject(new Error(detail))
+      } else {
         resolve(stdout)
-      },
-    )
+      }
+    })
+
+    child.on("error", (err) => {
+      clearTimeout(timer)
+      reject(err)
+    })
   })
 }
 
