@@ -1,0 +1,14 @@
+{
+  "files_title": "Files",
+  "files_docs": "Docs",
+  "files_docs_url": "https://code.claude.com/docs/en/settings#configuration-file-locations",
+  "files_select_file": "Select a file to edit",
+  "files_no_selection": "Select a file to view",
+  "files_no_selection_desc": "Browse the .claude/ directory tree on the left",
+  "files_empty_dir": "Directory is empty or does not exist",
+  "files_scope_global": "User",
+  "files_scope_project": "Project",
+  "files_render_error": "Failed to load Files explorer",
+  "files_open_vscode": "VSCode",
+  "files_open_cursor": "Cursor"
+}

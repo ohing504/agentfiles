@@ -1,0 +1,20 @@
+{
+  "skills_empty_title": "No Skill Selected",
+  "skills_empty_desc": "Select a skill from the left panel to view its details.",
+  "skills_add_title": "Add Skill",
+  "skills_add_desc": "Creates a new skill directory with SKILL.md template.",
+  "skills_edit": "Edit",
+  "skills_open_vscode": "VS Code",
+  "skills_open_cursor": "Cursor",
+  "skills_open_folder": "Open in Folder",
+  "skills_delete": "Delete",
+  "skills_delete_title": "Delete Skill",
+  "skills_delete_confirm": "Are you sure you want to delete \"{name}\"? This action cannot be undone.",
+  "skills_duplicate_tooltip": "A skill with the same name exists and takes priority.",
+  "skills_scope": "Scope",
+  "skills_last_updated": "Last updated",
+  "skills_description": "Description",
+  "skills_preview": "Preview",
+  "skills_source": "Source",
+  "skills_copied": "Copied to clipboard"
+}

@@ -1,0 +1,10 @@
+{
+  "editor_saved": "Saved",
+  "editor_unsaved_changes": "Unsaved changes",
+  "editor_saving": "Saving...",
+  "editor_save": "Save",
+  "editor_load_error": "Failed to load CLAUDE.md",
+  "editor_save_error": "Failed to save. Please try again.",
+  "editor_no_file": "No file found. Start typing to create one.",
+  "editor_placeholder": "# CLAUDE.md\n\nAdd instructions for Claude here..."
+}

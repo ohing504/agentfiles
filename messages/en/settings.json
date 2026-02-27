@@ -1,0 +1,22 @@
+{
+  "settings_general": "General",
+  "settings_model": "Model",
+  "settings_env": "Environment Variables",
+  "settings_status_line": "Status Line",
+  "settings_install_info": "Install Info",
+  "settings_feature_flags": "Feature Flags",
+  "settings_permissions": "Permissions",
+  "settings_shared": "Shared Settings",
+  "settings_local": "Local Settings",
+  "settings_no_project": "Select a project to view project settings",
+  "settings_save_success": "Settings saved",
+  "settings_save_error": "Failed to save settings",
+  "settings_key": "Key",
+  "settings_value": "Value",
+  "settings_add": "Add",
+  "settings_remove": "Remove",
+  "settings_enabled": "Enabled",
+  "settings_disabled": "Disabled",
+  "settings_on": "On",
+  "settings_off": "Off"
+}
