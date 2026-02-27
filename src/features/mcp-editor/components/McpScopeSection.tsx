@@ -19,7 +19,7 @@ const STATUS_ICON_CLASS: Record<McpConnectionStatus, string> = {
   unknown: "text-muted-foreground",
 }
 
-function getStatusTooltip(status: McpConnectionStatus): string {
+function getStatusTooltip(status: McpConnectionStatus): string | undefined {
   switch (status) {
     case "connected":
       return m.mcp_status_connected()
@@ -30,7 +30,7 @@ function getStatusTooltip(status: McpConnectionStatus): string {
     case "disabled":
       return m.mcp_status_disabled()
     default:
-      return ""
+      return undefined
   }
 }
 

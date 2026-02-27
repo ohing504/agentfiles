@@ -69,6 +69,9 @@ const mcpStatusKeys = {
 }
 
 export function useMcpStatusQuery() {
+  // 60s interval instead of INFREQUENT_REFETCH (30s): `claude mcp list` spawns
+  // subprocesses for each server health check, so polling less aggressively
+  // reduces CLI overhead.
   return useQuery<Record<string, McpConnectionStatus>>({
     queryKey: mcpStatusKeys.all,
     queryFn: () => getMcpStatusFn(),

@@ -135,6 +135,8 @@ export function parseMcpList(
     const trimmed = line.trim()
     if (!trimmed || trimmed.startsWith("Checking")) continue
 
+    // Output format: "{name}: {command_or_url} - {symbol} {status_text}"
+    // e.g. "my-server: npx my-mcp - ✓ Connected"
     const match = trimmed.match(/^(.+?):\s+.+\s+-\s+(.+)$/)
     if (!match) continue
 
