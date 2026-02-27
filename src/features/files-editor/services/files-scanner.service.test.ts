@@ -102,13 +102,13 @@ describe("files-scanner.service", () => {
 
       const result = await scanClaudeDir("project", tmpDir)
       const claudeSubDir = result.children?.find((c) => c.name === ".claude")
+      expect(claudeSubDir).toBeDefined()
       const pluginsDir = claudeSubDir?.children?.find(
         (c) => c.name === "plugins",
       )
-      if (pluginsDir) {
-        const cacheDir = pluginsDir.children?.find((c) => c.name === "cache")
-        expect(cacheDir).toBeUndefined()
-      }
+      expect(pluginsDir).toBeDefined()
+      const cacheDir = pluginsDir?.children?.find((c) => c.name === "cache")
+      expect(cacheDir).toBeUndefined()
     })
 
     it("sorts directories first, then files alphabetically", async () => {
@@ -167,6 +167,17 @@ describe("files-scanner.service", () => {
       const result = await scanClaudeDir("project", tmpDir)
       expect(result.type).toBe("directory")
       expect(result.children).toEqual([])
+    })
+
+    it("handles .agents as directory when it is a directory", async () => {
+      const agentsDir = path.join(tmpDir, ".agents")
+      await fs.mkdir(path.join(agentsDir, "skills"), { recursive: true })
+      await fs.writeFile(path.join(agentsDir, "skills", "commit.md"), "skill")
+
+      const result = await scanClaudeDir("project", tmpDir)
+      const agentsNode = result.children?.find((c) => c.name === ".agents")
+      expect(agentsNode?.type).toBe("directory")
+      expect(agentsNode?.children).toBeDefined()
     })
   })
 

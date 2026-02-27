@@ -53,15 +53,19 @@ async function scanProjectClaudeFiles(projectPath: string): Promise<FileNode> {
     const filePath = path.join(projectPath, filename)
     try {
       const stat = await fs.stat(filePath)
-      children.push({
-        name: filename,
-        path: filePath,
-        type: "file",
-        size: stat.size,
-        extension: path.extname(filename).toLowerCase() || undefined,
-      })
+      if (stat.isDirectory()) {
+        children.push(await scanDir(filePath, filename))
+      } else {
+        children.push({
+          name: filename,
+          path: filePath,
+          type: "file",
+          size: stat.size,
+          extension: path.extname(filename).toLowerCase() || undefined,
+        })
+      }
     } catch {
-      // 파일 없음 → 스킵
+      // 파일/디렉토리 없음 → 스킵
     }
   }
 
