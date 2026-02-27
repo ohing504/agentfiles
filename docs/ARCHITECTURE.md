@@ -193,9 +193,9 @@ agentfiles/
 │  └─ shared/
 │     └─ types.ts
 │
-├─ messages/                   ← i18n 메시지 파일
-│  ├─ en.json
-│  └─ ko.json
+├─ messages/                   ← i18n 메시지 파일 (namespace별 분리)
+│  ├─ en/                      ← 영어 (common, hooks, skills, plugins, mcp, config, files, settings, editor)
+│  └─ ko/                      ← 한국어 (동일 구조)
 │
 ├─ bin/
 │  └─ cli.ts                   ← npx agentfiles 진입점 (Chrome 앱 모드로 열기)

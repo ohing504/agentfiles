@@ -141,7 +141,7 @@ src/
   lib/                       ← 유틸리티
     auth.ts, query-keys.ts, format.ts, hook-utils.ts
   shared/types.ts            ← 공유 타입
-messages/                    ← i18n 메시지 (en.json, ko.json)
+messages/                    ← i18n 메시지 (en/{namespace}.json, ko/{namespace}.json)
 bin/cli.ts                   ← CLI 진입점
 tests/                       ← 테스트
 ```
