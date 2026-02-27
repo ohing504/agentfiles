@@ -7,7 +7,7 @@
 ## Next Up
 
 ### 추후 개선 (Backlog)
-- [ ] **i18n 메시지 파일 구조 개선 및 공통 텍스트 최적화**
+- [x] **i18n 메시지 파일 구조 개선 및 공통 텍스트 최적화**
   - 현황: `messages/en.json` 단일 파일에 257개 키가 flat 구조로 관리 (`hooks_*` 52개, `plugin_*` 47개, `mcp_*` 34개 등)
   - 문제: feature가 늘수록 파일이 비대해지고, 유사한 공통 텍스트가 feature별로 중복됨
     - 예) `*_scope_global/project`, `*_no_selection`, `*_loading`, `*_delete` 등이 feature마다 반복
