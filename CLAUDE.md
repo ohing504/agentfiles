@@ -155,6 +155,12 @@ tests/                       ← 테스트
 3. `pnpm test` — 테스트 통과
 4. `pnpm build` — 프로덕션 빌드 성공
 
+## Claude CLI 서버 호출 (서버 사이드)
+
+- `execFile` 대신 `spawn` + `stdio: ['ignore', 'pipe', 'pipe']` 사용 — Nitro dev 서버는 TTY 없음, `execFile`로 `claude` CLI 호출 시 stdin 대기로 hanging 발생
+- `claude mcp list`는 반드시 프로젝트 디렉토리(`cwd`)에서 실행해야 project-scoped 서버 반환
+- MCP disabled 상태는 `.mcp.json`의 `disabled` 필드가 아닌 `~/.claude.json` → `projects.{path}.disabledMcpServers[]`에 저장됨
+
 ## Conventions
 
 - 한국어로 설명, 존댓말 사용
