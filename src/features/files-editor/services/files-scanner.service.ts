@@ -79,6 +79,12 @@ async function scanProjectClaudeFiles(projectPath: string): Promise<FileNode> {
     // .claude 없음 → 스킵
   }
 
+  // Sort: directories first, then files, alphabetically within each group
+  children.sort((a, b) => {
+    if (a.type !== b.type) return a.type === "directory" ? -1 : 1
+    return a.name.localeCompare(b.name)
+  })
+
   return {
     name: path.basename(projectPath),
     path: projectPath,

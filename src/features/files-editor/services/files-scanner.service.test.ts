@@ -143,10 +143,10 @@ describe("files-scanner.service", () => {
       expect(childNames).toContain(".cursorrules")
       expect(childNames).toContain(".claude")
 
-      // 루트 파일들이 .claude 디렉토리보다 앞에 위치해야 함
+      // 디렉토리(.claude)가 파일(CLAUDE.md)보다 앞에 위치해야 함 (디렉토리 우선 정렬)
       const claudeIdx = childNames.indexOf(".claude")
       const claudeMdIdx = childNames.indexOf("CLAUDE.md")
-      expect(claudeMdIdx).toBeLessThan(claudeIdx)
+      expect(claudeIdx).toBeLessThan(claudeMdIdx)
     })
 
     it("omits root-level Claude files that don't exist", async () => {
