@@ -6,7 +6,7 @@ const TIMEOUT_MS = 30_000
 
 function execClaude(
   args: string[],
-  options?: { cwd?: string; timeout?: number },
+  options?: { cwd?: string; timeout?: number; env?: NodeJS.ProcessEnv },
 ): Promise<string> {
   return new Promise((resolve, reject) => {
     // stdin: "ignore" to prevent the process from blocking on interactive input
@@ -14,7 +14,7 @@ function execClaude(
     const child = spawn("claude", args, {
       cwd: options?.cwd,
       stdio: ["ignore", "pipe", "pipe"],
-      env: { ...process.env },
+      env: options?.env ?? { ...process.env },
     })
 
     let stdout = ""
@@ -159,5 +159,10 @@ export async function mcpListStatus(projectPath?: string): Promise<string> {
   // Run from the active project dir to include project-scoped servers.
   // Falls back to home dir when no project is selected (global-only view).
   const cwd = projectPath ?? os.homedir()
-  return execClaude(["mcp", "list"], { cwd })
+  // Strip CLAUDE_CODE_SSE_PORT so that a stale port from a previous Claude Code
+  // session (inherited by the Nitro dev server) doesn't cause `claude mcp list`
+  // to fail with exit code 1 when trying to connect to a dead SSE endpoint.
+  const env = { ...process.env }
+  delete env.CLAUDE_CODE_SSE_PORT
+  return execClaude(["mcp", "list"], { cwd, env })
 }

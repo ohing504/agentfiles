@@ -9,16 +9,9 @@ import {
 } from "@/components/ui/collapsible"
 import { ItemContextMenu } from "@/components/ui/item-context-menu"
 import { ListItem } from "@/components/ui/list-item"
+import { getMcpIconClass } from "@/lib/mcp-status"
 import { m } from "@/paraglide/messages"
 import type { McpConnectionStatus, McpServer, Scope } from "@/shared/types"
-
-const STATUS_ICON_CLASS: Record<McpConnectionStatus, string> = {
-  connected: "text-emerald-500",
-  needs_authentication: "text-amber-500",
-  failed: "text-red-500",
-  disabled: "text-muted-foreground/40",
-  unknown: "text-muted-foreground",
-}
 
 function getStatusTooltip(status: McpConnectionStatus): string | undefined {
   switch (status) {
@@ -94,6 +87,7 @@ export const McpScopeSection = memo(function McpScopeSection({
               const status: McpConnectionStatus = server.disabled
                 ? "disabled"
                 : (statusMap?.[server.name] ?? "unknown")
+              const iconClass = getMcpIconClass(server, statusMap)
               return (
                 <ItemContextMenu
                   key={`${server.name}-${server.scope}`}
@@ -115,7 +109,7 @@ export const McpScopeSection = memo(function McpScopeSection({
                 >
                   <ListItem
                     icon={ServerIcon}
-                    iconClassName={STATUS_ICON_CLASS[status]}
+                    iconClassName={iconClass}
                     label={server.name}
                     tooltip={getStatusTooltip(status)}
                     selected={

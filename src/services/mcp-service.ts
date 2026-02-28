@@ -214,12 +214,20 @@ export function parseMcpList(
     if (!trimmed || trimmed.startsWith("Checking")) continue
 
     // Output format: "{name}: {command_or_url} - {symbol} {status_text}"
-    // e.g. "my-server: npx my-mcp - ✓ Connected"
-    const match = trimmed.match(/^(.+?):\s+.+\s+-\s+(.+)$/)
-    if (!match) continue
+    // Name can contain colons (e.g. "plugin:context7:context7"), so split on
+    // the FIRST ": " (colon + space) to separate name from the rest.
+    const colonSpaceIdx = trimmed.indexOf(": ")
+    if (colonSpaceIdx === -1) continue
 
-    const name = match[1].trim()
-    const statusPart = match[2].trim()
+    const name = trimmed.substring(0, colonSpaceIdx)
+    const rest = trimmed.substring(colonSpaceIdx + 2)
+
+    // Status text follows the LAST " - " in the remainder.
+    // Using lastIndexOf handles commands that contain " - " themselves.
+    const dashIdx = rest.lastIndexOf(" - ")
+    if (dashIdx === -1) continue
+
+    const statusPart = rest.substring(dashIdx + 3).trim()
 
     let status: McpConnectionStatus
     if (statusPart.startsWith("✓")) {

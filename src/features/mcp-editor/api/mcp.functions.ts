@@ -55,7 +55,11 @@ export const getMcpStatusFn = createServerFn({ method: "GET" })
       // project-scoped servers. Falls back to home dir if no project selected.
       const stdout = await mcpListStatus(data.projectPath)
       return parseMcpList(stdout)
-    } catch {
+    } catch (error) {
+      // Log to server console so failures are diagnosable.
+      // Common causes: claude CLI not in PATH, timeout (mcp list takes ~15s),
+      // or a spawned MCP server hanging without TTY.
+      console.error("[getMcpStatusFn] claude mcp list failed:", error)
       return {} as Record<string, import("@/shared/types").McpConnectionStatus>
     }
   })
