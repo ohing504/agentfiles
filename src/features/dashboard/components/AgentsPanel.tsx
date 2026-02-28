@@ -1,9 +1,15 @@
-import { Bot } from "lucide-react"
+import { ListItem } from "@/components/ui/list-item"
 import { useAgentFiles } from "@/hooks/use-config"
+import { ENTITY_ICONS } from "@/lib/entity-icons"
+import type { DashboardDetailTarget } from "../types"
 import { OverviewPanel } from "./OverviewPanel"
 import { groupByScope, ScopeGroup } from "./ScopeGroup"
 
-export function AgentsPanel() {
+interface AgentsPanelProps {
+  onSelectItem?: (target: DashboardDetailTarget) => void
+}
+
+export function AgentsPanel({ onSelectItem }: AgentsPanelProps) {
   const {
     query: { data: files = [] },
   } = useAgentFiles("agent")
@@ -18,13 +24,12 @@ export function AgentsPanel() {
           {groups.map(({ scope, items }) => (
             <ScopeGroup key={scope} scope={scope}>
               {items.map((file) => (
-                <div
+                <ListItem
                   key={`${file.scope}-${file.name}`}
-                  className="flex items-center gap-1.5 px-2 py-1 rounded text-xs hover:bg-muted/50 cursor-default"
-                >
-                  <Bot className="size-3 shrink-0 text-muted-foreground" />
-                  <span className="truncate">{file.name}</span>
-                </div>
+                  icon={ENTITY_ICONS.agent}
+                  label={file.name}
+                  onClick={() => onSelectItem?.({ type: "agent", agent: file })}
+                />
               ))}
             </ScopeGroup>
           ))}

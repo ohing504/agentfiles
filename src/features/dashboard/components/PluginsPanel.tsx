@@ -1,24 +1,25 @@
 // src/features/dashboard/components/PluginsPanel.tsx
-import {
-  ChevronDown,
-  ChevronRight,
-  Plug2Icon,
-  ScrollText,
-  Server,
-  Zap,
-} from "lucide-react"
-import { useState } from "react"
+import { type ElementType, useState } from "react"
 import { useProjectContext } from "@/components/ProjectContext"
+import { ListItem, ListSubItem } from "@/components/ui/list-item"
+import { useMcpStatusQuery } from "@/features/mcp-editor/api/mcp.queries"
 import { usePluginsQuery } from "@/features/plugins-editor/api/plugins.queries"
+import { ENTITY_ICONS } from "@/lib/entity-icons"
 import { titleCase } from "@/lib/format"
-import { cn } from "@/lib/utils"
-import type { Plugin } from "@/shared/types"
+import { getMcpIconClass } from "@/lib/mcp-status"
+import type { McpConnectionStatus, Plugin } from "@/shared/types"
+import type { DashboardDetailTarget } from "../types"
 import { OverviewPanel } from "./OverviewPanel"
 import { groupByScope, ScopeGroup } from "./ScopeGroup"
 
-export function PluginsPanel() {
+interface PluginsPanelProps {
+  onSelectItem?: (target: DashboardDetailTarget) => void
+}
+
+export function PluginsPanel({ onSelectItem }: PluginsPanelProps) {
   const { activeProjectPath } = useProjectContext()
   const { data: plugins = [] } = usePluginsQuery(activeProjectPath ?? undefined)
+  const { data: statusMap } = useMcpStatusQuery()
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set())
 
   const allCollapsed =
@@ -60,6 +61,8 @@ export function PluginsPanel() {
                   plugin={plugin}
                   expanded={!collapsed.has(plugin.id)}
                   onToggle={() => toggle(plugin.id)}
+                  onSelectItem={onSelectItem}
+                  statusMap={statusMap}
                 />
               ))}
             </ScopeGroup>
@@ -70,81 +73,170 @@ export function PluginsPanel() {
   )
 }
 
+/**
+ * Static category label inside a ListItem's <ul> children.
+ * Must render as <li> since parent ListItem uses <ul>.
+ * Styled like ScopeGroup but within a list context.
+ * NO chevron, NO collapse — consistent with all other dashboard panels.
+ */
+function CategoryLabel({
+  icon: Icon,
+  label,
+  count,
+}: {
+  icon: ElementType
+  label: string
+  count: number
+}) {
+  return (
+    <li className="px-2 pt-1.5 pb-0.5 text-[10px] font-semibold text-muted-foreground/50 uppercase tracking-wider flex items-center gap-1.5 first:pt-0.5">
+      <Icon className="size-3 shrink-0" />
+      {label}
+      <span className="font-normal">({count})</span>
+    </li>
+  )
+}
+
 function PluginTreeItem({
   plugin,
   expanded,
   onToggle,
+  onSelectItem,
+  statusMap,
 }: {
   plugin: Plugin
   expanded: boolean
   onToggle: () => void
+  onSelectItem?: (target: DashboardDetailTarget) => void
+  statusMap?: Record<string, McpConnectionStatus>
 }) {
   const contents = plugin.contents
-  const skillCount = contents?.skills?.length ?? 0
-  const mcpCount = contents?.mcpServers?.length ?? 0
-  const hookCount = contents?.hooks
-    ? Object.values(contents.hooks).reduce<number>(
-        (n, groups) =>
-          n + (groups ?? []).reduce((m, g) => m + g.hooks.length, 0),
-        0,
-      )
-    : 0
-  const hasContents = skillCount > 0 || mcpCount > 0 || hookCount > 0
+  const skills = contents?.skills ?? []
+  const agents = contents?.agents ?? []
+  const mcpServers = contents?.mcpServers ?? []
+  const hookEntries = Object.entries(contents?.hooks ?? {})
 
+  const hasContents =
+    skills.length > 0 ||
+    agents.length > 0 ||
+    mcpServers.length > 0 ||
+    hookEntries.length > 0
+
+  const trailing = !plugin.enabled ? (
+    <span className="text-[10px] text-muted-foreground/40">off</span>
+  ) : undefined
+
+  // No sub-items: simple ListItem, click shows plugin detail
+  if (!hasContents) {
+    return (
+      <ListItem
+        icon={ENTITY_ICONS.plugin}
+        label={titleCase(plugin.name)}
+        iconClassName={!plugin.enabled ? "text-muted-foreground/50" : undefined}
+        trailing={trailing}
+        onClick={() => onSelectItem?.({ type: "plugin", plugin })}
+      />
+    )
+  }
+
+  // Has sub-items: ListItem collapsible (no explicit chevron — same as all other panels).
+  // Clicking toggles expand/collapse AND shows plugin detail.
   return (
-    <div>
-      <button
-        type="button"
-        className="w-full flex items-center gap-1.5 px-2 py-1 rounded text-xs hover:bg-muted/50 cursor-pointer select-none"
-        onClick={onToggle}
-      >
-        <span className="size-3 shrink-0 flex items-center">
-          {hasContents ? (
-            expanded ? (
-              <ChevronDown className="size-3" />
-            ) : (
-              <ChevronRight className="size-3" />
-            )
-          ) : null}
-        </span>
-        <Plug2Icon className="size-3 shrink-0 text-muted-foreground" />
-        <span
-          className={cn(
-            "truncate",
-            !plugin.enabled && "text-muted-foreground/50",
-          )}
-        >
-          {titleCase(plugin.name)}
-        </span>
-        {!plugin.enabled && (
-          <span className="ml-auto text-[10px] text-muted-foreground/40 shrink-0">
-            off
-          </span>
-        )}
-      </button>
-
-      {expanded && hasContents && (
-        <div className="ml-6 space-y-0.5 pb-0.5">
-          {skillCount > 0 && (
-            <div className="flex items-center gap-1.5 px-2 py-0.5 text-[11px] text-muted-foreground">
-              <ScrollText className="size-3 shrink-0" />
-              Skills ({skillCount})
-            </div>
-          )}
-          {mcpCount > 0 && (
-            <div className="flex items-center gap-1.5 px-2 py-0.5 text-[11px] text-muted-foreground">
-              <Server className="size-3 shrink-0" />
-              MCP: {contents?.mcpServers?.map((s) => s.name).join(", ")}
-            </div>
-          )}
-          {hookCount > 0 && (
-            <div className="flex items-center gap-1.5 px-2 py-0.5 text-[11px] text-muted-foreground">
-              <Zap className="size-3 shrink-0" />
-              Hooks ({hookCount})
-            </div>
-          )}
-        </div>
+    <ListItem
+      icon={ENTITY_ICONS.plugin}
+      label={titleCase(plugin.name)}
+      iconClassName={!plugin.enabled ? "text-muted-foreground/50" : undefined}
+      trailing={trailing}
+      open={expanded}
+      onClick={() => {
+        onToggle()
+        onSelectItem?.({ type: "plugin", plugin })
+      }}
+    >
+      {skills.length > 0 && (
+        <>
+          <CategoryLabel
+            icon={ENTITY_ICONS.skill}
+            label="Skills"
+            count={skills.length}
+          />
+          {skills.map((s) => (
+            <ListSubItem
+              key={s.name}
+              icon={ENTITY_ICONS.skill}
+              label={s.frontmatter?.name ?? s.name}
+              onClick={() => onSelectItem?.({ type: "skill", skill: s })}
+            />
+          ))}
+        </>
       )}
-    </div>
+
+      {agents.length > 0 && (
+        <>
+          <CategoryLabel
+            icon={ENTITY_ICONS.agent}
+            label="Agents"
+            count={agents.length}
+          />
+          {agents.map((a) => (
+            <ListSubItem
+              key={a.name}
+              icon={ENTITY_ICONS.agent}
+              label={a.name}
+              onClick={() => onSelectItem?.({ type: "agent", agent: a })}
+            />
+          ))}
+        </>
+      )}
+
+      {mcpServers.length > 0 && (
+        <>
+          <CategoryLabel
+            icon={ENTITY_ICONS.mcp}
+            label="MCP Servers"
+            count={mcpServers.length}
+          />
+          {mcpServers.map((s) => (
+            <ListSubItem
+              key={s.name}
+              icon={ENTITY_ICONS.mcp}
+              iconClassName={getMcpIconClass(s, statusMap)}
+              label={s.name}
+              onClick={() => onSelectItem?.({ type: "mcp", server: s })}
+            />
+          ))}
+        </>
+      )}
+
+      {hookEntries.length > 0 && (
+        <>
+          <CategoryLabel
+            icon={ENTITY_ICONS.hook}
+            label="Hooks"
+            count={hookEntries.length}
+          />
+          {hookEntries.map(([event, groups]) => {
+            const firstHook = groups?.[0]?.hooks?.[0]
+            const firstMatcher = groups?.[0]?.matcher
+            return (
+              <ListSubItem
+                key={event}
+                icon={ENTITY_ICONS.hook}
+                label={event}
+                onClick={() =>
+                  firstHook &&
+                  onSelectItem?.({
+                    type: "hook",
+                    hook: firstHook,
+                    event,
+                    matcher: firstMatcher,
+                  })
+                }
+              />
+            )
+          })}
+        </>
+      )}
+    </ListItem>
   )
 }

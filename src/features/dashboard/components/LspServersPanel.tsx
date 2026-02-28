@@ -1,6 +1,7 @@
 // src/features/dashboard/components/LspServersPanel.tsx
 import { Code } from "lucide-react"
 import { useProjectContext } from "@/components/ProjectContext"
+import { ListItem } from "@/components/ui/list-item"
 import { usePluginsQuery } from "@/features/plugins-editor/api/plugins.queries"
 import { OverviewPanel } from "./OverviewPanel"
 import { groupByScope, ScopeGroup } from "./ScopeGroup"
@@ -29,16 +30,16 @@ export function LspServersPanel() {
           {groups.map((group) => (
             <ScopeGroup key={group.scope} scope={group.scope}>
               {group.items.map((server, i) => (
-                <div
+                <ListItem
                   key={`${server.name}-${i}`}
-                  className="flex items-center gap-1.5 px-2 py-1 rounded text-xs hover:bg-muted/50 cursor-default"
-                >
-                  <Code className="size-3 shrink-0 text-muted-foreground" />
-                  <span className="truncate">{server.name}</span>
-                  <span className="ml-auto text-[10px] text-muted-foreground/50 shrink-0">
-                    {server.pluginName}
-                  </span>
-                </div>
+                  icon={Code}
+                  label={server.name}
+                  trailing={
+                    <span className="text-[10px] text-muted-foreground/50">
+                      {server.pluginName}
+                    </span>
+                  }
+                />
               ))}
             </ScopeGroup>
           ))}

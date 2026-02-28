@@ -121,6 +121,7 @@ interface ListSubItemProps {
   selected?: boolean
   onClick?: () => void
   className?: string
+  iconClassName?: string
   onContextMenu?: React.MouseEventHandler<HTMLLIElement>
 }
 
@@ -131,6 +132,7 @@ export function ListSubItem({
   selected,
   onClick,
   className,
+  iconClassName,
   onContextMenu,
 }: ListSubItemProps) {
   return (
@@ -147,7 +149,7 @@ export function ListSubItem({
       >
         <button type="button" onClick={onClick} className="text-left">
           <ItemMedia>
-            <Icon className="text-muted-foreground" />
+            <Icon className={iconClassName ?? "text-muted-foreground"} />
           </ItemMedia>
           <ItemContent>
             <ItemTitle className="font-normal leading-tight">{label}</ItemTitle>

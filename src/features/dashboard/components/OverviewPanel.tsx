@@ -24,7 +24,7 @@ export function OverviewPanel({
         className,
       )}
     >
-      <div className="flex items-center justify-between px-3 h-9 shrink-0 border-b border-border bg-muted/30">
+      <div className="flex items-center justify-between px-3 h-10 shrink-0 border-b border-border bg-muted/30">
         <div className="flex items-center gap-2">
           <span className="text-xs font-semibold">{title}</span>
           {count !== undefined && (

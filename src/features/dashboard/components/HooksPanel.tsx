@@ -1,20 +1,30 @@
 import { Zap } from "lucide-react"
+import { ListItem } from "@/components/ui/list-item"
 import { useHooksQuery } from "@/features/hooks-editor/api/hooks.queries"
 import type { HooksSettings } from "@/shared/types"
+import type { DashboardDetailTarget } from "../types"
 import { OverviewPanel } from "./OverviewPanel"
 import { ScopeGroup } from "./ScopeGroup"
 
-export function HooksPanel() {
+interface HooksPanelProps {
+  onSelectItem?: (target: DashboardDetailTarget) => void
+}
+
+function buildHookItems(hooks: HooksSettings) {
+  return Object.entries(hooks).map(([event, groups]) => ({
+    event,
+    firstHook: groups?.[0]?.hooks?.[0],
+    matcher: groups?.[0]?.matcher,
+  }))
+}
+
+export function HooksPanel({ onSelectItem }: HooksPanelProps) {
   const { data: globalHooks = {} } = useHooksQuery("user")
   const { data: projectHooks = {} } = useHooksQuery("project")
 
-  function hookEvents(hooks: HooksSettings): string[] {
-    return Object.keys(hooks)
-  }
-
-  const globalEvents = hookEvents(globalHooks)
-  const projectEvents = hookEvents(projectHooks)
-  const totalCount = globalEvents.length + projectEvents.length
+  const globalItems = buildHookItems(globalHooks)
+  const projectItems = buildHookItems(projectHooks)
+  const totalCount = globalItems.length + projectItems.length
 
   return (
     <OverviewPanel title="Hooks" count={totalCount}>
@@ -22,29 +32,43 @@ export function HooksPanel() {
         <p className="text-xs text-muted-foreground px-2 py-2">No hooks</p>
       ) : (
         <div>
-          {globalEvents.length > 0 && (
+          {globalItems.length > 0 && (
             <ScopeGroup scope="user">
-              {globalEvents.map((event) => (
-                <div
+              {globalItems.map(({ event, firstHook, matcher }) => (
+                <ListItem
                   key={`global-${event}`}
-                  className="flex items-center gap-1.5 px-2 py-1 rounded text-xs hover:bg-muted/50 cursor-default"
-                >
-                  <Zap className="size-3 shrink-0 text-muted-foreground" />
-                  <span className="truncate">{event}</span>
-                </div>
+                  icon={Zap}
+                  label={event}
+                  onClick={() =>
+                    firstHook &&
+                    onSelectItem?.({
+                      type: "hook",
+                      hook: firstHook,
+                      event,
+                      matcher,
+                    })
+                  }
+                />
               ))}
             </ScopeGroup>
           )}
-          {projectEvents.length > 0 && (
+          {projectItems.length > 0 && (
             <ScopeGroup scope="project">
-              {projectEvents.map((event) => (
-                <div
+              {projectItems.map(({ event, firstHook, matcher }) => (
+                <ListItem
                   key={`project-${event}`}
-                  className="flex items-center gap-1.5 px-2 py-1 rounded text-xs hover:bg-muted/50 cursor-default"
-                >
-                  <Zap className="size-3 shrink-0 text-muted-foreground" />
-                  <span className="truncate">{event}</span>
-                </div>
+                  icon={Zap}
+                  label={event}
+                  onClick={() =>
+                    firstHook &&
+                    onSelectItem?.({
+                      type: "hook",
+                      hook: firstHook,
+                      event,
+                      matcher,
+                    })
+                  }
+                />
               ))}
             </ScopeGroup>
           )}
