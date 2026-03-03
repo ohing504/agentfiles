@@ -41,7 +41,21 @@ export const removeMcpServerFn = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     const { mcpRemove } = await import("@/services/claude-cli")
-    await mcpRemove(data.name, data.scope)
+    await mcpRemove(data.name, data.scope, data.projectPath)
+    return { success: true }
+  })
+
+export const toggleMcpServerFn = createServerFn({ method: "POST" })
+  .inputValidator(
+    z.object({
+      name: z.string().min(1),
+      enable: z.boolean(),
+      projectPath: z.string().optional(),
+    }),
+  )
+  .handler(async ({ data }) => {
+    const { toggleMcpServer } = await import("@/services/mcp-service")
+    await toggleMcpServer(data.name, data.enable, data.projectPath)
     return { success: true }
   })
 

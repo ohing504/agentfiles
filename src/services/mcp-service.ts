@@ -204,6 +204,62 @@ export async function getMcpServers(
   return [...markedDirect, ...markedPlugin]
 }
 
+/**
+ * MCP 서버 enable/disable 토글
+ *
+ * ~/.claude.json → projects.{projectPath}.disabledMcpServers[] 배열을 수정한다.
+ * - enable=true  → 배열에서 name 제거
+ * - enable=false → 배열에 name 추가
+ */
+export async function toggleMcpServer(
+  name: string,
+  enable: boolean,
+  projectPath?: string,
+): Promise<void> {
+  const resolvedProjectPath = projectPath || process.cwd()
+  const claudeJsonPath = path.join(os.homedir(), ".claude.json")
+
+  const claudeJson = await readJson(claudeJsonPath)
+
+  // Ensure projects.{path} exists
+  if (!claudeJson.projects) {
+    claudeJson.projects = {}
+  }
+  const projects = claudeJson.projects as Record<
+    string,
+    Record<string, unknown>
+  >
+  if (!projects[resolvedProjectPath]) {
+    projects[resolvedProjectPath] = {}
+  }
+  const projectEntry = projects[resolvedProjectPath]
+
+  // Get or create disabledMcpServers array
+  let disabledArr: string[] = []
+  if (Array.isArray(projectEntry.disabledMcpServers)) {
+    disabledArr = projectEntry.disabledMcpServers.filter(
+      (item): item is string => typeof item === "string",
+    )
+  }
+
+  if (enable) {
+    // Remove from disabled list
+    disabledArr = disabledArr.filter((n) => n !== name)
+  } else {
+    // Add to disabled list (avoid duplicates)
+    if (!disabledArr.includes(name)) {
+      disabledArr.push(name)
+    }
+  }
+
+  projectEntry.disabledMcpServers = disabledArr
+  await fs.writeFile(
+    claudeJsonPath,
+    JSON.stringify(claudeJson, null, 2),
+    "utf-8",
+  )
+}
+
 export function parseMcpList(
   stdout: string,
 ): Record<string, McpConnectionStatus> {

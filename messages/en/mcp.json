@@ -32,5 +32,6 @@
   "mcp_status_connected": "Connected",
   "mcp_status_needs_auth": "Needs authentication",
   "mcp_status_failed": "Failed to connect",
-  "mcp_status_disabled": "Disabled"
+  "mcp_status_disabled": "Disabled",
+  "mcp_toggle_error": "Failed to toggle MCP server"
 }

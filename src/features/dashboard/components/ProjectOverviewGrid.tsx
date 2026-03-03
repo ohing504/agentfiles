@@ -8,6 +8,7 @@ import { useProjectContext } from "@/components/ProjectContext"
 import { SkillDetailPanel } from "@/components/SkillDetailPanel"
 import { Button } from "@/components/ui/button"
 import { AgentDetailPanel } from "@/features/agents-editor/components/AgentDetailPanel"
+import { useEntityActionHandler } from "../hooks/use-entity-action-handler"
 import type { DashboardDetailTarget } from "../types"
 import { AgentsPanel } from "./AgentsPanel"
 import { DashboardDetailSheet } from "./DashboardDetailSheet"
@@ -35,9 +36,11 @@ function useIsWideScreen() {
 function DetailPanelContent({
   target,
   activeProjectPath,
+  onClose,
 }: {
   target: DashboardDetailTarget
   activeProjectPath?: string | null
+  onClose?: () => void
 }) {
   if (!target) return null
   switch (target.type) {
@@ -48,7 +51,7 @@ function DetailPanelContent({
     case "agent":
       return <AgentDetailPanel agent={target.agent} />
     case "mcp":
-      return <McpDetailPanel server={target.server} />
+      return <McpDetailPanel server={target.server} onClose={onClose} />
     case "hook":
       return (
         <HookDetailPanel
@@ -65,19 +68,40 @@ export function ProjectOverviewGrid() {
   const { activeProjectPath } = useProjectContext()
   const [selected, setSelected] = useState<DashboardDetailTarget>(null)
   const isWide = useIsWideScreen()
+  const handleAction = useEntityActionHandler(() => setSelected(null))
 
   return (
     <div className="h-full flex overflow-hidden">
       {/* 패널 그리드 */}
       <div className="flex-1 p-3 flex flex-col gap-3 overflow-hidden min-w-0">
         <div className="grid grid-cols-3 gap-3 flex-1 min-h-0">
-          <PluginsPanel onSelectItem={setSelected} href="/plugins" />
-          <McpDirectPanel onSelectItem={setSelected} href="/mcp" />
-          <SkillsPanel onSelectItem={setSelected} href="/skills" />
+          <PluginsPanel
+            onSelectItem={setSelected}
+            onAction={handleAction}
+            href="/plugins"
+          />
+          <McpDirectPanel
+            onSelectItem={setSelected}
+            onAction={handleAction}
+            href="/mcp"
+          />
+          <SkillsPanel
+            onSelectItem={setSelected}
+            onAction={handleAction}
+            href="/skills"
+          />
         </div>
         <div className="grid grid-cols-3 gap-3 h-[160px] shrink-0">
-          <HooksPanel onSelectItem={setSelected} href="/hooks" />
-          <AgentsPanel onSelectItem={setSelected} href="/agents" />
+          <HooksPanel
+            onSelectItem={setSelected}
+            onAction={handleAction}
+            href="/hooks"
+          />
+          <AgentsPanel
+            onSelectItem={setSelected}
+            onAction={handleAction}
+            href="/agents"
+          />
           <LspServersPanel />
         </div>
       </div>
@@ -85,17 +109,21 @@ export function ProjectOverviewGrid() {
       {/* 인라인 디테일 패널 — 넓은 화면, 항목 선택 시 */}
       {isWide && selected && (
         <div className="relative w-[400px] shrink-0 border-l border-border flex flex-col overflow-hidden">
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            className="absolute top-3 right-3 z-10"
-            onClick={() => setSelected(null)}
-          >
-            <XIcon className="size-4" />
-          </Button>
+          {/* MCP panel renders its own close button in header flex flow */}
+          {selected.type !== "mcp" && (
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              className="absolute top-3 right-3 z-10"
+              onClick={() => setSelected(null)}
+            >
+              <XIcon className="size-4" />
+            </Button>
+          )}
           <DetailPanelContent
             target={selected}
             activeProjectPath={activeProjectPath}
+            onClose={() => setSelected(null)}
           />
         </div>
       )}

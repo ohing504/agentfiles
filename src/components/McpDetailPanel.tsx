@@ -1,4 +1,4 @@
-import { MoreHorizontalIcon, PencilIcon, Trash2Icon } from "lucide-react"
+import { MoreHorizontalIcon, PencilIcon, Trash2Icon, XIcon } from "lucide-react"
 import { useState } from "react"
 import { toast } from "sonner"
 import { CursorIcon, VscodeIcon } from "@/components/icons/editor-icons"
@@ -20,6 +20,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { Switch } from "@/components/ui/switch"
+import {
+  useMcpMutations,
+  useMcpQuery,
+} from "@/features/mcp-editor/api/mcp.queries"
 import { m } from "@/paraglide/messages"
 import type { McpConnectionStatus, McpServer } from "@/shared/types"
 import { McpDetailView } from "./McpDetailView"
@@ -32,6 +37,8 @@ interface McpDetailPanelProps {
   onEdit?: () => void
   /** When provided, shows "Delete" menu item with confirmation */
   onDelete?: () => void
+  /** When provided, shows close (X) button in header */
+  onClose?: () => void
   status?: McpConnectionStatus
 }
 
@@ -40,11 +47,20 @@ export function McpDetailPanel({
   filePath,
   onEdit,
   onDelete,
+  onClose,
   status,
 }: McpDetailPanelProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const { toggleMutation } = useMcpMutations()
+  const { data: servers = [] } = useMcpQuery()
+
+  // Use fresh data from query cache to stay in sync with list toggles
+  const freshServer =
+    servers.find((s) => s.name === server.name && s.scope === server.scope) ??
+    server
 
   const isFromPlugin = !!server.fromPlugin
+  const isEnabled = !freshServer.disabled
   const hasAnyAction =
     !!filePath || (!isFromPlugin && !!onEdit) || (!isFromPlugin && !!onDelete)
 
@@ -65,52 +81,79 @@ export function McpDetailPanel({
         <h2 className="text-sm font-semibold truncate min-w-0">
           {server.name}
         </h2>
-        {hasAnyAction && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="shrink-0 size-8">
-                <MoreHorizontalIcon className="size-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {filePath && (
-                <>
-                  <DropdownMenuItem onClick={() => handleOpenInEditor("code")}>
-                    <VscodeIcon className="size-4" />
-                    {m.common_open_vscode()}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => handleOpenInEditor("cursor")}
-                  >
-                    <CursorIcon className="size-4" />
-                    {m.common_open_cursor()}
-                  </DropdownMenuItem>
-                </>
-              )}
-              {onEdit && !isFromPlugin && (
-                <>
-                  {filePath && <DropdownMenuSeparator />}
-                  <DropdownMenuItem onClick={onEdit}>
-                    <PencilIcon className="size-4" />
-                    {m.action_edit()}
-                  </DropdownMenuItem>
-                </>
-              )}
-              {onDelete && !isFromPlugin && (
-                <>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    variant="destructive"
-                    onClick={() => setShowDeleteConfirm(true)}
-                  >
-                    <Trash2Icon className="size-4" />
-                    {m.action_delete()}
-                  </DropdownMenuItem>
-                </>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
+        <span className="flex items-center gap-1">
+          {!isFromPlugin && (
+            <Switch
+              size="sm"
+              checked={isEnabled}
+              disabled={toggleMutation.isPending}
+              onCheckedChange={(checked) => {
+                toggleMutation.mutate(
+                  { name: server.name, enable: !!checked },
+                  { onError: () => toast.error(m.mcp_toggle_error()) },
+                )
+              }}
+            />
+          )}
+          {hasAnyAction && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="shrink-0 size-8">
+                  <MoreHorizontalIcon className="size-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {filePath && (
+                  <>
+                    <DropdownMenuItem
+                      onClick={() => handleOpenInEditor("code")}
+                    >
+                      <VscodeIcon className="size-4" />
+                      {m.common_open_vscode()}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => handleOpenInEditor("cursor")}
+                    >
+                      <CursorIcon className="size-4" />
+                      {m.common_open_cursor()}
+                    </DropdownMenuItem>
+                  </>
+                )}
+                {onEdit && !isFromPlugin && (
+                  <>
+                    {filePath && <DropdownMenuSeparator />}
+                    <DropdownMenuItem onClick={onEdit}>
+                      <PencilIcon className="size-4" />
+                      {m.action_edit()}
+                    </DropdownMenuItem>
+                  </>
+                )}
+                {onDelete && !isFromPlugin && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      variant="destructive"
+                      onClick={() => setShowDeleteConfirm(true)}
+                    >
+                      <Trash2Icon className="size-4" />
+                      {m.action_delete()}
+                    </DropdownMenuItem>
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+          {onClose && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="shrink-0 size-8"
+              onClick={onClose}
+            >
+              <XIcon className="size-4" />
+            </Button>
+          )}
+        </span>
       </div>
 
       {/* Content */}

@@ -8,6 +8,7 @@ import {
   getMcpServersFn,
   getMcpStatusFn,
   removeMcpServerFn,
+  toggleMcpServerFn,
 } from "./mcp.functions"
 
 // Feature-local query keys
@@ -61,7 +62,15 @@ export function useMcpMutations() {
     onSuccess: invalidate,
   })
 
-  return { addMutation, removeMutation }
+  const toggleMutation = useMutation({
+    mutationFn: (params: { name: string; enable: boolean }) =>
+      toggleMcpServerFn({
+        data: { ...params, projectPath: activeProjectPath ?? undefined },
+      }),
+    onSuccess: invalidate,
+  })
+
+  return { addMutation, removeMutation, toggleMutation }
 }
 
 const mcpStatusKeys = {
