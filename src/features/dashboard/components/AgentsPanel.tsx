@@ -7,16 +7,17 @@ import { groupByScope, ScopeGroup } from "./ScopeGroup"
 
 interface AgentsPanelProps {
   onSelectItem?: (target: DashboardDetailTarget) => void
+  href?: string
 }
 
-export function AgentsPanel({ onSelectItem }: AgentsPanelProps) {
+export function AgentsPanel({ onSelectItem, href }: AgentsPanelProps) {
   const {
     query: { data: files = [] },
   } = useAgentFiles("agent")
   const groups = groupByScope(files)
 
   return (
-    <OverviewPanel title="Agents" count={files.length}>
+    <OverviewPanel title="Agents" count={files.length} href={href}>
       {files.length === 0 ? (
         <p className="text-xs text-muted-foreground px-2 py-2">No agents</p>
       ) : (
@@ -27,7 +28,14 @@ export function AgentsPanel({ onSelectItem }: AgentsPanelProps) {
                 <ListItem
                   key={`${file.scope}-${file.name}`}
                   icon={ENTITY_ICONS.agent}
-                  label={file.name}
+                  label={file.frontmatter?.name ?? file.name}
+                  trailing={
+                    file.frontmatter?.description ? (
+                      <span className="text-[10px] text-muted-foreground truncate max-w-[200px]">
+                        {String(file.frontmatter.description)}
+                      </span>
+                    ) : undefined
+                  }
                   onClick={() => onSelectItem?.({ type: "agent", agent: file })}
                 />
               ))}

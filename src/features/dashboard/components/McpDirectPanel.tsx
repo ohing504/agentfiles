@@ -11,9 +11,10 @@ import { groupByScope, ScopeGroup } from "./ScopeGroup"
 
 interface McpDirectPanelProps {
   onSelectItem?: (target: DashboardDetailTarget) => void
+  href?: string
 }
 
-export function McpDirectPanel({ onSelectItem }: McpDirectPanelProps) {
+export function McpDirectPanel({ onSelectItem, href }: McpDirectPanelProps) {
   const { data: servers = [] } = useMcpQuery()
   const { data: statusMap } = useMcpStatusQuery()
   // Plugin-provided servers are visible in the Plugins panel — exclude them here
@@ -21,7 +22,7 @@ export function McpDirectPanel({ onSelectItem }: McpDirectPanelProps) {
   const groups = groupByScope(directServers)
 
   return (
-    <OverviewPanel title="MCP Servers" count={directServers.length}>
+    <OverviewPanel title="MCP Servers" count={directServers.length} href={href}>
       {directServers.length === 0 ? (
         <p className="text-xs text-muted-foreground px-2 py-2">
           No MCP servers
@@ -36,6 +37,11 @@ export function McpDirectPanel({ onSelectItem }: McpDirectPanelProps) {
                   icon={ENTITY_ICONS.mcp}
                   iconClassName={getMcpIconClass(server, statusMap)}
                   label={server.name}
+                  trailing={
+                    <span className="text-[10px] text-muted-foreground">
+                      {server.type}
+                    </span>
+                  }
                   onClick={() => onSelectItem?.({ type: "mcp", server })}
                 />
               ))}

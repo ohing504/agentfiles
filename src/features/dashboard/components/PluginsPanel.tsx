@@ -14,9 +14,10 @@ import { groupByScope, ScopeGroup } from "./ScopeGroup"
 
 interface PluginsPanelProps {
   onSelectItem?: (target: DashboardDetailTarget) => void
+  href?: string
 }
 
-export function PluginsPanel({ onSelectItem }: PluginsPanelProps) {
+export function PluginsPanel({ onSelectItem, href }: PluginsPanelProps) {
   const { activeProjectPath } = useProjectContext()
   const { data: plugins = [] } = usePluginsQuery(activeProjectPath ?? undefined)
   const { data: statusMap } = useMcpStatusQuery()
@@ -48,7 +49,12 @@ export function PluginsPanel({ onSelectItem }: PluginsPanelProps) {
   )
 
   return (
-    <OverviewPanel title="Plugins" count={plugins.length} actions={actions}>
+    <OverviewPanel
+      title="Plugins"
+      count={plugins.length}
+      actions={actions}
+      href={href}
+    >
       {plugins.length === 0 ? (
         <p className="text-xs text-muted-foreground px-2 py-2">No plugins</p>
       ) : (
@@ -97,6 +103,19 @@ function CategoryLabel({
   )
 }
 
+function pluginContentSummary(plugin: Plugin): string | null {
+  const contents = plugin.contents
+  if (!contents) return null
+  const parts: string[] = []
+  if (contents.skills.length > 0) parts.push(`${contents.skills.length}S`)
+  if (contents.agents.length > 0) parts.push(`${contents.agents.length}A`)
+  if (contents.mcpServers.length > 0)
+    parts.push(`${contents.mcpServers.length}M`)
+  const hookCount = Object.keys(contents.hooks ?? {}).length
+  if (hookCount > 0) parts.push(`${hookCount}H`)
+  return parts.length > 0 ? parts.join(" · ") : null
+}
+
 function PluginTreeItem({
   plugin,
   expanded,
@@ -122,9 +141,17 @@ function PluginTreeItem({
     mcpServers.length > 0 ||
     hookEntries.length > 0
 
-  const trailing = !plugin.enabled ? (
-    <span className="text-[10px] text-muted-foreground/40">off</span>
-  ) : undefined
+  const summary = pluginContentSummary(plugin)
+  const trailing = (
+    <span className="flex items-center gap-1.5">
+      {summary && (
+        <span className="text-[10px] text-muted-foreground">{summary}</span>
+      )}
+      {!plugin.enabled && (
+        <span className="text-[10px] text-muted-foreground/40">off</span>
+      )}
+    </span>
+  )
 
   // No sub-items: simple ListItem, click shows plugin detail
   if (!hasContents) {

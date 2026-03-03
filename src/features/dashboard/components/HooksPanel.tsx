@@ -8,6 +8,7 @@ import { ScopeGroup } from "./ScopeGroup"
 
 interface HooksPanelProps {
   onSelectItem?: (target: DashboardDetailTarget) => void
+  href?: string
 }
 
 function buildHookItems(hooks: HooksSettings) {
@@ -18,7 +19,7 @@ function buildHookItems(hooks: HooksSettings) {
   }))
 }
 
-export function HooksPanel({ onSelectItem }: HooksPanelProps) {
+export function HooksPanel({ onSelectItem, href }: HooksPanelProps) {
   const { data: globalHooks = {} } = useHooksQuery("user")
   const { data: projectHooks = {} } = useHooksQuery("project")
 
@@ -27,7 +28,7 @@ export function HooksPanel({ onSelectItem }: HooksPanelProps) {
   const totalCount = globalItems.length + projectItems.length
 
   return (
-    <OverviewPanel title="Hooks" count={totalCount}>
+    <OverviewPanel title="Hooks" count={totalCount} href={href}>
       {totalCount === 0 ? (
         <p className="text-xs text-muted-foreground px-2 py-2">No hooks</p>
       ) : (
@@ -39,6 +40,13 @@ export function HooksPanel({ onSelectItem }: HooksPanelProps) {
                   key={`global-${event}`}
                   icon={Zap}
                   label={event}
+                  trailing={
+                    firstHook?.command ? (
+                      <span className="text-[10px] text-muted-foreground truncate max-w-[200px] font-mono">
+                        {firstHook.command}
+                      </span>
+                    ) : undefined
+                  }
                   onClick={() =>
                     firstHook &&
                     onSelectItem?.({
@@ -59,6 +67,13 @@ export function HooksPanel({ onSelectItem }: HooksPanelProps) {
                   key={`project-${event}`}
                   icon={Zap}
                   label={event}
+                  trailing={
+                    firstHook?.command ? (
+                      <span className="text-[10px] text-muted-foreground truncate max-w-[200px] font-mono">
+                        {firstHook.command}
+                      </span>
+                    ) : undefined
+                  }
                   onClick={() =>
                     firstHook &&
                     onSelectItem?.({

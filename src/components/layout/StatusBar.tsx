@@ -1,12 +1,5 @@
-import {
-  ArrowUpCircle,
-  Check,
-  CheckCircle2,
-  FolderOpen,
-  XCircle,
-} from "lucide-react"
+import { ArrowUpCircle, Check, CheckCircle2, XCircle } from "lucide-react"
 import { toast } from "sonner"
-import { useProjectContext } from "@/components/ProjectContext"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,7 +12,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { useCliStatus } from "@/hooks/use-config"
-import { shortenPath } from "@/lib/format"
 import { getLocale, locales, setLocale } from "@/paraglide/runtime"
 
 type Locale = (typeof locales)[number]
@@ -131,21 +123,8 @@ function StatusBarCliVersion() {
 }
 
 export function StatusBar() {
-  const { activeProject, homedir } = useProjectContext()
-
   return (
-    <footer className="relative z-20 flex h-6 shrink-0 items-center justify-between border-t bg-muted/30 px-3 text-xs text-muted-foreground">
-      {/* Left */}
-      <div className="flex items-center gap-2">
-        <FolderOpen className="size-3" />
-        <span>
-          {activeProject
-            ? shortenPath(activeProject.path, homedir)
-            : "~/.claude"}
-        </span>
-      </div>
-
-      {/* Right */}
+    <footer className="relative z-20 flex h-6 shrink-0 items-center justify-end border-t bg-muted/30 px-3 text-xs text-muted-foreground">
       <div className="flex items-center gap-1">
         <StatusBarCliVersion />
         <div aria-hidden="true" className="h-3 w-px bg-border" />

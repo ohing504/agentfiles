@@ -71,13 +71,13 @@ export function ProjectOverviewGrid() {
       {/* 패널 그리드 */}
       <div className="flex-1 p-3 flex flex-col gap-3 overflow-hidden min-w-0">
         <div className="grid grid-cols-3 gap-3 flex-1 min-h-0">
-          <PluginsPanel onSelectItem={setSelected} />
-          <McpDirectPanel onSelectItem={setSelected} />
-          <SkillsPanel onSelectItem={setSelected} />
+          <PluginsPanel onSelectItem={setSelected} href="/plugins" />
+          <McpDirectPanel onSelectItem={setSelected} href="/mcp" />
+          <SkillsPanel onSelectItem={setSelected} href="/skills" />
         </div>
         <div className="grid grid-cols-3 gap-3 h-[160px] shrink-0">
-          <HooksPanel onSelectItem={setSelected} />
-          <AgentsPanel onSelectItem={setSelected} />
+          <HooksPanel onSelectItem={setSelected} href="/hooks" />
+          <AgentsPanel onSelectItem={setSelected} href="/agents" />
           <LspServersPanel />
         </div>
       </div>

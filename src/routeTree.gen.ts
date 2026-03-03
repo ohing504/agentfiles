@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SkillsRouteRouteImport } from './routes/skills/route'
+import { Route as SettingsRouteRouteImport } from './routes/settings/route'
 import { Route as ProjectRouteRouteImport } from './routes/project/route'
 import { Route as PluginsRouteRouteImport } from './routes/plugins/route'
 import { Route as McpRouteRouteImport } from './routes/mcp/route'
@@ -37,6 +38,11 @@ import { Route as GlobalMcpNameRouteRouteImport } from './routes/global/mcp/$nam
 const SkillsRouteRoute = SkillsRouteRouteImport.update({
   id: '/skills',
   path: '/skills',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsRouteRoute = SettingsRouteRouteImport.update({
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProjectRouteRoute = ProjectRouteRouteImport.update({
@@ -164,6 +170,7 @@ export interface FileRoutesByFullPath {
   '/mcp': typeof McpRouteRouteWithChildren
   '/plugins': typeof PluginsRouteRouteWithChildren
   '/project': typeof ProjectRouteRouteWithChildren
+  '/settings': typeof SettingsRouteRoute
   '/skills': typeof SkillsRouteRoute
   '/global/files': typeof GlobalFilesRouteRoute
   '/global/settings': typeof GlobalSettingsRouteRoute
@@ -190,6 +197,7 @@ export interface FileRoutesByTo {
   '/mcp': typeof McpRouteRouteWithChildren
   '/plugins': typeof PluginsRouteRouteWithChildren
   '/project': typeof ProjectRouteRouteWithChildren
+  '/settings': typeof SettingsRouteRoute
   '/skills': typeof SkillsRouteRoute
   '/global/files': typeof GlobalFilesRouteRoute
   '/global/settings': typeof GlobalSettingsRouteRoute
@@ -217,6 +225,7 @@ export interface FileRoutesById {
   '/mcp': typeof McpRouteRouteWithChildren
   '/plugins': typeof PluginsRouteRouteWithChildren
   '/project': typeof ProjectRouteRouteWithChildren
+  '/settings': typeof SettingsRouteRoute
   '/skills': typeof SkillsRouteRoute
   '/global/files': typeof GlobalFilesRouteRoute
   '/global/settings': typeof GlobalSettingsRouteRoute
@@ -245,6 +254,7 @@ export interface FileRouteTypes {
     | '/mcp'
     | '/plugins'
     | '/project'
+    | '/settings'
     | '/skills'
     | '/global/files'
     | '/global/settings'
@@ -271,6 +281,7 @@ export interface FileRouteTypes {
     | '/mcp'
     | '/plugins'
     | '/project'
+    | '/settings'
     | '/skills'
     | '/global/files'
     | '/global/settings'
@@ -297,6 +308,7 @@ export interface FileRouteTypes {
     | '/mcp'
     | '/plugins'
     | '/project'
+    | '/settings'
     | '/skills'
     | '/global/files'
     | '/global/settings'
@@ -324,6 +336,7 @@ export interface RootRouteChildren {
   McpRouteRoute: typeof McpRouteRouteWithChildren
   PluginsRouteRoute: typeof PluginsRouteRouteWithChildren
   ProjectRouteRoute: typeof ProjectRouteRouteWithChildren
+  SettingsRouteRoute: typeof SettingsRouteRoute
   SkillsRouteRoute: typeof SkillsRouteRoute
   ApiHealthRoute: typeof ApiHealthRoute
 }
@@ -335,6 +348,13 @@ declare module '@tanstack/react-router' {
       path: '/skills'
       fullPath: '/skills'
       preLoaderRoute: typeof SkillsRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/project': {
@@ -578,6 +598,7 @@ const rootRouteChildren: RootRouteChildren = {
   McpRouteRoute: McpRouteRouteWithChildren,
   PluginsRouteRoute: PluginsRouteRouteWithChildren,
   ProjectRouteRoute: ProjectRouteRouteWithChildren,
+  SettingsRouteRoute: SettingsRouteRoute,
   SkillsRouteRoute: SkillsRouteRoute,
   ApiHealthRoute: ApiHealthRoute,
 }

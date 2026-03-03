@@ -1,6 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router"
-import { ConfigPage } from "@/features/config-editor/components/ConfigPage"
+import { createFileRoute, Navigate } from "@tanstack/react-router"
 
 export const Route = createFileRoute("/project/settings")({
-  component: () => <ConfigPage />,
+  component: () => <Navigate to="/settings" />,
 })
