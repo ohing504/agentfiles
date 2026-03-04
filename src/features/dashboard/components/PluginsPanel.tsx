@@ -1,9 +1,15 @@
 // src/features/dashboard/components/PluginsPanel.tsx
 import { type ElementType, useState } from "react"
 import { useProjectContext } from "@/components/ProjectContext"
+import {
+  EntityActionContextMenu,
+  EntityActionDropdown,
+} from "@/components/ui/entity-action-menu"
 import { ListItem, ListSubItem } from "@/components/ui/list-item"
 import { useMcpStatusQuery } from "@/features/mcp-editor/api/mcp.queries"
 import { usePluginsQuery } from "@/features/plugins-editor/api/plugins.queries"
+import type { EntityActionId } from "@/lib/entity-actions"
+import { ENTITY_ACTIONS } from "@/lib/entity-actions"
 import { ENTITY_ICONS } from "@/lib/entity-icons"
 import { titleCase } from "@/lib/format"
 import { getMcpIconClass } from "@/lib/mcp-status"
@@ -14,10 +20,18 @@ import { groupByScope, ScopeGroup } from "./ScopeGroup"
 
 interface PluginsPanelProps {
   onSelectItem?: (target: DashboardDetailTarget) => void
+  onAction?: (
+    id: EntityActionId,
+    target: NonNullable<DashboardDetailTarget>,
+  ) => void
   href?: string
 }
 
-export function PluginsPanel({ onSelectItem, href }: PluginsPanelProps) {
+export function PluginsPanel({
+  onSelectItem,
+  onAction,
+  href,
+}: PluginsPanelProps) {
   const { activeProjectPath } = useProjectContext()
   const { data: plugins = [] } = usePluginsQuery(activeProjectPath ?? undefined)
   const { data: statusMap } = useMcpStatusQuery()
@@ -68,6 +82,7 @@ export function PluginsPanel({ onSelectItem, href }: PluginsPanelProps) {
                   expanded={!collapsed.has(plugin.id)}
                   onToggle={() => toggle(plugin.id)}
                   onSelectItem={onSelectItem}
+                  onAction={onAction}
                   statusMap={statusMap}
                 />
               ))}
@@ -116,17 +131,26 @@ function pluginContentSummary(plugin: Plugin): string | null {
   return parts.length > 0 ? parts.join(" · ") : null
 }
 
+/** Open-only actions for plugin sub-items (plugin-managed, no edit/delete) */
+const openOnlyFilter = (a: (typeof ENTITY_ACTIONS)["skill"][number]) =>
+  a.id === "open-vscode" || a.id === "open-cursor" || a.id === "open-folder"
+
 function PluginTreeItem({
   plugin,
   expanded,
   onToggle,
   onSelectItem,
+  onAction,
   statusMap,
 }: {
   plugin: Plugin
   expanded: boolean
   onToggle: () => void
   onSelectItem?: (target: DashboardDetailTarget) => void
+  onAction?: (
+    id: EntityActionId,
+    target: NonNullable<DashboardDetailTarget>,
+  ) => void
   statusMap?: Record<string, McpConnectionStatus>
 }) {
   const contents = plugin.contents
@@ -141,6 +165,8 @@ function PluginTreeItem({
     mcpServers.length > 0 ||
     hookEntries.length > 0
 
+  const pluginTarget = { type: "plugin" as const, plugin }
+
   const summary = pluginContentSummary(plugin)
   const trailing = (
     <span className="flex items-center gap-1.5">
@@ -150,120 +176,189 @@ function PluginTreeItem({
       {!plugin.enabled && (
         <span className="text-[10px] text-muted-foreground/40">off</span>
       )}
+      <EntityActionDropdown
+        actions={ENTITY_ACTIONS.plugin}
+        onAction={(id) => onAction?.(id, pluginTarget)}
+        itemName={titleCase(plugin.name)}
+      />
     </span>
   )
 
   // No sub-items: simple ListItem, click shows plugin detail
   if (!hasContents) {
     return (
-      <ListItem
-        icon={ENTITY_ICONS.plugin}
-        label={titleCase(plugin.name)}
-        iconClassName={!plugin.enabled ? "text-muted-foreground/50" : undefined}
-        trailing={trailing}
-        onClick={() => onSelectItem?.({ type: "plugin", plugin })}
-      />
+      <EntityActionContextMenu
+        actions={ENTITY_ACTIONS.plugin}
+        onAction={(id) => onAction?.(id, pluginTarget)}
+        itemName={titleCase(plugin.name)}
+      >
+        <ListItem
+          icon={ENTITY_ICONS.plugin}
+          label={titleCase(plugin.name)}
+          iconClassName={
+            !plugin.enabled ? "text-muted-foreground/50" : undefined
+          }
+          trailing={trailing}
+          onClick={() => onSelectItem?.(pluginTarget)}
+        />
+      </EntityActionContextMenu>
     )
   }
 
   // Has sub-items: ListItem collapsible (no explicit chevron — same as all other panels).
   // Clicking toggles expand/collapse AND shows plugin detail.
   return (
-    <ListItem
-      icon={ENTITY_ICONS.plugin}
-      label={titleCase(plugin.name)}
-      iconClassName={!plugin.enabled ? "text-muted-foreground/50" : undefined}
-      trailing={trailing}
-      open={expanded}
-      onClick={() => {
-        onToggle()
-        onSelectItem?.({ type: "plugin", plugin })
-      }}
+    <EntityActionContextMenu
+      actions={ENTITY_ACTIONS.plugin}
+      onAction={(id) => onAction?.(id, pluginTarget)}
+      itemName={titleCase(plugin.name)}
     >
-      {skills.length > 0 && (
-        <>
-          <CategoryLabel
-            icon={ENTITY_ICONS.skill}
-            label="Skills"
-            count={skills.length}
-          />
-          {skills.map((s) => (
-            <ListSubItem
-              key={s.name}
+      <ListItem
+        icon={ENTITY_ICONS.plugin}
+        label={titleCase(plugin.name)}
+        iconClassName={!plugin.enabled ? "text-muted-foreground/50" : undefined}
+        trailing={trailing}
+        open={expanded}
+        onClick={() => {
+          onToggle()
+          onSelectItem?.(pluginTarget)
+        }}
+      >
+        {skills.length > 0 && (
+          <>
+            <CategoryLabel
               icon={ENTITY_ICONS.skill}
-              label={s.frontmatter?.name ?? s.name}
-              onClick={() => onSelectItem?.({ type: "skill", skill: s })}
+              label="Skills"
+              count={skills.length}
             />
-          ))}
-        </>
-      )}
+            {skills.map((s) => {
+              const t = { type: "skill" as const, skill: s }
+              const acts = ENTITY_ACTIONS.skill.filter(openOnlyFilter)
+              return (
+                <EntityActionContextMenu
+                  key={s.name}
+                  actions={acts}
+                  onAction={(id) => onAction?.(id, t)}
+                  itemName={s.frontmatter?.name ?? s.name}
+                >
+                  <ListSubItem
+                    icon={ENTITY_ICONS.skill}
+                    label={s.frontmatter?.name ?? s.name}
+                    trailing={
+                      <EntityActionDropdown
+                        actions={acts}
+                        onAction={(id) => onAction?.(id, t)}
+                        itemName={s.frontmatter?.name ?? s.name}
+                      />
+                    }
+                    onClick={() => onSelectItem?.(t)}
+                  />
+                </EntityActionContextMenu>
+              )
+            })}
+          </>
+        )}
 
-      {agents.length > 0 && (
-        <>
-          <CategoryLabel
-            icon={ENTITY_ICONS.agent}
-            label="Agents"
-            count={agents.length}
-          />
-          {agents.map((a) => (
-            <ListSubItem
-              key={a.name}
+        {agents.length > 0 && (
+          <>
+            <CategoryLabel
               icon={ENTITY_ICONS.agent}
-              label={a.name}
-              onClick={() => onSelectItem?.({ type: "agent", agent: a })}
+              label="Agents"
+              count={agents.length}
             />
-          ))}
-        </>
-      )}
+            {agents.map((a) => {
+              const t = { type: "agent" as const, agent: a }
+              const acts = ENTITY_ACTIONS.agent.filter(openOnlyFilter)
+              return (
+                <EntityActionContextMenu
+                  key={a.name}
+                  actions={acts}
+                  onAction={(id) => onAction?.(id, t)}
+                  itemName={a.frontmatter?.name ?? a.name}
+                >
+                  <ListSubItem
+                    icon={ENTITY_ICONS.agent}
+                    label={a.name}
+                    trailing={
+                      <EntityActionDropdown
+                        actions={acts}
+                        onAction={(id) => onAction?.(id, t)}
+                        itemName={a.frontmatter?.name ?? a.name}
+                      />
+                    }
+                    onClick={() => onSelectItem?.(t)}
+                  />
+                </EntityActionContextMenu>
+              )
+            })}
+          </>
+        )}
 
-      {mcpServers.length > 0 && (
-        <>
-          <CategoryLabel
-            icon={ENTITY_ICONS.mcp}
-            label="MCP Servers"
-            count={mcpServers.length}
-          />
-          {mcpServers.map((s) => (
-            <ListSubItem
-              key={s.name}
+        {mcpServers.length > 0 && (
+          <>
+            <CategoryLabel
               icon={ENTITY_ICONS.mcp}
-              iconClassName={getMcpIconClass(s, statusMap)}
-              label={s.name}
-              onClick={() => onSelectItem?.({ type: "mcp", server: s })}
+              label="MCP Servers"
+              count={mcpServers.length}
             />
-          ))}
-        </>
-      )}
+            {mcpServers.map((s) => {
+              const t = { type: "mcp" as const, server: s }
+              const acts = ENTITY_ACTIONS.mcp.filter(openOnlyFilter)
+              return (
+                <EntityActionContextMenu
+                  key={s.name}
+                  actions={acts}
+                  onAction={(id) => onAction?.(id, t)}
+                  itemName={s.name}
+                >
+                  <ListSubItem
+                    icon={ENTITY_ICONS.mcp}
+                    iconClassName={getMcpIconClass(s, statusMap)}
+                    label={s.name}
+                    trailing={
+                      <EntityActionDropdown
+                        actions={acts}
+                        onAction={(id) => onAction?.(id, t)}
+                        itemName={s.name}
+                      />
+                    }
+                    onClick={() => onSelectItem?.(t)}
+                  />
+                </EntityActionContextMenu>
+              )
+            })}
+          </>
+        )}
 
-      {hookEntries.length > 0 && (
-        <>
-          <CategoryLabel
-            icon={ENTITY_ICONS.hook}
-            label="Hooks"
-            count={hookEntries.length}
-          />
-          {hookEntries.map(([event, groups]) => {
-            const firstHook = groups?.[0]?.hooks?.[0]
-            const firstMatcher = groups?.[0]?.matcher
-            return (
-              <ListSubItem
-                key={event}
-                icon={ENTITY_ICONS.hook}
-                label={event}
-                onClick={() =>
-                  firstHook &&
-                  onSelectItem?.({
-                    type: "hook",
-                    hook: firstHook,
-                    event,
-                    matcher: firstMatcher,
-                  })
-                }
-              />
-            )
-          })}
-        </>
-      )}
-    </ListItem>
+        {hookEntries.length > 0 && (
+          <>
+            <CategoryLabel
+              icon={ENTITY_ICONS.hook}
+              label="Hooks"
+              count={hookEntries.length}
+            />
+            {hookEntries.map(([event, groups]) => {
+              const firstHook = groups?.[0]?.hooks?.[0]
+              const firstMatcher = groups?.[0]?.matcher
+              if (!firstHook) return null
+              const t = {
+                type: "hook" as const,
+                hook: firstHook,
+                event,
+                matcher: firstMatcher,
+              }
+              return (
+                <ListSubItem
+                  key={event}
+                  icon={ENTITY_ICONS.hook}
+                  label={event}
+                  onClick={() => onSelectItem?.(t)}
+                />
+              )
+            })}
+          </>
+        )}
+      </ListItem>
+    </EntityActionContextMenu>
   )
 }
