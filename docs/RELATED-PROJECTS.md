@@ -52,12 +52,32 @@
 
 ---
 
-## 우리의 차별점 (claude-code-studio)
+---
 
-| 항목 | LovCode / Opcode | claude-code-studio |
+## 참조 모델 (v2 추가)
+
+### Homebrew
+- **핵심 참조**: 발견 + 설치 + 관리가 하나의 인터페이스에서 통합
+- **적용**: 마켓플레이스에서 검색 → 원클릭 설치 → 관리까지 한 곳에서
+
+### Raycast Store
+- **핵심 참조**: 확장 프로그램 설치 시 설명과 사용법이 바로 보이는 UX
+- **적용**: 설치 직후 AI 요약으로 "이게 뭘 하는지" 즉시 이해 가능하게
+
+### Obsidian Community Plugins
+- **핵심 참조**: 앱 안에서 커뮤니티 플러그인을 탐색하고 관리
+- **적용**: 외부 사이트 없이 agentfiles 안에서 마켓플레이스 브라우징
+
+---
+
+## 우리의 차별점 (agentfiles)
+
+| 항목 | LovCode / Opcode | agentfiles |
 |------|-------------------|---------------------|
-| **배포** | 네이티브 설치 필요 | `npx claude-code-studio` (즉시 실행) |
-| **초점** | 채팅/세션 관리 | **설정 파일 관리** (CLAUDE.md, agents, commands, skills, plugins, MCP) |
+| **배포** | 네이티브 설치 필요 | `npx agentfiles` (즉시 실행) |
+| **초점** | 채팅/세션 관리 | **워크플로우 설계 + 이해 + 마켓플레이스** |
 | **기술** | Tauri 2 / Electron | TanStack Start + Chrome --app |
 | **진입 장벽** | 다운로드 → 설치 → 실행 | 터미널에서 한 줄 실행 |
 | **의존성** | 독립 실행 | Node.js + Chrome |
+| **AI 통합** | 없음 | AI 요약/번역/가이드로 설정 이해 지원 |
+| **마켓플레이스** | 없음 | Skills + MCP + Plugins 통합 마켓 |

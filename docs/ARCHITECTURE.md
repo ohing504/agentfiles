@@ -490,14 +490,117 @@ Hooks              ← Global/Project 공통 (탭으로 전환)
 
 ---
 
-## 11. v2 확장 계획
+## 11. v2 확장 아키텍처
 
-이 설계는 다음 확장을 고려하여 만들어짐:
+v2는 기존 v1 아키텍처 위에 3개 서비스를 추가한다: AIService, MarketplaceService, ReleaseService.
 
-- **v2:** `services/config-service.ts`에 skills.sh API 클라이언트 추가, UI에 레지스트리 탭 추가
+### v2 추가 서비스
+
+```text
+┌─────────────────────────────────────────────────────────┐
+│                    Browser (React)                       │
+│                                                          │
+│  v1 Pages (유지)        v2 Pages (추가)                  │
+│  ┌──────────────┐      ┌──────────────┐                │
+│  │ Dashboard    │      │ Marketplace  │                │
+│  │ Files/Hooks  │      │ AI Guide     │                │
+│  │ Plugins/MCP  │      │ Release Notes│                │
+│  └──────┬───────┘      └──────┬───────┘                │
+│         └──────────┬──────────┘                         │
+│              Server Functions                            │
+└────────────────────┬─────────────────────────────────────┘
+                     │
+┌────────────────────┴─────────────────────────────────────┐
+│  v1 Services (유지)        v2 Services (추가)            │
+│  ┌────────────────┐       ┌──────────────────┐          │
+│  │ ConfigService  │       │ AIService        │          │
+│  │ FileWriter     │       │ (요약/번역/가이드) │          │
+│  │ Claude CLI     │       ├──────────────────┤          │
+│  │ HooksService   │       │ MarketplaceService│         │
+│  │ PluginService  │       │ (skills.sh/MCP)   │         │
+│  │ McpService     │       ├──────────────────┤          │
+│  └────────────────┘       │ ReleaseService   │          │
+│                            │ (릴리즈 추적)     │          │
+│                            └──────────────────┘          │
+└──────────────────────────────────────────────────────────┘
+```
+
+### AIService
+
+AI 요약, 번역, 가이드 기능을 담당하는 서비스.
+
+```text
+src/services/ai-service.ts
+
+- summarize(filePath, lang)   → AI 요약 카드 생성
+- translate(filePath, lang)   → 파일 번역 프리뷰 생성
+- chat(messages, context)     → AI Guide 대화 (v2.2)
+```
+
+**AI 백엔드 (단계적 전환):**
+- v2.0: Claude CLI pipe 모드 (`echo "..." | claude --pipe`)
+- v2.2+: Anthropic SDK 직접 사용 (스트리밍 채팅용)
+
+**캐싱:**
+```text
+~/.claude/agentfiles/ai-cache/
+├── summaries/     ← {fileHash}-{lang}.json
+└── translations/  ← {fileHash}-{lang}.md
+```
+- 캐시 키: 파일 내용 해시 + 선호 언어
+- 파일 변경 시 해시 불일치로 자동 무효화
+
+### MarketplaceService
+
+외부 소스를 통합하는 어댑터 패턴 기반 서비스.
+
+```text
+src/services/marketplace-service.ts
+
+- searchSkills(query)         → skills.sh API 검색
+- searchMcpServers(query)     → 자체 curated JSON 검색
+- searchPlugins(query)        → plugin 카탈로그 검색
+- install(type, id, scope)    → 원클릭 설치 (CLI 위임)
+- getInstalled()              → 로컬 설치 상태와 매칭
+```
+
+**데이터 소스별 어댑터:**
+```text
+skills.sh API ──→ ┌──────────────────────┐
+MCP 디렉토리   ──→ │ MarketplaceService   │ ──→ 통합 UI
+Plugin 카탈로그 ──→ └──────────────────────┘
+                        캐시: 15분 TTL
+```
+
+### ReleaseService
+
+Claude Code 및 설치된 plugin의 릴리즈를 추적하는 서비스.
+
+```text
+src/services/release-service.ts
+
+- getClaudeCodeReleases()     → npm registry 조회
+- getPluginReleases(pluginId) → GitHub API 릴리즈 조회
+- summarizeRelease(notes)     → AI 요약 (AIService 위임)
+```
+
+### v2 확장 데이터 흐름
+
+```text
+v1 흐름 (유지):
+  Browser → Server Functions → ConfigService → 파일시스템/CLI
+
+v2 추가 흐름:
+  Browser → Server Functions → MarketplaceService → 외부 API (skills.sh 등)
+  Browser → Server Functions → AIService → Claude CLI/SDK → 요약/번역/가이드
+  Browser → Server Functions → ReleaseService → npm/GitHub API → 릴리즈 추적
+```
+
+### v3/v4 확장 계획
+
 - **v3:** 서버를 클라우드 배포, 인증 레이어 추가, 같은 React 코드 재사용
 - **v4:** `services/config-service.ts`에 Cursor, Kiro 등 멀티 에이전트 파싱 로직 추가
 
 ---
 
-*이 문서는 2026-02-21 brainstorming 세션에서 작성됨*
+*이 문서는 2026-02-21 brainstorming 세션에서 작성, 2026-03-04 v2 방향성 재정의 시 업데이트됨*
