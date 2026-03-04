@@ -105,9 +105,15 @@ export async function mcpAdd(
   await execClaude(args)
 }
 
-export async function mcpRemove(name: string, scope: Scope): Promise<void> {
+export async function mcpRemove(
+  name: string,
+  scope: Scope,
+  projectPath?: string,
+): Promise<void> {
   const cliScope = scope === "user" ? "user" : "project"
-  await execClaude(["mcp", "remove", name, "-s", cliScope])
+  await execClaude(["mcp", "remove", name, "-s", cliScope], {
+    cwd: projectPath,
+  })
 }
 
 export async function pluginToggle(

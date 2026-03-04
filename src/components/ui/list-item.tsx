@@ -54,7 +54,7 @@ export function ListItem({
       variant="default"
       size="xs"
       className={cn(
-        "rounded-md cursor-pointer hover:bg-accent hover:text-accent-foreground [&_svg]:size-4 [&_svg]:shrink-0",
+        "group/item rounded-md cursor-pointer hover:bg-accent hover:text-accent-foreground [&_svg]:size-4 [&_svg]:shrink-0",
         selected && "bg-accent text-accent-foreground font-medium",
         className,
       )}
@@ -136,7 +136,7 @@ export function ListSubItem({
   onContextMenu,
 }: ListSubItemProps) {
   return (
-    <li onContextMenu={onContextMenu}>
+    <li className="group/item" onContextMenu={onContextMenu}>
       <Item
         asChild
         variant="default"
