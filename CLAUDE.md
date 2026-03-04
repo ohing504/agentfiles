@@ -4,17 +4,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-agentfiles는 AI 에이전트 설정 파일의 패키지 매니저 + 커뮤니티 플랫폼이다. `npx agentfiles` 실행 시 `localhost:3000`에서 Chrome 앱 모드로 로컬 웹앱이 열리며, `~/.claude/`와 프로젝트별 `.claude/` 설정을 GUI로 관리한다.
+AI 개발 워크플로우를 발견하고, 이해하고, 가꿔나가는 플랫폼. `npx agentfiles` 실행 시 `localhost:3000`에서 Chrome 앱 모드로 로컬 웹앱이 열리며, `~/.claude/`와 프로젝트별 `.claude/` 워크플로우를 관리한다.
 
-현재 상태: v1 개발 완료 (Phase 1-13 전체 완료)
+현재 상태: v1 완료, v2 개발 중
 
 ## Key Documents
 
-- `docs/FEATURES.md` — 제품 요구사항 및 기능 정의 (what)
-- `docs/ARCHITECTURE.md` — v1 기술 설계 (how)
-- `docs/RELATED-PROJECTS.md` — 경쟁/관련 프로젝트 분석
+- `docs/FEATURES.md` — 제품 요구사항 및 로드맵 (what)
+- `docs/ARCHITECTURE.md` — 기술 설계 (how)
+- `docs/REFERENCES.md` — 경쟁 프로젝트, 참조 모델, 영감
 - `docs/EDITOR-GUIDE.md` — Feature editor 아키텍처 가이드 (리팩토링 참조)
-- `docs/WORK.md` — 진행 중·예정·완료 작업 목록 (Next Up / Backlog / Shipped). 다음 작업을 찾거나 개선 아이디어를 확인할 때 참고
+- `docs/WORK.md` — 진행 중·예정·완료 작업 목록
 
 ## Architecture
 
