@@ -15,6 +15,8 @@ import { DashboardDetailSheet } from "./DashboardDetailSheet"
 import { HooksPanel } from "./HooksPanel"
 import { LspServersPanel } from "./LspServersPanel"
 import { McpDirectPanel } from "./McpDirectPanel"
+import { MemoryDetailPanel } from "./MemoryDetailPanel"
+import { MemoryPanel } from "./MemoryPanel"
 import { PluginsPanel } from "./PluginsPanel"
 import { SkillsPanel } from "./SkillsPanel"
 
@@ -61,6 +63,8 @@ function DetailPanelContent({
           activeProjectPath={activeProjectPath}
         />
       )
+    case "memory":
+      return <MemoryDetailPanel file={target.file} />
   }
 }
 
@@ -104,6 +108,11 @@ export function ProjectOverviewGrid() {
           />
           <LspServersPanel />
         </div>
+        {activeProjectPath && (
+          <div className="h-[160px] shrink-0">
+            <MemoryPanel onSelectItem={setSelected} />
+          </div>
+        )}
       </div>
 
       {/* 인라인 디테일 패널 — 넓은 화면, 항목 선택 시 */}

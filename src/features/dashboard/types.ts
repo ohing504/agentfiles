@@ -3,6 +3,7 @@ import type {
   HookEntry,
   HookScope,
   McpServer,
+  MemoryFile,
   Plugin,
 } from "@/shared/types"
 
@@ -18,4 +19,5 @@ export type DashboardDetailTarget =
       matcher?: string
       scope?: HookScope
     }
+  | { type: "memory"; file: MemoryFile }
   | null

@@ -54,6 +54,12 @@ export const queryKeys = {
     all: ["cli-status"] as const,
   },
 
+  memory: {
+    all: ["memory"] as const,
+    byProject: (projectPath?: string) =>
+      [...queryKeys.memory.all, projectPath] as const,
+  },
+
   projects: {
     all: ["projects"] as const,
   },

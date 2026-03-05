@@ -6,6 +6,7 @@ import {
   getProjectConfigPath,
 } from "@/services/config-service"
 import { getMcpServers } from "@/services/mcp-service"
+import { getMemoryFiles } from "@/services/memory-service"
 import { getPlugins } from "@/services/plugin-service"
 import type { AgentFile, Overview } from "@/shared/types"
 
@@ -55,6 +56,8 @@ export async function getOverview(projectPath?: string): Promise<Overview> {
     countConflicts(globalCommands, projectCommands) +
     countConflicts(globalSkills, projectSkills)
 
+  const memoryFiles = projectPath ? await getMemoryFiles(projectPath) : []
+
   const globalMcpCount = mcpServers.filter((s) => s.scope === "user").length
   const projectMcpCount = mcpServers.filter((s) => s.scope === "project").length
 
@@ -92,5 +95,6 @@ export async function getOverview(projectPath?: string): Promise<Overview> {
       project: projectSkills.length,
     },
     conflictCount,
+    memory: { total: memoryFiles.length },
   }
 }

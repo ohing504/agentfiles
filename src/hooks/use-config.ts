@@ -150,6 +150,23 @@ export function useAgentFiles(type: AgentFile["type"]) {
   return { query, saveMutation, deleteMutation }
 }
 
+// ── Memory Files ─────────────────────────────────────────────────────────────
+
+export function useMemoryFiles() {
+  const { activeProjectPath } = useProjectContext()
+
+  return useQuery({
+    queryKey: queryKeys.memory.byProject(activeProjectPath),
+    queryFn: async () => {
+      if (!activeProjectPath) return []
+      const { getMemoryFilesFn } = await import("@/server/memory")
+      return getMemoryFilesFn({ data: { projectPath: activeProjectPath } })
+    },
+    enabled: !!activeProjectPath,
+    ...INFREQUENT_REFETCH,
+  })
+}
+
 // ── CLI Status ────────────────────────────────────────────────────────────────
 
 export function useCliStatus() {

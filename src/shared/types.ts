@@ -111,6 +111,15 @@ export interface SupportingFile {
   size: number
 }
 
+// ── Memory ──
+export interface MemoryFile {
+  name: string
+  path: string
+  size: number
+  lastModified: string // ISO 8601
+  content: string
+}
+
 // ── 대시보드 ──
 export interface Overview {
   claudeMd: { global?: ClaudeMd; project?: ClaudeMd }
@@ -120,6 +129,7 @@ export interface Overview {
   commands: { total: number; global: number; project: number }
   skills: { total: number; global: number; project: number }
   conflictCount: number
+  memory: { total: number }
 }
 
 // ── API 에러 ──
