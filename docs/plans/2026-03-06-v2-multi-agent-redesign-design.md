@@ -61,28 +61,61 @@ agentfiles (GUI)    = 전체 워크플로우 통합 관리
 
 ## 멀티 에이전트 아키텍처
 
-### AgentMeta
+### 네이밍 원칙
+
+skills.sh (Vercel)의 네이밍을 최대한 따른다. 생태계 호환성 및 코드 참조 용이성을 위해.
+
+### AgentConfig (skills.sh 동일)
 
 ```typescript
-interface AgentMeta {
-  id: string              // "claude" | "codex" | ...
-  name: string            // "Claude Code" | "Codex" | ...
-  homeDir: string         // "~/.claude" | "~/.codex" | ...
-  skillsDir: string       // "~/.claude/skills" | "~/.codex/skills"
+// skills.sh의 AgentConfig를 그대로 참조
+interface AgentConfig {
+  name: string            // "claude-code" | "codex" | ...
+  displayName: string     // "Claude Code" | "Codex" | ...
+  skillsDir: string       // ".claude/skills" (프로젝트 레벨 상대 경로)
+  globalSkillsDir: string | undefined  // "~/.claude/skills" (글로벌 절대 경로)
+  detectInstalled: () => Promise<boolean>  // 설치 여부 감지
+  showInUniversalList?: boolean
+}
+
+// agentfiles 확장 필드 (skills.sh에 없는 것)
+interface AgentConfigExtended extends AgentConfig {
   entities: EntityType[]  // 지원하는 엔티티 종류
 }
 
 // Claude: skills, agents, commands, hooks, plugins, mcp, settings, CLAUDE.md
 // Codex:  skills (+ 추후 확장)
-// 공통:   ~/.agents/ (skills.sh 관리)
+// 공통:   ~/.agents/ (skills.sh 관리, "universal" 에이전트들)
+```
+
+skills.sh에서 참조할 함수명:
+- `detectInstalledAgents()` — 설치된 에이전트 감지
+- `getAgentConfig(type)` — 에이전트 설정 조회
+- `isUniversalAgent(type)` — `.agents/skills/` 공유 여부
+- `getCanonicalSkillsDir(global)` — canonical 경로 조회
+- `listInstalledSkills(options)` — 설치된 스킬 목록
+
+### Universal vs Non-universal 에이전트
+
+skills.sh의 핵심 구분:
+
+```text
+Universal 에이전트 (skillsDir === ".agents/skills/"):
+  Codex, Cursor, Gemini CLI, GitHub Copilot, OpenCode, Cline, Kimi CLI 등
+  → ~/.agents/skills/ 을 직접 읽음, symlink 불필요
+
+Non-universal 에이전트 (자체 skillsDir):
+  Claude (.claude/skills), Windsurf (.windsurf/skills), Roo (.roo/skills) 등
+  → canonical에서 자체 디렉토리로 symlink 생성
 ```
 
 ### Main Agent 선택
 
 - VS Code의 언어/린터 선택처럼, 항상 접근 가능한 위치에 배치
 - Main Agent 선택에 따라 표시되는 디렉토리와 엔티티가 달라짐
-- 설정 저장: `~/.claude/agentfiles/settings.json` → `{ mainAgent: "claude" }`
-- 초기 지원: Claude, Codex (추후 확장 가능한 구조)
+- 설정 저장: `~/.claude/agentfiles/settings.json` → `{ mainAgent: "claude-code" }`
+- 초기 지원: claude-code, codex (추후 확장 가능한 구조)
+- Main Agent 목록은 `detectInstalledAgents()`로 자동 감지
 
 ### 스코프 모델 확장
 
@@ -91,24 +124,64 @@ interface AgentMeta {
   Global (~/.claude/)  vs  Project (.claude/)
 
 새 모델:
-  ┌── Shared (~/.agents/)           ← skills.sh 공통
+  ┌── Shared (~/.agents/)           ← skills.sh canonical (universal 에이전트)
   ├── Agent-Global (~/.claude/)     ← Main Agent 전용 글로벌
   ├── Agent-Project (.claude/)      ← Main Agent 전용 프로젝트
   └── Link/Copy 출처 표시           ← symlink이면 원본 경로 표시
 ```
 
+### InstalledSkill (skills.sh 동일)
+
+```typescript
+// skills.sh의 InstalledSkill을 그대로 활용
+interface InstalledSkill {
+  name: string
+  description: string
+  path: string           // 실제 경로
+  canonicalPath: string  // ~/.agents/skills/<name>
+  scope: 'project' | 'global'
+  agents: AgentType[]    // 어떤 에이전트에 설치되었는지
+}
+```
+
+### 락 파일 활용
+
+```typescript
+// ~/.agents/.skill-lock.json — skills.sh가 관리
+interface SkillLockEntry {
+  source: string         // "vercel-labs/agent-skills"
+  sourceType: string     // "github" | "gitlab" | "git" | "local"
+  sourceUrl: string      // "https://github.com/..."
+  skillPath?: string     // "skills/chatgpt-apps/SKILL.md"
+  skillFolderHash: string // GitHub tree SHA (업데이트 감지용)
+  installedAt: string
+  updatedAt: string
+}
+
+// agentfiles에서 활용:
+// - 설치 출처 표시 (GitHub repo 링크)
+// - 업데이트 가능 여부 표시 (hash 비교)
+// - 설치 일시 표시
+```
+
 ### 데이터 흐름
 
 ```text
-AgentRegistry (AgentMeta[])
+detectInstalledAgents()
     │
-    ├── Shared:       ~/.agents/skills/*
+    ▼
+AgentConfig[] (설치된 에이전트만)
+    │
+    ├── Shared:       ~/.agents/skills/* (canonical)
     ├── Agent-Global: ~/.claude/{skills,plugins,commands,...}  (Main Agent 기준)
     └── Agent-Project: .claude/{skills,...}                    (프로젝트 기준)
     │
     ▼
+listInstalledSkills() → InstalledSkill[]
+    │
+    ▼
 통합 뷰: Main Agent 기준으로 필터링 + Shared 항상 포함
-         symlink이면 원본 경로 + 출처 표시
+         symlink이면 원본 경로 + 출처 표시 (lock 파일 참조)
 ```
 
 ---
@@ -146,7 +219,7 @@ AgentRegistry (AgentMeta[])
 
 | 항목 | 설명 |
 |------|------|
-| AgentMeta 레지스트리 | Claude, Codex 지원. 에이전트별 디렉토리/엔티티 매핑 |
+| AgentConfig 레지스트리 | skills.sh 네이밍 준수. detectInstalledAgents() 자동 감지 |
 | Main Agent 선택기 | 설정 저장 + UI 선택 |
 | 디렉토리 스캔 확장 | `~/.agents/` + 에이전트별 홈 디렉토리 통합 스캔 |
 | 스코프 모델 | Shared / Agent-Global / Agent-Project |
@@ -201,36 +274,88 @@ AgentRegistry (AgentMeta[])
 
 ---
 
-## 참고
+## skills.sh 코드 분석 결과
 
-### skills.sh 설치 흐름 (분석 필요)
+> 소스: https://github.com/vercel-labs/skills (v1.4.4)
+
+### 에이전트 레지스트리 (`src/agents.ts`)
+
+40+ 에이전트 지원. 두 종류로 구분:
+
+| 분류 | skillsDir | 예시 |
+|------|-----------|------|
+| Universal | `.agents/skills/` | Codex, Cursor, Gemini CLI, GitHub Copilot, Cline, OpenCode |
+| Non-universal | 자체 경로 | Claude (`.claude/skills`), Windsurf (`.windsurf/skills`), Roo (`.roo/skills`) |
+
+감지 방식: 각 에이전트 홈 디렉토리(`~/.claude`, `~/.codex` 등) 존재 여부로 판단.
+
+### 설치 흐름 (`src/installer.ts`)
 
 ```text
 npx skills add <owner/repo> --skill <name>
-  ├── 대상 에이전트 선택 (공통: ~/.agents, Claude: ~/.claude, Codex: ~/.codex)
+  ├── git clone → temp 디렉토리
+  ├── discoverSkills() → SKILL.md 탐색
+  ├── 대상 에이전트 선택 (detectInstalledAgents + 사용자 선택)
   ├── 스코프 선택 (global / project)
-  ├── 설치 방식 (copy / link[recommended])
-  └── 설치 완료 → symlink 또는 복사본 생성
+  ├── 설치 방식 (symlink[기본] / copy)
+  │
+  ├── Symlink 모드:
+  │   ├── ~/.agents/skills/<name>/  ← canonical (실제 파일 복사)
+  │   └── ~/.claude/skills/<name>   ← symlink → canonical
+  │
+  └── Copy 모드:
+      └── 각 에이전트 디렉토리에 직접 복사
 ```
 
-### 디렉토리 구조 (관찰 기반, Phase 2에서 정밀 분석)
+### 스킬 포맷 (`src/skills.ts`)
 
 ```text
-~/.agents/                     ← skills.sh 공통
-  └── skills/<name>/SKILL.md
+<skill-name>/
+  SKILL.md              ← 필수 (gray-matter frontmatter: name, description, metadata)
+  agents/               ← 선택 (서브에이전트 정의)
+  scripts/              ← 선택 (보조 스크립트)
+  references/           ← 선택 (참조 문서)
+```
 
-~/.claude/                     ← Claude Code
+파싱: `gray-matter`로 frontmatter 추출. `name`과 `description`이 필수.
+
+### 락 파일 (`~/.agents/.skill-lock.json`)
+
+skills.sh가 관리하는 설치 메타데이터. 버전 추적 + 업데이트 감지에 사용.
+
+### 디렉토리 구조 (확인 완료)
+
+```text
+~/.agents/                          ← skills.sh canonical (universal 에이전트 공유)
+  ├── skills/<name>/SKILL.md
+  └── .skill-lock.json              ← 설치 메타데이터
+
+~/.claude/                          ← Claude Code (non-universal)
   ├── skills/<name> → ~/.agents/skills/<name>  (symlink)
   ├── plugins/
   ├── commands/
   ├── settings.json
   └── CLAUDE.md
 
-~/.codex/                      ← Codex (구조 분석 필요)
+~/.codex/                           ← Codex (universal → .agents/skills/ 직접 사용)
   └── skills/<name>
 ```
 
+### agentfiles가 재사용할 네이밍
+
+| skills.sh | agentfiles | 용도 |
+|-----------|-----------|------|
+| `AgentConfig` | 그대로 사용 | 에이전트 메타 정보 |
+| `AgentType` | 그대로 사용 | 에이전트 타입 union |
+| `InstalledSkill` | 그대로 사용 + `InstalledPlugin`, `InstalledHook` 등으로 확장 | 설치된 엔티티 |
+| `detectInstalledAgents()` | 그대로 사용 | 에이전트 감지 |
+| `getAgentConfig()` | 그대로 사용 | 에이전트 설정 조회 |
+| `isUniversalAgent()` | 그대로 사용 | universal 여부 |
+| `listInstalledSkills()` | 그대로 사용 + `listInstalledPlugins()` 등 확장 | 목록 조회 |
+| `getCanonicalSkillsDir()` | 그대로 사용 | canonical 경로 |
+| `InstallMode` (`symlink` \| `copy`) | 그대로 사용 | 설치 방식 |
+
 ---
 
-*2026-03-06 brainstorming 세션에서 작성*
+*2026-03-06 brainstorming 세션에서 작성, skills.sh 분석 결과 추가*
 *이전 문서: 2026-03-04-v2-direction-design.md (방향성 재정의 → 이 문서로 대체)*

@@ -14,7 +14,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 | Phase | 내용 | 상태 |
 |-------|------|------|
-| Phase 1 | 멀티 에이전트 기반 (AgentMeta, Main Agent 선택기) + UI 전면 재설계 | 다음 작업 |
+| Phase 1 | 멀티 에이전트 기반 (AgentConfig, Main Agent 선택기) + UI 전면 재설계 | 다음 작업 |
 | Phase 2 | skills.sh 분석 + 전체 프레임워크 설계 | 예정 |
 | Phase 3 | 이해 레이어 (AI 요약, 번역, 파일 탐색) | 예정 |
 | Phase 4 | 마켓플레이스 (skills.sh 연동) | 예정 |
@@ -23,7 +23,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 핵심 원칙:
 - 순수 shadcn/ui — 커스텀 스타일, 색상 변경 없음
 - skills.sh를 설치 백엔드로 활용 (자체 마켓플레이스 구현 X)
-- Claude + Codex 우선 지원, 확장 가능한 AgentMeta 구조
+- Claude + Codex 우선 지원, skills.sh 네이밍 준수 (AgentConfig, InstalledSkill 등)
 
 ## Key Documents
 
