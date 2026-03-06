@@ -4,12 +4,30 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-AI 개발 워크플로우를 발견하고, 이해하고, 가꿔나가는 플랫폼. `npx agentfiles` 실행 시 `localhost:3000`에서 Chrome 앱 모드로 로컬 웹앱이 열리며, `~/.claude/`와 프로젝트별 `.claude/` 워크플로우를 관리한다.
+**멀티 에이전트** 개발 워크플로우를 발견하고, 이해하고, 가꿔나가는 플랫폼. `npx agentfiles` 실행 시 `localhost:3000`에서 Chrome 앱 모드로 로컬 웹앱이 열리며, `~/.claude/`, `~/.codex/`, `~/.agents/` 및 프로젝트별 워크플로우를 통합 관리한다.
 
-현재 상태: v1 완료, v2 개발 중
+현재 상태: v1 완료, v2 멀티 에이전트 재설계 진행 중
+
+## Current Priority
+
+**v2 멀티 에이전트 재설계** — `docs/plans/2026-03-06-v2-multi-agent-redesign-design.md` 참조
+
+| Phase | 내용 | 상태 |
+|-------|------|------|
+| Phase 1 | 멀티 에이전트 기반 (AgentMeta, Main Agent 선택기) + UI 전면 재설계 | 다음 작업 |
+| Phase 2 | skills.sh 분석 + 전체 프레임워크 설계 | 예정 |
+| Phase 3 | 이해 레이어 (AI 요약, 번역, 파일 탐색) | 예정 |
+| Phase 4 | 마켓플레이스 (skills.sh 연동) | 예정 |
+| Phase 5 | AI 가이드 (채팅, 개선 제안) | 예정 |
+
+핵심 원칙:
+- 순수 shadcn/ui — 커스텀 스타일, 색상 변경 없음
+- skills.sh를 설치 백엔드로 활용 (자체 마켓플레이스 구현 X)
+- Claude + Codex 우선 지원, 확장 가능한 AgentMeta 구조
 
 ## Key Documents
 
+- `docs/plans/2026-03-06-v2-multi-agent-redesign-design.md` — **v2 멀티 에이전트 재설계** (현재 최우선)
 - `docs/FEATURES.md` — 제품 요구사항 및 로드맵 (what)
 - `docs/ARCHITECTURE.md` — 기술 설계 (how)
 - `docs/REFERENCES.md` — 경쟁 프로젝트, 참조 모델, 영감
