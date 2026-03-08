@@ -1,5 +1,5 @@
 {
-  "name": "agentfiles",
+  "name": "@ohing504/agentfiles",
   "type": "module",
   "version": "0.1.0",
   "description": "AI agent configuration file manager and community platform",
