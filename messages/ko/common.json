@@ -40,5 +40,14 @@
   "board_no_agents": "에이전트 없음",
   "board_no_hooks": "훅 없음",
   "board_no_memory": "메모리 파일 없음",
-  "board_no_lsp": "LSP 서버 없음"
+  "board_no_lsp": "LSP 서버 없음",
+  "board_columns": "열 관리",
+  "board_col_files": "파일",
+  "board_col_plugins": "플러그인",
+  "board_col_mcp": "MCP 서버",
+  "board_col_skills": "스킬",
+  "board_col_agents": "에이전트",
+  "board_col_hooks": "훅",
+  "board_col_memory": "메모리",
+  "board_col_lsp": "LSP 서버"
 }

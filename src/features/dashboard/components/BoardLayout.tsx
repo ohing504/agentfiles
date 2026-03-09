@@ -10,9 +10,12 @@ import {
 } from "@/components/ui/collapsible"
 import { Sheet, SheetContent } from "@/components/ui/sheet"
 import { ENTITY_ICONS } from "@/lib/entity-icons"
+import type { BoardColumnId } from "@/shared/types"
+import { useBoardConfig } from "../hooks/use-board-config"
 import { useEntityActionHandler } from "../hooks/use-entity-action-handler"
 import type { DashboardDetailTarget } from "../types"
 import { AgentsPanel } from "./AgentsPanel"
+import { BoardColumnSettings } from "./BoardColumnSettings"
 import { DetailPanelContent } from "./DetailPanelContent"
 import { HooksPanel } from "./HooksPanel"
 import { LspServersPanel } from "./LspServersPanel"
@@ -29,7 +32,7 @@ const SCOPE_LABELS: Record<string, string> = {
 }
 
 interface ColumnDef {
-  id: string
+  id: BoardColumnId
   title: string
   icon: ElementType
   /** Scopes this column appears in */
@@ -41,6 +44,7 @@ export function BoardLayout() {
   const [selected, setSelected] = useState<DashboardDetailTarget>(null)
   const handleAction = useEntityActionHandler(() => setSelected(null))
   const [collapsedScopes, setCollapsedScopes] = useState<Set<string>>(new Set())
+  const { boardConfig, toggleColumn } = useBoardConfig()
 
   function toggleScope(scope: string) {
     setCollapsedScopes((prev) => {
@@ -50,7 +54,7 @@ export function BoardLayout() {
     })
   }
 
-  const columnDefs: ColumnDef[] = [
+  const allColumnDefs: ColumnDef[] = [
     {
       id: "plugins",
       title: "Plugins",
@@ -84,7 +88,7 @@ export function BoardLayout() {
     ...(activeProjectPath
       ? [
           {
-            id: "memory",
+            id: "memory" as BoardColumnId,
             title: "Memory",
             icon: BrainIcon,
             scopes: ["project"] as string[],
@@ -98,6 +102,19 @@ export function BoardLayout() {
       scopes: ["user", "project"],
     },
   ]
+
+  // Apply column order and visibility from board config
+  const hiddenColumns = boardConfig?.hiddenColumns ?? []
+  const columnOrder = boardConfig?.columnOrder
+
+  const columnDefs = columnOrder
+    ? columnOrder
+        .map((id) => allColumnDefs.find((c) => c.id === id))
+        .filter(
+          (c): c is ColumnDef =>
+            c !== undefined && !hiddenColumns.includes(c.id),
+        )
+    : allColumnDefs.filter((c) => !hiddenColumns.includes(c.id))
 
   const scopes = activeProjectPath ? ["user", "project"] : ["user"]
 
@@ -129,10 +146,21 @@ export function BoardLayout() {
 
   return (
     <>
-      <div className="h-full overflow-auto px-3 pb-3">
+      {/* Toolbar — outside scroll area, never scrolls horizontally */}
+      <div className="flex items-center justify-end px-3 pt-3 pb-1">
+        <BoardColumnSettings
+          columnOrder={
+            boardConfig?.columnOrder ?? allColumnDefs.map((c) => c.id)
+          }
+          hiddenColumns={hiddenColumns}
+          onToggle={toggleColumn}
+        />
+      </div>
+
+      <div className="h-full overflow-auto pb-3">
         <div className="inline-flex flex-col min-w-full">
           {/* Sticky column headers */}
-          <div className="flex gap-3 sticky top-0 z-10 bg-background pt-3 pb-2">
+          <div className="flex gap-3 sticky top-0 z-10 bg-background px-3 pt-1 pb-2 items-center">
             {columnDefs.map((col) => (
               <div
                 key={col.id}
@@ -145,43 +173,45 @@ export function BoardLayout() {
           </div>
 
           {/* Scope rows — each row spans all columns */}
-          {scopes.map((scope) => {
-            const isOpen = !collapsedScopes.has(scope)
-            return (
-              <Collapsible
-                key={scope}
-                open={isOpen}
-                onOpenChange={() => toggleScope(scope)}
-              >
-                <CollapsibleTrigger asChild>
-                  <button
-                    type="button"
-                    className="w-full flex items-center gap-1.5 px-2 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors border-b border-border/50"
-                  >
-                    {isOpen ? (
-                      <ChevronDown className="size-3.5 shrink-0" />
-                    ) : (
-                      <ChevronRight className="size-3.5 shrink-0" />
-                    )}
-                    {SCOPE_LABELS[scope] ?? scope}
-                  </button>
-                </CollapsibleTrigger>
-                <CollapsibleContent>
-                  <div className="flex gap-3 py-2">
-                    {columnDefs.map((col) => (
-                      <div key={col.id} className={COL_CLASS}>
-                        {col.scopes.includes(scope) && (
-                          <div className="border border-border rounded-lg p-1">
-                            {renderPanel(col.id, scope)}
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </CollapsibleContent>
-              </Collapsible>
-            )
-          })}
+          <div className="px-3">
+            {scopes.map((scope) => {
+              const isOpen = !collapsedScopes.has(scope)
+              return (
+                <Collapsible
+                  key={scope}
+                  open={isOpen}
+                  onOpenChange={() => toggleScope(scope)}
+                >
+                  <CollapsibleTrigger asChild>
+                    <button
+                      type="button"
+                      className="w-full flex items-center gap-1.5 px-2 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors border-b border-border/50"
+                    >
+                      {isOpen ? (
+                        <ChevronDown className="size-3.5 shrink-0" />
+                      ) : (
+                        <ChevronRight className="size-3.5 shrink-0" />
+                      )}
+                      {SCOPE_LABELS[scope] ?? scope}
+                    </button>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <div className="flex gap-3 py-2">
+                      {columnDefs.map((col) => (
+                        <div key={col.id} className={COL_CLASS}>
+                          {col.scopes.includes(scope) && (
+                            <div className="border border-border rounded-lg p-1">
+                              {renderPanel(col.id, scope)}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
+              )
+            })}
+          </div>
         </div>
       </div>
 

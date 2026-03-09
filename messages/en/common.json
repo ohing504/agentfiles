@@ -40,5 +40,14 @@
   "board_no_agents": "No agents",
   "board_no_hooks": "No hooks",
   "board_no_memory": "No memory files",
-  "board_no_lsp": "No LSP servers"
+  "board_no_lsp": "No LSP servers",
+  "board_columns": "Columns",
+  "board_col_files": "Files",
+  "board_col_plugins": "Plugins",
+  "board_col_mcp": "MCP Servers",
+  "board_col_skills": "Skills",
+  "board_col_agents": "Agents",
+  "board_col_hooks": "Hooks",
+  "board_col_memory": "Memory",
+  "board_col_lsp": "LSP Servers"
 }
