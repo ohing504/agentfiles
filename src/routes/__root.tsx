@@ -2,6 +2,7 @@ import { TanStackDevtools } from "@tanstack/react-devtools"
 import { createRootRoute, HeadContent, Scripts } from "@tanstack/react-router"
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools"
 
+import { AgentProvider } from "@/components/AgentContext"
 import { ErrorBoundary } from "@/components/ErrorBoundary"
 import { Layout } from "@/components/layout/Layout"
 import { ProjectProvider } from "@/components/ProjectContext"
@@ -47,11 +48,13 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </head>
       <body className="h-full antialiased">
         <TooltipProvider delayDuration={300}>
-          <ProjectProvider>
-            <ErrorBoundary>
-              <Layout>{children}</Layout>
-            </ErrorBoundary>
-          </ProjectProvider>
+          <AgentProvider>
+            <ProjectProvider>
+              <ErrorBoundary>
+                <Layout>{children}</Layout>
+              </ErrorBoundary>
+            </ProjectProvider>
+          </AgentProvider>
         </TooltipProvider>
         {import.meta.env.DEV && (
           <TanStackDevtools
