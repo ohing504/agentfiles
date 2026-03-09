@@ -34,6 +34,7 @@
   "common_open_cursor": "Cursor",
   "common_open_error": "Failed to open in {editor}",
   "common_no_results": "No results",
+  "board_no_files": "No files",
   "board_no_plugins": "No plugins",
   "board_no_mcp": "No MCP servers",
   "board_no_skills": "No skills",

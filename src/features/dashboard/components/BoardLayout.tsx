@@ -14,7 +14,13 @@ import {
   useSortable,
 } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
-import { BrainIcon, ChevronDown, ChevronRight, Code } from "lucide-react"
+import {
+  BrainIcon,
+  ChevronDown,
+  ChevronRight,
+  Code,
+  FileTextIcon,
+} from "lucide-react"
 import type { ElementType } from "react"
 import { useState } from "react"
 import { useProjectContext } from "@/components/ProjectContext"
@@ -33,6 +39,7 @@ import type { DashboardDetailTarget } from "../types"
 import { AgentsPanel } from "./AgentsPanel"
 import { BoardColumnSettings } from "./BoardColumnSettings"
 import { DetailPanelContent } from "./DetailPanelContent"
+import { FilesPanel } from "./FilesPanel"
 import { HooksPanel } from "./HooksPanel"
 import { LspServersPanel } from "./LspServersPanel"
 import { McpDirectPanel } from "./McpDirectPanel"
@@ -88,6 +95,12 @@ const NOTION_COLORS: Record<
     bg: "rgba(227,226,224,0.65)",
     darkDot: "#9b9a97",
     darkBg: "rgba(90,90,90,0.35)",
+  },
+  brown: {
+    dot: "#937264",
+    bg: "rgba(238,224,218,0.65)",
+    darkDot: "#937264",
+    darkBg: "rgba(96,59,44,0.35)",
   },
 }
 
@@ -165,6 +178,13 @@ export function BoardLayout() {
 
   const allColumnDefs: ColumnDef[] = [
     {
+      id: "files",
+      title: "Files",
+      icon: FileTextIcon,
+      scopes: ["user", "project"],
+      color: "gray",
+    },
+    {
       id: "plugins",
       title: "Plugins",
       icon: ENTITY_ICONS.plugin,
@@ -215,7 +235,7 @@ export function BoardLayout() {
       title: "LSP Servers",
       icon: Code,
       scopes: ["user", "project"],
-      color: "gray",
+      color: "brown",
     },
   ]
 
@@ -260,6 +280,8 @@ export function BoardLayout() {
       onAction: handleAction,
     }
     switch (colId) {
+      case "files":
+        return <FilesPanel scopeFilter={scope} onSelectItem={setSelected} />
       case "plugins":
         return <PluginsPanel {...common} />
       case "mcp":

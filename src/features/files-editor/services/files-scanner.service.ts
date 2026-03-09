@@ -26,10 +26,21 @@ export const EXCLUDED_NAMES = new Set([
   "cache",
   "debug",
   "file-history",
+  "node_modules",
   // Claude internal infrastructure
   "teams",
   "tasks",
   "installed_plugins.json",
+  // Heavy internal dirs
+  "plugins",
+  "projects",
+  "session-env",
+  "paste-cache",
+  "image-cache",
+  "shell-snapshots",
+  "todos",
+  "telemetry",
+  "statsig",
 ])
 
 const EXCLUDED_EXTENSIONS = new Set([".db", ".lock", ".log"])
@@ -133,18 +144,22 @@ async function scanDir(dirPath: string, name: string): Promise<FileNode> {
 
     const entryPath = path.join(dirPath, entry.name)
 
-    if (entry.isDirectory()) {
-      const child = await scanDir(entryPath, entry.name)
-      children.push(child)
-    } else if (entry.isFile() || entry.isSymbolicLink()) {
-      const stat = await fs.stat(entryPath)
-      children.push({
-        name: entry.name,
-        path: entryPath,
-        type: "file",
-        size: stat.size,
-        extension: path.extname(entry.name).toLowerCase() || undefined,
-      })
+    try {
+      if (entry.isDirectory()) {
+        const child = await scanDir(entryPath, entry.name)
+        children.push(child)
+      } else if (entry.isFile() || entry.isSymbolicLink()) {
+        const stat = await fs.stat(entryPath)
+        children.push({
+          name: entry.name,
+          path: entryPath,
+          type: "file",
+          size: stat.size,
+          extension: path.extname(entry.name).toLowerCase() || undefined,
+        })
+      }
+    } catch {
+      // Skip broken symlinks or inaccessible entries
     }
   }
 

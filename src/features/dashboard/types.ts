@@ -20,4 +20,5 @@ export type DashboardDetailTarget =
       scope?: HookScope
     }
   | { type: "memory"; file: MemoryFile }
+  | { type: "file"; filePath: string }
   | null

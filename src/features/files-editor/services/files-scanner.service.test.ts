@@ -91,23 +91,18 @@ describe("files-scanner.service", () => {
 
     it("excludes cache directories", async () => {
       const claudeDir = path.join(tmpDir, ".claude")
-      await fs.mkdir(path.join(claudeDir, "plugins", "cache"), {
-        recursive: true,
-      })
+      await fs.mkdir(path.join(claudeDir, "agents"), { recursive: true })
+      await fs.mkdir(path.join(claudeDir, "cache"), { recursive: true })
       await fs.writeFile(path.join(claudeDir, "CLAUDE.md"), "test")
-      await fs.writeFile(
-        path.join(claudeDir, "plugins", "cache", "big.js"),
-        "x",
-      )
+      await fs.writeFile(path.join(claudeDir, "cache", "big.js"), "x")
+      await fs.writeFile(path.join(claudeDir, "agents", "test.md"), "y")
 
       const result = await scanClaudeDir("project", tmpDir)
       const claudeSubDir = result.children?.find((c) => c.name === ".claude")
       expect(claudeSubDir).toBeDefined()
-      const pluginsDir = claudeSubDir?.children?.find(
-        (c) => c.name === "plugins",
-      )
-      expect(pluginsDir).toBeDefined()
-      const cacheDir = pluginsDir?.children?.find((c) => c.name === "cache")
+      const agentsDir = claudeSubDir?.children?.find((c) => c.name === "agents")
+      expect(agentsDir).toBeDefined()
+      const cacheDir = claudeSubDir?.children?.find((c) => c.name === "cache")
       expect(cacheDir).toBeUndefined()
     })
 

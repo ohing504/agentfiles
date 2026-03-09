@@ -54,6 +54,7 @@ describe("i18n messages", () => {
     const validPrefixes = [
       "action",
       "app",
+      "board",
       "claude",
       "common",
       "config",

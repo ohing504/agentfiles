@@ -5,6 +5,7 @@ import { PluginDetailPanel } from "@/components/PluginDetailPanel"
 import { SkillDetailPanel } from "@/components/SkillDetailPanel"
 import { AgentDetailPanel } from "@/features/agents-editor/components/AgentDetailPanel"
 import type { DashboardDetailTarget } from "../types"
+import { FileDetailPanel } from "./FileDetailPanel"
 import { MemoryDetailPanel } from "./MemoryDetailPanel"
 
 interface DetailPanelContentProps {
@@ -39,5 +40,7 @@ export function DetailPanelContent({
       )
     case "memory":
       return <MemoryDetailPanel file={target.file} />
+    case "file":
+      return <FileDetailPanel filePath={target.filePath} />
   }
 }

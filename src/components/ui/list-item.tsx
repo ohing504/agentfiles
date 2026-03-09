@@ -91,7 +91,7 @@ export function ListItem({
           <CollapsibleTrigger asChild>{item}</CollapsibleTrigger>
         )}
         <CollapsibleContent>
-          <ul className="ml-3.5 pl-2.5 py-0.5 flex flex-col gap-0.5">
+          <ul className="ml-3.5 pl-2.5 py-0.5 flex flex-col gap-0.5 list-none">
             {children}
           </ul>
         </CollapsibleContent>
@@ -136,7 +136,7 @@ export function ListSubItem({
   onContextMenu,
 }: ListSubItemProps) {
   return (
-    <li className="group/item" onContextMenu={onContextMenu}>
+    <li className="group/item list-none" onContextMenu={onContextMenu}>
       <Item
         asChild
         variant="default"
