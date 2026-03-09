@@ -247,3 +247,22 @@ export type McpConnectionStatus =
   | "failed"
   | "disabled"
   | "unknown"
+
+// ── Agent Config ──
+export type AgentType = "claude-code" // 향후: | "codex" | "cursor" | ...
+export type EntityType = "skill" | "agent" | "hook" | "plugin" | "mcp"
+
+export interface AgentConfig {
+  name: AgentType
+  displayName: string
+  /** 프로젝트 상대 경로 (e.g., ".claude/skills") */
+  skillsDir: string
+  /** 글로벌 절대 경로 (e.g., "~/.claude/skills") — 런타임에 homedir 치환 */
+  globalSkillsDir: string | undefined
+  /** 프로젝트 설정 디렉토리 (e.g., ".claude") */
+  configDir: string
+  /** 글로벌 설정 디렉토리 (e.g., "~/.claude") */
+  globalConfigDir: string | undefined
+  /** 지원하는 엔티티 타입 */
+  entities: EntityType[]
+}
