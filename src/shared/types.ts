@@ -266,3 +266,8 @@ export interface AgentConfig {
   /** 지원하는 엔티티 타입 */
   entities: EntityType[]
 }
+
+// ── Agentfiles Config ──
+export interface AgentfilesConfig {
+  mainAgent: AgentType
+}
