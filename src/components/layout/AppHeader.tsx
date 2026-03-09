@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router"
-import { SettingsIcon } from "lucide-react"
+import { MoonIcon, SettingsIcon, SunIcon } from "lucide-react"
 import { useAgentContext } from "@/components/AgentContext"
 import { ClaudeIcon } from "@/components/icons/agent-icons"
 import { ProjectSwitcher } from "@/components/ProjectSwitcher"
@@ -16,6 +16,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { useTheme } from "@/hooks/use-theme"
 import type { AgentType } from "@/shared/types"
 
 const AGENT_ICONS: Record<
@@ -27,6 +28,7 @@ const AGENT_ICONS: Record<
 
 export function AppHeader() {
   const { mainAgent, installedAgents, setMainAgent } = useAgentContext()
+  const { resolved, toggle } = useTheme()
 
   return (
     <header className="flex h-12 shrink-0 items-center justify-between border-b bg-background px-3">
@@ -54,16 +56,32 @@ export function AppHeader() {
           </SelectContent>
         </Select>
       </div>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button variant="ghost" size="icon" asChild>
-            <Link to="/settings">
-              <SettingsIcon className="size-4" />
-            </Link>
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent side="bottom">Settings</TooltipContent>
-      </Tooltip>
+      <div className="flex items-center gap-1">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="ghost" size="icon" onClick={toggle}>
+              {resolved === "dark" ? (
+                <SunIcon className="size-4" />
+              ) : (
+                <MoonIcon className="size-4" />
+              )}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="bottom">
+            {resolved === "dark" ? "Light mode" : "Dark mode"}
+          </TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="ghost" size="icon" asChild>
+              <Link to="/settings">
+                <SettingsIcon className="size-4" />
+              </Link>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="bottom">Settings</TooltipContent>
+        </Tooltip>
+      </div>
     </header>
   )
 }
