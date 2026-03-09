@@ -33,5 +33,12 @@
   "common_open_vscode": "VS Code",
   "common_open_cursor": "Cursor",
   "common_open_error": "Failed to open in {editor}",
-  "common_no_results": "No results"
+  "common_no_results": "No results",
+  "board_no_plugins": "No plugins",
+  "board_no_mcp": "No MCP servers",
+  "board_no_skills": "No skills",
+  "board_no_agents": "No agents",
+  "board_no_hooks": "No hooks",
+  "board_no_memory": "No memory files",
+  "board_no_lsp": "No LSP servers"
 }

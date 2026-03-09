@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start"
+import type { BoardColumnId } from "@/shared/types"
 
 export const getMainAgentFn = createServerFn({ method: "GET" }).handler(
   async () => {
@@ -25,3 +26,24 @@ export const getInstalledAgentsFn = createServerFn({ method: "GET" }).handler(
     return getAgentRegistry()
   },
 )
+
+export const getBoardConfigFn = createServerFn({ method: "GET" }).handler(
+  async () => {
+    const { getAgentfilesConfig } = await import("@/services/agentfiles-config")
+    const config = await getAgentfilesConfig()
+    return config.board
+  },
+)
+
+export const updateBoardConfigFn = createServerFn({ method: "POST" })
+  .inputValidator(
+    (data: {
+      columnOrder?: BoardColumnId[]
+      hiddenColumns?: BoardColumnId[]
+    }) => data,
+  )
+  .handler(async ({ data }) => {
+    const { updateBoardConfig } = await import("@/services/agentfiles-config")
+    await updateBoardConfig(data)
+    return { success: true }
+  })

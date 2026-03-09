@@ -1,6 +1,7 @@
 // src/features/dashboard/components/PluginsPanel.tsx
 import { type ElementType, useState } from "react"
 import { useProjectContext } from "@/components/ProjectContext"
+import { Empty, EmptyDescription, EmptyMedia } from "@/components/ui/empty"
 import {
   EntityActionContextMenu,
   EntityActionDropdown,
@@ -13,36 +14,32 @@ import { ENTITY_ACTIONS } from "@/lib/entity-actions"
 import { ENTITY_ICONS } from "@/lib/entity-icons"
 import { titleCase } from "@/lib/format"
 import { getMcpIconClass } from "@/lib/mcp-status"
+import { m } from "@/paraglide/messages"
 import type { McpConnectionStatus, Plugin } from "@/shared/types"
 import type { DashboardDetailTarget } from "../types"
-import { OverviewPanel } from "./OverviewPanel"
-import { groupByScope, ScopeGroup } from "./ScopeGroup"
 
 interface PluginsPanelProps {
+  scopeFilter?: string
   onSelectItem?: (target: DashboardDetailTarget) => void
   onAction?: (
     id: EntityActionId,
     target: NonNullable<DashboardDetailTarget>,
   ) => void
-  href?: string
 }
 
 export function PluginsPanel({
+  scopeFilter,
   onSelectItem,
   onAction,
-  href,
 }: PluginsPanelProps) {
   const { activeProjectPath } = useProjectContext()
   const { data: plugins = [] } = usePluginsQuery(activeProjectPath ?? undefined)
   const { data: statusMap } = useMcpStatusQuery()
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set())
 
-  const allCollapsed =
-    plugins.length > 0 && plugins.every((p) => collapsed.has(p.id))
-
-  function toggleAll() {
-    setCollapsed(allCollapsed ? new Set() : new Set(plugins.map((p) => p.id)))
-  }
+  const filtered = scopeFilter
+    ? plugins.filter((p) => p.scope === scopeFilter)
+    : plugins
 
   function toggle(id: string) {
     setCollapsed((prev) => {
@@ -52,45 +49,30 @@ export function PluginsPanel({
     })
   }
 
-  const actions = (
-    <button
-      type="button"
-      onClick={toggleAll}
-      className="text-[10px] text-muted-foreground hover:text-foreground transition-colors"
-    >
-      {allCollapsed ? "Expand all" : "Collapse all"}
-    </button>
-  )
+  if (filtered.length === 0)
+    return (
+      <Empty className="py-6">
+        <EmptyMedia variant="icon">
+          <ENTITY_ICONS.plugin />
+        </EmptyMedia>
+        <EmptyDescription>{m.board_no_plugins()}</EmptyDescription>
+      </Empty>
+    )
 
   return (
-    <OverviewPanel
-      title="Plugins"
-      count={plugins.length}
-      actions={actions}
-      href={href}
-    >
-      {plugins.length === 0 ? (
-        <p className="text-xs text-muted-foreground px-2 py-2">No plugins</p>
-      ) : (
-        <div className="space-y-0.5">
-          {groupByScope(plugins).map(({ scope, items }) => (
-            <ScopeGroup key={scope} scope={scope}>
-              {items.map((plugin) => (
-                <PluginTreeItem
-                  key={plugin.id}
-                  plugin={plugin}
-                  expanded={!collapsed.has(plugin.id)}
-                  onToggle={() => toggle(plugin.id)}
-                  onSelectItem={onSelectItem}
-                  onAction={onAction}
-                  statusMap={statusMap}
-                />
-              ))}
-            </ScopeGroup>
-          ))}
-        </div>
-      )}
-    </OverviewPanel>
+    <div className="space-y-0.5">
+      {filtered.map((plugin) => (
+        <PluginTreeItem
+          key={plugin.id}
+          plugin={plugin}
+          expanded={!collapsed.has(plugin.id)}
+          onToggle={() => toggle(plugin.id)}
+          onSelectItem={onSelectItem}
+          onAction={onAction}
+          statusMap={statusMap}
+        />
+      ))}
+    </div>
   )
 }
 
@@ -205,8 +187,7 @@ function PluginTreeItem({
     )
   }
 
-  // Has sub-items: ListItem collapsible (no explicit chevron — same as all other panels).
-  // Clicking toggles expand/collapse AND shows plugin detail.
+  // Has sub-items: ListItem collapsible
   return (
     <EntityActionContextMenu
       actions={ENTITY_ACTIONS.plugin}

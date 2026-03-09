@@ -267,7 +267,24 @@ export interface AgentConfig {
   entities: EntityType[]
 }
 
+// ── Board Config ──
+export type BoardColumnId =
+  | "files"
+  | "plugins"
+  | "mcp"
+  | "skills"
+  | "agents"
+  | "hooks"
+  | "memory"
+  | "lsp"
+
+export interface BoardConfig {
+  columnOrder: BoardColumnId[]
+  hiddenColumns: BoardColumnId[]
+}
+
 // ── Agentfiles Config ──
 export interface AgentfilesConfig {
   mainAgent: AgentType
+  board: BoardConfig
 }

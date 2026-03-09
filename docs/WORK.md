@@ -41,6 +41,8 @@
 
 ## Shipped
 
+- **v2 Board-style 대시보드** (2026-03-09) — Notion 보드 스타일 레이아웃. 스코프 행(User/Project)이 전체 너비 차지, 행 안에 엔티티별 카드 수평 배치. Sticky 컬럼 헤더, 행 단위 Collapsible, shadcn Empty 빈 상태, i18n 지원. BoardConfig 타입 + agentfiles.json 저장. 레거시 그리드/OverviewPanel/ScopeGroup 삭제.
+- **Agent selector + 아이콘** (2026-03-09) — AppHeader에 Main Agent 선택기 UI, ClaudeIcon(주황) + OpenAIIcon. AgentConfig 타입/레지스트리, agentfiles.json 저장.
 - **config-service 분리 + 테스트 co-location** (2026-02-27) — agent-file-service, overview-service 추출. 전체 유닛 테스트를 `tests/` → 소스 파일 옆으로 co-locate. 235개 테스트 통과.
 - **Files 프로젝트 루트 Claude 파일 표시** (2026-02-27) — project scope에서 `CLAUDE.md`, `AGENTS.md`, `.agents`, `.cursorrules` 등 루트 파일도 트리에 표시. 디렉토리 우선 정렬.
 - **files-editor 리팩토링** (2026-02-27) — `.claude/` 전체 파일 탐색기 + 읽기 전용 뷰어로 전면 재작성. feature-local 서비스, FilesContext, `/files` 단일 라우트 통합.

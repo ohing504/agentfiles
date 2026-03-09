@@ -1,4 +1,5 @@
 import { Zap } from "lucide-react"
+import { Empty, EmptyDescription, EmptyMedia } from "@/components/ui/empty"
 import {
   EntityActionContextMenu,
   EntityActionDropdown,
@@ -7,18 +8,17 @@ import { ListItem } from "@/components/ui/list-item"
 import { useHooksQuery } from "@/features/hooks-editor/api/hooks.queries"
 import type { EntityActionId } from "@/lib/entity-actions"
 import { ENTITY_ACTIONS } from "@/lib/entity-actions"
+import { m } from "@/paraglide/messages"
 import type { HookScope, HooksSettings } from "@/shared/types"
 import type { DashboardDetailTarget } from "../types"
-import { OverviewPanel } from "./OverviewPanel"
-import { ScopeGroup } from "./ScopeGroup"
 
 interface HooksPanelProps {
+  scopeFilter?: string
   onSelectItem?: (target: DashboardDetailTarget) => void
   onAction?: (
     id: EntityActionId,
     target: NonNullable<DashboardDetailTarget>,
   ) => void
-  href?: string
 }
 
 function buildHookItems(hooks: HooksSettings) {
@@ -29,77 +29,81 @@ function buildHookItems(hooks: HooksSettings) {
   }))
 }
 
-export function HooksPanel({ onSelectItem, onAction, href }: HooksPanelProps) {
+export function HooksPanel({
+  scopeFilter,
+  onSelectItem,
+  onAction,
+}: HooksPanelProps) {
   const { data: globalHooks = {} } = useHooksQuery("user")
   const { data: projectHooks = {} } = useHooksQuery("project")
 
-  const globalItems = buildHookItems(globalHooks)
-  const projectItems = buildHookItems(projectHooks)
-  const totalCount = globalItems.length + projectItems.length
+  // Build scoped item groups based on filter
+  const groups: {
+    items: ReturnType<typeof buildHookItems>
+    scope: HookScope
+  }[] = []
 
-  function renderHookList(
-    items: ReturnType<typeof buildHookItems>,
-    scope: HookScope,
-    keyPrefix: string,
-  ) {
-    return items.map(({ event, firstHook, matcher }) => {
-      if (!firstHook) return null
-      const target = {
-        type: "hook" as const,
-        hook: firstHook,
-        event,
-        matcher,
-        scope,
-      }
-      return (
-        <EntityActionContextMenu
-          key={`${keyPrefix}-${event}`}
-          actions={ENTITY_ACTIONS.hook}
-          onAction={(id) => onAction?.(id, target)}
-          itemName={event}
-        >
-          <ListItem
-            icon={Zap}
-            label={event}
-            trailing={
-              <span className="flex items-center gap-1">
-                {firstHook.command && (
-                  <span className="text-[10px] text-muted-foreground truncate max-w-[200px] font-mono">
-                    {firstHook.command}
-                  </span>
-                )}
-                <EntityActionDropdown
-                  actions={ENTITY_ACTIONS.hook}
-                  onAction={(id) => onAction?.(id, target)}
-                  itemName={event}
-                />
-              </span>
-            }
-            onClick={() => onSelectItem?.(target)}
-          />
-        </EntityActionContextMenu>
-      )
-    })
+  if (!scopeFilter || scopeFilter === "user") {
+    const items = buildHookItems(globalHooks)
+    if (items.length > 0) groups.push({ items, scope: "user" })
+  }
+  if (!scopeFilter || scopeFilter === "project") {
+    const items = buildHookItems(projectHooks)
+    if (items.length > 0) groups.push({ items, scope: "project" })
   }
 
+  if (groups.length === 0)
+    return (
+      <Empty className="py-6">
+        <EmptyMedia variant="icon">
+          <Zap />
+        </EmptyMedia>
+        <EmptyDescription>{m.board_no_hooks()}</EmptyDescription>
+      </Empty>
+    )
+
   return (
-    <OverviewPanel title="Hooks" count={totalCount} href={href}>
-      {totalCount === 0 ? (
-        <p className="text-xs text-muted-foreground px-2 py-2">No hooks</p>
-      ) : (
-        <div>
-          {globalItems.length > 0 && (
-            <ScopeGroup scope="user">
-              {renderHookList(globalItems, "user", "global")}
-            </ScopeGroup>
-          )}
-          {projectItems.length > 0 && (
-            <ScopeGroup scope="project">
-              {renderHookList(projectItems, "project", "project")}
-            </ScopeGroup>
-          )}
-        </div>
+    <div>
+      {groups.flatMap(({ items, scope }) =>
+        items.map(({ event, firstHook, matcher }) => {
+          if (!firstHook) return null
+          const target = {
+            type: "hook" as const,
+            hook: firstHook,
+            event,
+            matcher,
+            scope,
+          }
+          return (
+            <EntityActionContextMenu
+              key={`${scope}-${event}`}
+              actions={ENTITY_ACTIONS.hook}
+              onAction={(id) => onAction?.(id, target)}
+              itemName={event}
+            >
+              <ListItem
+                icon={Zap}
+                label={event}
+                trailing={
+                  <span className="flex items-center gap-1">
+                    {firstHook.command && (
+                      <span className="text-[10px] text-muted-foreground truncate max-w-[200px] font-mono">
+                        {firstHook.command}
+                      </span>
+                    )}
+                    <EntityActionDropdown
+                      actions={ENTITY_ACTIONS.hook}
+                      onAction={(id) => onAction?.(id, target)}
+                      itemName={event}
+                    />
+                  </span>
+                }
+                onClick={() => onSelectItem?.(target)}
+              />
+            </EntityActionContextMenu>
+          )
+        }),
       )}
-    </OverviewPanel>
+    </div>
   )
 }
