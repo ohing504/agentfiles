@@ -1,4 +1,4 @@
-import { FolderOpen, Trash2 } from "lucide-react"
+import { FolderOpen, MoreHorizontal, Trash2 } from "lucide-react"
 import { useState } from "react"
 import { toast } from "sonner"
 import { CursorIcon, VscodeIcon } from "@/components/icons/editor-icons"
@@ -20,6 +20,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { DetailPanelHeader } from "@/features/dashboard/components/DetailPanelHeader"
 import { m } from "@/paraglide/messages"
 import type { AgentFile } from "@/shared/types"
 import { SkillDetailView } from "./SkillDetailView"
@@ -58,53 +59,56 @@ export function SkillDetailPanel({ skill, onDelete }: SkillDetailPanelProps) {
 
   return (
     <>
-      {/* Header */}
-      <div className="flex items-center justify-between px-4 h-12 shrink-0 border-b border-border">
-        <h2 className="text-sm font-semibold truncate min-w-0">{skill.name}</h2>
-        {hasAnyAction && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="shrink-0">
-                {m.action_edit()}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {hasPath && (
-                <>
-                  <DropdownMenuItem onClick={() => handleOpenInEditor("code")}>
-                    <VscodeIcon className="size-4" />
-                    {m.common_open_vscode()}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => handleOpenInEditor("cursor")}
-                  >
-                    <CursorIcon className="size-4" />
-                    {m.common_open_cursor()}
-                  </DropdownMenuItem>
-                  {skill.isSkillDir && (
-                    <DropdownMenuItem onClick={handleOpenFolder}>
-                      <FolderOpen className="size-4" />
-                      {m.skills_open_folder()}
+      <DetailPanelHeader
+        title={skill.name}
+        trailing={
+          hasAnyAction ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="size-7 shrink-0">
+                  <MoreHorizontal data-icon />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {hasPath && (
+                  <>
+                    <DropdownMenuItem
+                      onClick={() => handleOpenInEditor("code")}
+                    >
+                      <VscodeIcon className="size-4" />
+                      {m.common_open_vscode()}
                     </DropdownMenuItem>
-                  )}
-                </>
-              )}
-              {onDelete && (
-                <>
-                  {hasPath && <DropdownMenuSeparator />}
-                  <DropdownMenuItem
-                    variant="destructive"
-                    onClick={() => setShowDeleteConfirm(true)}
-                  >
-                    <Trash2 className="size-4" />
-                    {m.action_delete()}
-                  </DropdownMenuItem>
-                </>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
-      </div>
+                    <DropdownMenuItem
+                      onClick={() => handleOpenInEditor("cursor")}
+                    >
+                      <CursorIcon className="size-4" />
+                      {m.common_open_cursor()}
+                    </DropdownMenuItem>
+                    {skill.isSkillDir && (
+                      <DropdownMenuItem onClick={handleOpenFolder}>
+                        <FolderOpen className="size-4" />
+                        {m.skills_open_folder()}
+                      </DropdownMenuItem>
+                    )}
+                  </>
+                )}
+                {onDelete && (
+                  <>
+                    {hasPath && <DropdownMenuSeparator />}
+                    <DropdownMenuItem
+                      variant="destructive"
+                      onClick={() => setShowDeleteConfirm(true)}
+                    >
+                      <Trash2 className="size-4" />
+                      {m.action_delete()}
+                    </DropdownMenuItem>
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : undefined
+        }
+      />
 
       {/* Content */}
       <SkillDetailView skill={skill} />

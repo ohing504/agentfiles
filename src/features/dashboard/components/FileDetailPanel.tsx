@@ -1,4 +1,5 @@
 import { useFileContentQuery } from "@/features/files-editor/api/files.queries"
+import { DetailPanelHeader } from "./DetailPanelHeader"
 
 interface FileDetailPanelProps {
   filePath: string
@@ -10,12 +11,7 @@ export function FileDetailPanel({ filePath }: FileDetailPanelProps) {
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
-      <div className="px-4 py-3 border-b border-border shrink-0">
-        <h3 className="text-sm font-semibold">{fileName}</h3>
-        <p className="text-[10px] text-muted-foreground mt-0.5 font-mono truncate">
-          {filePath}
-        </p>
-      </div>
+      <DetailPanelHeader title={fileName} />
       <div className="flex-1 overflow-y-auto p-4">
         {isLoading ? (
           <p className="text-xs text-muted-foreground">Loading...</p>

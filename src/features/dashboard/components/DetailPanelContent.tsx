@@ -11,13 +11,11 @@ import { MemoryDetailPanel } from "./MemoryDetailPanel"
 interface DetailPanelContentProps {
   target: DashboardDetailTarget
   activeProjectPath?: string | null
-  onClose?: () => void
 }
 
 export function DetailPanelContent({
   target,
   activeProjectPath,
-  onClose,
 }: DetailPanelContentProps) {
   if (!target) return null
   switch (target.type) {
@@ -28,7 +26,7 @@ export function DetailPanelContent({
     case "agent":
       return <AgentDetailPanel agent={target.agent} />
     case "mcp":
-      return <McpDetailPanel server={target.server} onClose={onClose} />
+      return <McpDetailPanel server={target.server} />
     case "hook":
       return (
         <HookDetailPanel

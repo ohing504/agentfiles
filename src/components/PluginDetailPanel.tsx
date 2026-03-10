@@ -1,6 +1,7 @@
 import { DetailField } from "@/components/DetailField"
 import { ScopeBadge } from "@/components/ScopeBadge"
 import { Badge } from "@/components/ui/badge"
+import { DetailPanelHeader } from "@/features/dashboard/components/DetailPanelHeader"
 import { ENTITY_ICONS } from "@/lib/entity-icons"
 import { titleCase } from "@/lib/format"
 import type { Plugin } from "@/shared/types"
@@ -15,13 +16,10 @@ export function PluginDetailPanel({ plugin }: { plugin: Plugin }) {
 
   return (
     <>
-      <div className="flex items-center gap-2 px-4 h-12 shrink-0 border-b border-border">
-        <ENTITY_ICONS.plugin className="size-4 text-muted-foreground shrink-0" />
-        <h2 className="text-sm font-semibold truncate min-w-0">
-          {titleCase(plugin.name)}
-        </h2>
-        <ScopeBadge scope={plugin.scope} />
-      </div>
+      <DetailPanelHeader
+        title={titleCase(plugin.name)}
+        trailing={<ScopeBadge scope={plugin.scope} />}
+      />
 
       <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4">
         {plugin.description && (

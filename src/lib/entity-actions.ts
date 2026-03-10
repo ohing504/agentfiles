@@ -64,7 +64,7 @@ const deleteAction: EntityAction = {
 // --- Entity action definitions ---
 
 export const ENTITY_ACTIONS: Record<EntityActionType, EntityAction[]> = {
-  skill: [openVscode, openCursor, openFolder, edit, deleteAction],
+  skill: [openVscode, openCursor, openFolder, deleteAction],
   agent: [openVscode, openCursor, edit, deleteAction],
   hook: [openVscode, openCursor, edit, deleteAction],
   plugin: [openVscode, openCursor, deleteAction],

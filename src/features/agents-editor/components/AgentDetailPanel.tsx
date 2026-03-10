@@ -1,4 +1,4 @@
-import { Trash2 } from "lucide-react"
+import { MoreHorizontal, Trash2 } from "lucide-react"
 import { useState } from "react"
 import { toast } from "sonner"
 import { DetailField } from "@/components/DetailField"
@@ -23,6 +23,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Separator } from "@/components/ui/separator"
+import { DetailPanelHeader } from "@/features/dashboard/components/DetailPanelHeader"
 import { useAgentFileDetailQuery } from "@/hooks/use-agent-file-detail"
 import { extractBody, formatDate } from "@/lib/format"
 import { getLocale } from "@/paraglide/runtime"
@@ -54,47 +55,50 @@ export function AgentDetailPanel({ agent, onDelete }: AgentDetailPanelProps) {
 
   return (
     <>
-      {/* Header */}
-      <div className="flex items-center justify-between px-4 h-12 shrink-0 border-b border-border">
-        <h2 className="text-sm font-semibold truncate min-w-0">{agent.name}</h2>
-        {hasAnyAction && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="shrink-0">
-                Edit
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {hasPath && (
-                <>
-                  <DropdownMenuItem onClick={() => handleOpenInEditor("code")}>
-                    <VscodeIcon className="size-4" />
-                    Open in VS Code
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => handleOpenInEditor("cursor")}
-                  >
-                    <CursorIcon className="size-4" />
-                    Open in Cursor
-                  </DropdownMenuItem>
-                </>
-              )}
-              {onDelete && (
-                <>
-                  {hasPath && <DropdownMenuSeparator />}
-                  <DropdownMenuItem
-                    variant="destructive"
-                    onClick={() => setShowDeleteConfirm(true)}
-                  >
-                    <Trash2 className="size-4" />
-                    Delete
-                  </DropdownMenuItem>
-                </>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
-      </div>
+      <DetailPanelHeader
+        title={agent.name}
+        trailing={
+          hasAnyAction ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="size-7 shrink-0">
+                  <MoreHorizontal data-icon />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {hasPath && (
+                  <>
+                    <DropdownMenuItem
+                      onClick={() => handleOpenInEditor("code")}
+                    >
+                      <VscodeIcon className="size-4" />
+                      Open in VS Code
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => handleOpenInEditor("cursor")}
+                    >
+                      <CursorIcon className="size-4" />
+                      Open in Cursor
+                    </DropdownMenuItem>
+                  </>
+                )}
+                {onDelete && (
+                  <>
+                    {hasPath && <DropdownMenuSeparator />}
+                    <DropdownMenuItem
+                      variant="destructive"
+                      onClick={() => setShowDeleteConfirm(true)}
+                    >
+                      <Trash2 className="size-4" />
+                      Delete
+                    </DropdownMenuItem>
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : undefined
+        }
+      />
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-6 min-h-0">
