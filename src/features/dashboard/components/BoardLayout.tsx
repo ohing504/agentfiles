@@ -18,12 +18,15 @@ import {
   BrainIcon,
   ChevronDown,
   ChevronRight,
+  ChevronsDownUp,
+  ChevronsUpDown,
   Code,
   FileTextIcon,
 } from "lucide-react"
 import type { ElementType } from "react"
 import { useState } from "react"
 import { useProjectContext } from "@/components/ProjectContext"
+import { Button } from "@/components/ui/button"
 import {
   Collapsible,
   CollapsibleContent,
@@ -107,9 +110,11 @@ const NOTION_COLORS: Record<
 function SortableColumnHeader({
   col,
   isDark,
+  action,
 }: {
   col: ColumnDef
   isDark: boolean
+  action?: React.ReactNode
 }) {
   const {
     attributes,
@@ -140,7 +145,16 @@ function SortableColumnHeader({
         className="size-2.5 rounded-[4px] shrink-0"
         style={{ backgroundColor: isDark ? colors.darkDot : colors.dot }}
       />
-      <span className="text-xs font-medium">{col.title}</span>
+      <span className="text-xs font-medium flex-1">{col.title}</span>
+      {action && (
+        <span
+          role="toolbar"
+          onPointerDown={(e) => e.stopPropagation()}
+          onKeyDown={(e) => e.stopPropagation()}
+        >
+          {action}
+        </span>
+      )}
     </div>
   )
 }
@@ -167,6 +181,8 @@ export function BoardLayout() {
   const [collapsedScopes, setCollapsedScopes] = useState<Set<string>>(new Set())
   const { boardConfig, toggleColumn, setColumnOrder } = useBoardConfig()
   const { resolved: themeMode } = useTheme()
+  // Plugins collapse signal: even = all collapsed, odd = all expanded
+  const [pluginsCollapseSignal, setPluginsCollapseSignal] = useState(0)
 
   function toggleScope(scope: string) {
     setCollapsedScopes((prev) => {
@@ -283,7 +299,9 @@ export function BoardLayout() {
       case "files":
         return <FilesPanel scopeFilter={scope} onSelectItem={setSelected} />
       case "plugins":
-        return <PluginsPanel {...common} />
+        return (
+          <PluginsPanel {...common} collapseSignal={pluginsCollapseSignal} />
+        )
       case "mcp":
         return <McpDirectPanel {...common} />
       case "skills":
@@ -332,6 +350,22 @@ export function BoardLayout() {
                     key={col.id}
                     col={col}
                     isDark={themeMode === "dark"}
+                    action={
+                      col.id === "plugins" ? (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="size-6"
+                          onClick={() => setPluginsCollapseSignal((s) => s + 1)}
+                        >
+                          {pluginsCollapseSignal % 2 === 0 ? (
+                            <ChevronsUpDown data-icon />
+                          ) : (
+                            <ChevronsDownUp data-icon />
+                          )}
+                        </Button>
+                      ) : undefined
+                    }
                   />
                 ))}
               </SortableContext>
@@ -388,7 +422,7 @@ export function BoardLayout() {
       >
         <SheetContent
           side="right"
-          className="w-1/2 min-w-[400px] sm:max-w-none p-0 flex flex-col"
+          className="data-[side=right]:w-2/3 data-[side=right]:lg:w-1/2 data-[side=right]:sm:max-w-none min-w-[400px] p-0 flex flex-col"
         >
           <DetailPanelContent
             target={selected}
