@@ -136,7 +136,16 @@ export async function scanSkillsDir(basePath: string): Promise<AgentFile[]> {
     for (const entry of entries) {
       const fullPath = path.join(basePath, entry.name)
 
-      if (entry.isDirectory()) {
+      // Resolve symlinks to determine if they point to directories
+      const isDir = entry.isDirectory()
+      const isSymlinkDir =
+        entry.isSymbolicLink() &&
+        (await fs
+          .stat(fullPath)
+          .then((s) => s.isDirectory())
+          .catch(() => false))
+
+      if (isDir || isSymlinkDir) {
         // Check if directory contains SKILL.md
         const skillMdPath = path.join(fullPath, "SKILL.md")
         try {
@@ -158,6 +167,7 @@ export async function scanSkillsDir(basePath: string): Promise<AgentFile[]> {
             lastModified: stat.mtime.toISOString(),
             type: "skill",
             isSkillDir: true,
+            isSymlink: isSymlinkDir,
             supportingFiles,
           })
         } catch {
