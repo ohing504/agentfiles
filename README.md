@@ -16,9 +16,9 @@ Claude Code를 비롯한 AI 에이전트 도구들은 설정 파일 기반으로
 
 agentfiles는 이 세 가지를 한 곳에서 해결합니다:
 
-- **Discover** — Skills, MCP, Plugins를 통합 마켓플레이스에서 발견하고 원클릭 설치
-- **Understand** — AI가 설치된 컴포넌트를 선호 언어로 요약하고, 릴리즈 변경사항을 추적
-- **Cultivate** — AI와 대화하면서 내 워크플로우를 이해하고 개선
+- **Visibility** — 설정 파일들이 어디에 무엇이 있는지 한눈에 보인다
+- **Management** — Skills, MCP, Plugins, Hooks를 GUI에서 관리한다
+- **Understanding** — AI가 내 워크플로우를 선호 언어로 설명한다 (v1 예정)
 
 ## 주요 기능
 
@@ -30,10 +30,6 @@ agentfiles는 이 세 가지를 한 곳에서 해결합니다:
 - **MCP 서버** — 추가/제거/활성화 관리
 - **Settings** — Global/Project settings.json 편집
 - **다국어** — 영어/한국어 전환 (Paraglide i18n)
-- **AI 요약 카드** — 각 Skill/Hook/Plugin을 선호 언어로 한 문단 요약 `예정`
-- **번역 프리뷰** — 영어 파일의 선호 언어 번역 탭 `예정`
-- **Release Notes Hub** — Claude Code + Plugin 릴리즈 추적 및 AI 요약 `예정`
-- **통합 마켓플레이스** — Skills, MCP, Plugins 검색 및 원클릭 설치 `예정`
 
 ## 빠른 시작
 
@@ -103,9 +99,10 @@ pnpm typecheck     # TypeScript 타입 체크
 ```text
 src/
   routes/          # 파일 기반 라우팅 (hooks, global/*, project/*)
+  features/        # Feature-based 모듈 (dashboard, hooks-editor, skills-editor 등)
   services/        # 서버 사이드 서비스 (ConfigService, HooksService 등)
   server/          # Server Functions (hooks, settings, plugins, mcp 등)
-  components/      # UI 컴포넌트 (pages/, settings/, StatusBar 등)
+  components/      # 공유 UI 컴포넌트 (layout/, settings/, ui/ 등)
   hooks/           # React 커스텀 훅
   lib/             # 유틸리티
   shared/          # 공유 타입

@@ -6,28 +6,25 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **멀티 에이전트** 개발 워크플로우를 발견하고, 이해하고, 가꿔나가는 플랫폼. `npx agentfiles` 실행 시 `localhost:3000`에서 Chrome 앱 모드로 로컬 웹앱이 열리며, `~/.claude/`, `~/.codex/`, `~/.agents/` 및 프로젝트별 워크플로우를 통합 관리한다.
 
-현재 상태: v1 완료, v2 멀티 에이전트 재설계 진행 중
+현재 상태 및 로드맵은 `docs/WORK.md` 참조.
 
 ## Current Priority
 
-**v2 멀티 에이전트 재설계** — `docs/plans/2026-03-06-v2-multi-agent-redesign-design.md` 참조
+**v1 정식 릴리즈를 향해 개발 중** — 상세 일정은 `docs/WORK.md` 참조
 
-| Phase | 내용 | 상태 |
-|-------|------|------|
-| Phase 1 | 멀티 에이전트 기반 (AgentConfig, Main Agent 선택기) + UI 전면 재설계 | 다음 작업 |
-| Phase 2 | skills.sh 분석 + 전체 프레임워크 설계 | 예정 |
-| Phase 3 | 이해 레이어 (AI 요약, 번역, 파일 탐색) | 예정 |
-| Phase 4 | 마켓플레이스 (skills.sh 연동) | 예정 |
-| Phase 5 | AI 가이드 (채팅, 개선 제안) | 예정 |
+v1 목표:
+- 대시보드 패널 통합 (에디터 페이지 제거)
+- 디자인 개선 (Codex App / Claude Desktop / Notion 참고)
+- AI 요약 카드 (Claude CLI pipe)
+- 마켓플레이스 (skills.sh 연동)
 
 핵심 원칙:
 - 순수 shadcn/ui — 커스텀 스타일, 색상 변경 없음
 - skills.sh를 설치 백엔드로 활용 (자체 마켓플레이스 구현 X)
-- Claude + Codex 우선 지원, skills.sh 네이밍 준수 (AgentConfig, InstalledSkill 등)
+- 뷰어/모니터링 중심 — 수정(에디팅)은 IDE 위임
 
 ## Key Documents
 
-- `docs/plans/2026-03-06-v2-multi-agent-redesign-design.md` — **v2 멀티 에이전트 재설계** (현재 최우선)
 - `docs/FEATURES.md` — 제품 요구사항 및 로드맵 (what)
 - `docs/ARCHITECTURE.md` — 기술 설계 (how)
 - `docs/REFERENCES.md` — 경쟁 프로젝트, 참조 모델, 영감
@@ -79,7 +76,6 @@ src/
     index.tsx                ← Dashboard (/)
     hooks/route.tsx          ← Hooks 에디터 (/hooks)
     skills/route.tsx         ← Skills 에디터 (/skills)
-    # files/ 라우트 삭제됨 — 대시보드 Files 패널로 통합
     plugins/
       index.tsx              ← 리다이렉트 → /global/plugins
       $id/route.tsx          ← 리다이렉트
@@ -119,7 +115,6 @@ src/
       constants.tsx          ← FrontmatterBadges, addSkillSchema
   components/                ← 공유 UI 컴포넌트 (2곳 이상에서 사용)
     layout/                  ← Layout, Sidebar, StatusBar
-    pages/                   ← FilesPageContent, PluginsPageContent, McpPageContent (추후 feature로 이동 예정)
     settings/                ← GlobalSettingsPage, ProjectSettingsPage
     ui/                      ← shadcn 컴포넌트
     icons/                   ← 아이콘 컴포넌트
