@@ -302,9 +302,9 @@ export function BoardLayout() {
   }
 
   return (
-    <>
+    <div className="flex h-full flex-col">
       {/* Toolbar — outside scroll area, never scrolls horizontally */}
-      <div className="flex items-center justify-end px-3 pt-3 pb-1">
+      <div className="flex items-center justify-end px-3 pt-3 pb-1 shrink-0">
         <BoardColumnSettings
           columnOrder={
             boardConfig?.columnOrder ?? allColumnDefs.map((c) => c.id)
@@ -319,7 +319,7 @@ export function BoardLayout() {
         collisionDetection={closestCenter}
         onDragEnd={handleDragEnd}
       >
-        <div className="h-full overflow-auto pb-3">
+        <div className="flex-1 min-h-0 overflow-auto pb-3">
           <div className="inline-flex flex-col min-w-full">
             {/* Sticky column headers */}
             <div className="flex gap-3 sticky top-0 z-10 bg-background px-3 pt-1 pb-2 items-center">
@@ -397,6 +397,6 @@ export function BoardLayout() {
           />
         </SheetContent>
       </Sheet>
-    </>
+    </div>
   )
 }

@@ -56,19 +56,17 @@ export function SkillsPanel({
             <ListItem
               icon={ScrollText}
               label={file.frontmatter?.name ?? file.name}
+              description={
+                file.frontmatter?.description
+                  ? String(file.frontmatter.description)
+                  : undefined
+              }
               trailing={
-                <span className="flex items-center gap-1">
-                  {file.frontmatter?.description && (
-                    <span className="text-[10px] text-muted-foreground truncate max-w-[200px]">
-                      {String(file.frontmatter.description)}
-                    </span>
-                  )}
-                  <EntityActionDropdown
-                    actions={ENTITY_ACTIONS.skill}
-                    onAction={(id) => onAction?.(id, target)}
-                    itemName={file.frontmatter?.name ?? file.name}
-                  />
-                </span>
+                <EntityActionDropdown
+                  actions={ENTITY_ACTIONS.skill}
+                  onAction={(id) => onAction?.(id, target)}
+                  itemName={file.frontmatter?.name ?? file.name}
+                />
               }
               onClick={() => onSelectItem?.(target)}
             />

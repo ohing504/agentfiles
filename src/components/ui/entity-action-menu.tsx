@@ -168,7 +168,7 @@ export function EntityActionDropdown({
             type="button"
             variant="ghost"
             size="icon"
-            className="size-6 opacity-0 group-hover/item:opacity-100 transition-opacity"
+            className="size-6 opacity-0 group-hover/item:opacity-100 data-[state=open]:opacity-100 transition-opacity"
             onClick={(e) => e.stopPropagation()}
           >
             <MoreHorizontal className="size-4" />
