@@ -79,7 +79,7 @@ src/
     index.tsx                ← Dashboard (/)
     hooks/route.tsx          ← Hooks 에디터 (/hooks)
     skills/route.tsx         ← Skills 에디터 (/skills)
-    files/route.tsx          ← 리다이렉트 → /global/files
+    # files/ 라우트 삭제됨 — 대시보드 Files 패널로 통합
     plugins/
       index.tsx              ← 리다이렉트 → /global/plugins
       $id/route.tsx          ← 리다이렉트
@@ -89,7 +89,6 @@ src/
     global/
       route.tsx              ← Global 레이아웃
       settings/route.tsx     ← Global Settings
-      files/route.tsx        ← Global Files
       plugins/
         index.tsx            ← Global Plugins 목록
         $id/route.tsx        ← Plugin 상세
@@ -99,7 +98,6 @@ src/
     project/
       route.tsx              ← Project 레이아웃
       settings/route.tsx     ← Project Settings
-      files/route.tsx        ← Project Files
       plugins/
         index.tsx            ← Project Plugins 목록
         $id/route.tsx        ← Plugin 상세
@@ -196,6 +194,11 @@ tests/                       ← 테스트
 - context7 을 활용해서 최신 문서 기반으로 official 권장 사항을 따를 것
 - web search, context7 등을 통해 best practice 를 따를 것
 - 확장에 대비하는 것은 좋지만 과도한 오버엔지니어링을 피할 것
+
+### Plan Document Convention
+- 설계 문서 (`*-design.md`): 완료 시 Status를 `Completed`로 변경, 각 항목에 Done 표시
+- 실행 문서 (implementation plan): 완료 시 상세 태스크 단계를 제거하고 Summary만 유지
+- 완료된 문서는 정리하여 간결하게 유지
 
 ### Commit Convention
 - Use English for all commit messages, PR titles, and issue comments

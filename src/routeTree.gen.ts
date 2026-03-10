@@ -16,16 +16,13 @@ import { Route as PluginsRouteRouteImport } from './routes/plugins/route'
 import { Route as McpRouteRouteImport } from './routes/mcp/route'
 import { Route as HooksRouteRouteImport } from './routes/hooks/route'
 import { Route as GlobalRouteRouteImport } from './routes/global/route'
-import { Route as FilesRouteRouteImport } from './routes/files/route'
 import { Route as AgentsRouteRouteImport } from './routes/agents/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as ProjectSettingsRouteRouteImport } from './routes/project/settings/route'
-import { Route as ProjectFilesRouteRouteImport } from './routes/project/files/route'
 import { Route as PluginsIdRouteRouteImport } from './routes/plugins/$id/route'
 import { Route as McpNameRouteRouteImport } from './routes/mcp/$name/route'
 import { Route as GlobalSettingsRouteRouteImport } from './routes/global/settings/route'
-import { Route as GlobalFilesRouteRouteImport } from './routes/global/files/route'
 import { Route as ProjectPluginsIndexRouteImport } from './routes/project/plugins/index'
 import { Route as ProjectMcpIndexRouteImport } from './routes/project/mcp/index'
 import { Route as GlobalPluginsIndexRouteImport } from './routes/global/plugins/index'
@@ -70,11 +67,6 @@ const GlobalRouteRoute = GlobalRouteRouteImport.update({
   path: '/global',
   getParentRoute: () => rootRouteImport,
 } as any)
-const FilesRouteRoute = FilesRouteRouteImport.update({
-  id: '/files',
-  path: '/files',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AgentsRouteRoute = AgentsRouteRouteImport.update({
   id: '/agents',
   path: '/agents',
@@ -95,11 +87,6 @@ const ProjectSettingsRouteRoute = ProjectSettingsRouteRouteImport.update({
   path: '/settings',
   getParentRoute: () => ProjectRouteRoute,
 } as any)
-const ProjectFilesRouteRoute = ProjectFilesRouteRouteImport.update({
-  id: '/files',
-  path: '/files',
-  getParentRoute: () => ProjectRouteRoute,
-} as any)
 const PluginsIdRouteRoute = PluginsIdRouteRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -113,11 +100,6 @@ const McpNameRouteRoute = McpNameRouteRouteImport.update({
 const GlobalSettingsRouteRoute = GlobalSettingsRouteRouteImport.update({
   id: '/settings',
   path: '/settings',
-  getParentRoute: () => GlobalRouteRoute,
-} as any)
-const GlobalFilesRouteRoute = GlobalFilesRouteRouteImport.update({
-  id: '/files',
-  path: '/files',
   getParentRoute: () => GlobalRouteRoute,
 } as any)
 const ProjectPluginsIndexRoute = ProjectPluginsIndexRouteImport.update({
@@ -164,7 +146,6 @@ const GlobalMcpNameRouteRoute = GlobalMcpNameRouteRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/agents': typeof AgentsRouteRoute
-  '/files': typeof FilesRouteRoute
   '/global': typeof GlobalRouteRouteWithChildren
   '/hooks': typeof HooksRouteRoute
   '/mcp': typeof McpRouteRouteWithChildren
@@ -172,11 +153,9 @@ export interface FileRoutesByFullPath {
   '/project': typeof ProjectRouteRouteWithChildren
   '/settings': typeof SettingsRouteRoute
   '/skills': typeof SkillsRouteRoute
-  '/global/files': typeof GlobalFilesRouteRoute
   '/global/settings': typeof GlobalSettingsRouteRoute
   '/mcp/$name': typeof McpNameRouteRoute
   '/plugins/$id': typeof PluginsIdRouteRoute
-  '/project/files': typeof ProjectFilesRouteRoute
   '/project/settings': typeof ProjectSettingsRouteRoute
   '/api/health': typeof ApiHealthRoute
   '/global/mcp/$name': typeof GlobalMcpNameRouteRoute
@@ -191,7 +170,6 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/agents': typeof AgentsRouteRoute
-  '/files': typeof FilesRouteRoute
   '/global': typeof GlobalRouteRouteWithChildren
   '/hooks': typeof HooksRouteRoute
   '/mcp': typeof McpRouteRouteWithChildren
@@ -199,11 +177,9 @@ export interface FileRoutesByTo {
   '/project': typeof ProjectRouteRouteWithChildren
   '/settings': typeof SettingsRouteRoute
   '/skills': typeof SkillsRouteRoute
-  '/global/files': typeof GlobalFilesRouteRoute
   '/global/settings': typeof GlobalSettingsRouteRoute
   '/mcp/$name': typeof McpNameRouteRoute
   '/plugins/$id': typeof PluginsIdRouteRoute
-  '/project/files': typeof ProjectFilesRouteRoute
   '/project/settings': typeof ProjectSettingsRouteRoute
   '/api/health': typeof ApiHealthRoute
   '/global/mcp/$name': typeof GlobalMcpNameRouteRoute
@@ -219,7 +195,6 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/agents': typeof AgentsRouteRoute
-  '/files': typeof FilesRouteRoute
   '/global': typeof GlobalRouteRouteWithChildren
   '/hooks': typeof HooksRouteRoute
   '/mcp': typeof McpRouteRouteWithChildren
@@ -227,11 +202,9 @@ export interface FileRoutesById {
   '/project': typeof ProjectRouteRouteWithChildren
   '/settings': typeof SettingsRouteRoute
   '/skills': typeof SkillsRouteRoute
-  '/global/files': typeof GlobalFilesRouteRoute
   '/global/settings': typeof GlobalSettingsRouteRoute
   '/mcp/$name': typeof McpNameRouteRoute
   '/plugins/$id': typeof PluginsIdRouteRoute
-  '/project/files': typeof ProjectFilesRouteRoute
   '/project/settings': typeof ProjectSettingsRouteRoute
   '/api/health': typeof ApiHealthRoute
   '/global/mcp/$name': typeof GlobalMcpNameRouteRoute
@@ -248,7 +221,6 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/agents'
-    | '/files'
     | '/global'
     | '/hooks'
     | '/mcp'
@@ -256,11 +228,9 @@ export interface FileRouteTypes {
     | '/project'
     | '/settings'
     | '/skills'
-    | '/global/files'
     | '/global/settings'
     | '/mcp/$name'
     | '/plugins/$id'
-    | '/project/files'
     | '/project/settings'
     | '/api/health'
     | '/global/mcp/$name'
@@ -275,7 +245,6 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/agents'
-    | '/files'
     | '/global'
     | '/hooks'
     | '/mcp'
@@ -283,11 +252,9 @@ export interface FileRouteTypes {
     | '/project'
     | '/settings'
     | '/skills'
-    | '/global/files'
     | '/global/settings'
     | '/mcp/$name'
     | '/plugins/$id'
-    | '/project/files'
     | '/project/settings'
     | '/api/health'
     | '/global/mcp/$name'
@@ -302,7 +269,6 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/agents'
-    | '/files'
     | '/global'
     | '/hooks'
     | '/mcp'
@@ -310,11 +276,9 @@ export interface FileRouteTypes {
     | '/project'
     | '/settings'
     | '/skills'
-    | '/global/files'
     | '/global/settings'
     | '/mcp/$name'
     | '/plugins/$id'
-    | '/project/files'
     | '/project/settings'
     | '/api/health'
     | '/global/mcp/$name'
@@ -330,7 +294,6 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AgentsRouteRoute: typeof AgentsRouteRoute
-  FilesRouteRoute: typeof FilesRouteRoute
   GlobalRouteRoute: typeof GlobalRouteRouteWithChildren
   HooksRouteRoute: typeof HooksRouteRoute
   McpRouteRoute: typeof McpRouteRouteWithChildren
@@ -392,13 +355,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GlobalRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/files': {
-      id: '/files'
-      path: '/files'
-      fullPath: '/files'
-      preLoaderRoute: typeof FilesRouteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/agents': {
       id: '/agents'
       path: '/agents'
@@ -427,13 +383,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProjectSettingsRouteRouteImport
       parentRoute: typeof ProjectRouteRoute
     }
-    '/project/files': {
-      id: '/project/files'
-      path: '/files'
-      fullPath: '/project/files'
-      preLoaderRoute: typeof ProjectFilesRouteRouteImport
-      parentRoute: typeof ProjectRouteRoute
-    }
     '/plugins/$id': {
       id: '/plugins/$id'
       path: '/$id'
@@ -453,13 +402,6 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/global/settings'
       preLoaderRoute: typeof GlobalSettingsRouteRouteImport
-      parentRoute: typeof GlobalRouteRoute
-    }
-    '/global/files': {
-      id: '/global/files'
-      path: '/files'
-      fullPath: '/global/files'
-      preLoaderRoute: typeof GlobalFilesRouteRouteImport
       parentRoute: typeof GlobalRouteRoute
     }
     '/project/plugins/': {
@@ -522,7 +464,6 @@ declare module '@tanstack/react-router' {
 }
 
 interface GlobalRouteRouteChildren {
-  GlobalFilesRouteRoute: typeof GlobalFilesRouteRoute
   GlobalSettingsRouteRoute: typeof GlobalSettingsRouteRoute
   GlobalMcpNameRouteRoute: typeof GlobalMcpNameRouteRoute
   GlobalPluginsIdRouteRoute: typeof GlobalPluginsIdRouteRoute
@@ -531,7 +472,6 @@ interface GlobalRouteRouteChildren {
 }
 
 const GlobalRouteRouteChildren: GlobalRouteRouteChildren = {
-  GlobalFilesRouteRoute: GlobalFilesRouteRoute,
   GlobalSettingsRouteRoute: GlobalSettingsRouteRoute,
   GlobalMcpNameRouteRoute: GlobalMcpNameRouteRoute,
   GlobalPluginsIdRouteRoute: GlobalPluginsIdRouteRoute,
@@ -568,7 +508,6 @@ const PluginsRouteRouteWithChildren = PluginsRouteRoute._addFileChildren(
 )
 
 interface ProjectRouteRouteChildren {
-  ProjectFilesRouteRoute: typeof ProjectFilesRouteRoute
   ProjectSettingsRouteRoute: typeof ProjectSettingsRouteRoute
   ProjectMcpNameRouteRoute: typeof ProjectMcpNameRouteRoute
   ProjectPluginsIdRouteRoute: typeof ProjectPluginsIdRouteRoute
@@ -577,7 +516,6 @@ interface ProjectRouteRouteChildren {
 }
 
 const ProjectRouteRouteChildren: ProjectRouteRouteChildren = {
-  ProjectFilesRouteRoute: ProjectFilesRouteRoute,
   ProjectSettingsRouteRoute: ProjectSettingsRouteRoute,
   ProjectMcpNameRouteRoute: ProjectMcpNameRouteRoute,
   ProjectPluginsIdRouteRoute: ProjectPluginsIdRouteRoute,
@@ -592,7 +530,6 @@ const ProjectRouteRouteWithChildren = ProjectRouteRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AgentsRouteRoute: AgentsRouteRoute,
-  FilesRouteRoute: FilesRouteRoute,
   GlobalRouteRoute: GlobalRouteRouteWithChildren,
   HooksRouteRoute: HooksRouteRoute,
   McpRouteRoute: McpRouteRouteWithChildren,

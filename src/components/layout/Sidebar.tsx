@@ -1,6 +1,5 @@
 import { Link } from "@tanstack/react-router"
 import {
-  FolderOpenIcon,
   LayoutDashboardIcon,
   PanelLeftIcon,
   Plug2Icon,
@@ -64,14 +63,6 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
                   >
                     <LayoutDashboardIcon />
                     <span>{m.nav_dashboard()}</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild tooltip={m.nav_files()}>
-                  <Link to="/files" activeProps={{ "data-active": true }}>
-                    <FolderOpenIcon />
-                    <span>{m.nav_files()}</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
