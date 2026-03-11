@@ -132,9 +132,10 @@ tests/                       ← 테스트
 - 확장에 대비하는 것은 좋지만 과도한 오버엔지니어링을 피할 것
 
 ### Plan Document Convention
-- 설계 문서 (`*-design.md`): 완료 시 Status를 `Completed`로 변경, 각 항목에 Done 표시
-- 실행 문서 (implementation plan): 완료 시 상세 태스크 단계를 제거하고 Summary만 유지
-- 완료된 문서는 정리하여 간결하게 유지
+- 설계 문서 (`*-design.md`): 구현 완료 시 삭제. 유효한 규칙은 CLAUDE.md Conventions에 승격
+- 실행 문서 (implementation plan): 구현 완료 시 삭제
+- WORK.md Shipped에 한 줄 요약만 유지
+- 미구현 설계 문서만 `docs/plans/`에 보관
 
 ### Commit Convention
 - Use English for all commit messages, PR titles, and issue comments
