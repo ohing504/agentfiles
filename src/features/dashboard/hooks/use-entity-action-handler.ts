@@ -3,6 +3,8 @@ import { useNavigate } from "@tanstack/react-router"
 import { toast } from "sonner"
 import { useProjectContext } from "@/components/ProjectContext"
 import type { EntityActionId } from "@/lib/entity-actions"
+import { queryKeys } from "@/lib/query-keys"
+import { m } from "@/paraglide/messages"
 import type { DashboardDetailTarget } from "../types"
 
 type NonNullTarget = NonNullable<DashboardDetailTarget>
@@ -45,10 +47,58 @@ export function useEntityActionHandler(onAfterDelete?: () => void) {
         }
 
         case "delete": {
-          await handleDelete(target, activeProjectPath)
-          queryClient.invalidateQueries()
+          const itemName = getItemName(target)
           onAfterDelete?.()
-          break
+          await toast.promise(
+            handleDelete(target, activeProjectPath).then(() => {
+              queryClient.invalidateQueries({
+                queryKey: queryKeys.agentFiles.all,
+              })
+              queryClient.invalidateQueries({
+                queryKey: queryKeys.overview.all,
+              })
+            }),
+            {
+              loading: m.toast_deleting({ name: itemName }),
+              success: m.toast_deleted({ name: itemName }),
+              error: (err: unknown) =>
+                err instanceof Error ? err.message : m.toast_delete_failed(),
+            },
+          )
+          return
+        }
+
+        case "remove-from-agent": {
+          if (target.type === "skill") {
+            const itemName = target.skill.name
+            onAfterDelete?.()
+            const { deleteItemFn } = await import("@/server/items")
+            await toast.promise(
+              deleteItemFn({
+                data: {
+                  type: "skill",
+                  name: target.skill.name,
+                  scope: target.skill.scope,
+                  agent: "claude-code",
+                  projectPath: activeProjectPath,
+                },
+              }).then(() => {
+                queryClient.invalidateQueries({
+                  queryKey: queryKeys.agentFiles.all,
+                })
+                queryClient.invalidateQueries({
+                  queryKey: queryKeys.overview.all,
+                })
+              }),
+              {
+                loading: m.toast_removing({ name: itemName }),
+                success: m.toast_removed_from_agent({ name: itemName }),
+                error: (err: unknown) =>
+                  err instanceof Error ? err.message : m.toast_remove_failed(),
+              },
+            )
+          }
+          return
         }
       }
     } catch (err) {
@@ -58,6 +108,25 @@ export function useEntityActionHandler(onAfterDelete?: () => void) {
 }
 
 // --- helpers ---
+
+function getItemName(target: NonNullTarget): string {
+  switch (target.type) {
+    case "skill":
+      return target.skill.name
+    case "agent":
+      return target.agent.name
+    case "plugin":
+      return target.plugin.id
+    case "mcp":
+      return target.server.name
+    case "hook":
+      return target.event
+    case "memory":
+      return target.file.name
+    case "file":
+      return target.filePath
+  }
+}
 
 function getFilePath(target: NonNullTarget): string | undefined {
   switch (target.type) {

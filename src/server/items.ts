@@ -112,17 +112,30 @@ export const deleteItemFn = createServerFn({ method: "POST" })
       name: z.string().min(1),
       scope: scopeSchema,
       projectPath: z.string().optional(),
+      agent: z.string().optional(),
     }),
   )
   .handler(async ({ data }) => {
+    const { validateItemName } = await import("@/server/validation")
+    validateItemName(data.name)
+
+    if (data.type === "skill") {
+      const { removeSkill } = await import("@/services/skills-cli-service")
+      const result = await removeSkill({
+        name: data.name,
+        scope: data.scope as "user" | "project",
+        agent: data.agent,
+        projectPath: data.projectPath,
+      })
+      if (!result.success) throw new Error(result.output)
+      return { success: true }
+    }
+
     const path = await import("node:path")
     const { getGlobalConfigPath, getProjectConfigPath } = await import(
       "@/services/config-service"
     )
     const { deleteFile } = await import("@/services/file-writer")
-    const { validateItemName } = await import("@/server/validation")
-
-    validateItemName(data.name)
 
     const basePath =
       data.scope === "user"
