@@ -604,7 +604,11 @@ export function BoardLayout() {
           showCloseButton={false}
           className="data-[side=right]:w-2/3 data-[side=right]:lg:w-1/2 data-[side=right]:sm:max-w-none min-w-[400px] p-0 flex flex-col"
         >
-          <DetailPanelContent target={selected} />
+          <DetailPanelContent
+            target={selected}
+            onClose={() => setSelected(null)}
+            onAction={handleAction}
+          />
         </SheetContent>
       </Sheet>
     </div>
