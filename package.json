@@ -1,6 +1,7 @@
 {
   "name": "@ohing504/agentfiles",
   "type": "module",
+  "packageManager": "pnpm@10.30.3",
   "version": "0.2.0",
   "description": "AI agent configuration file manager and community platform",
   "license": "MIT",
