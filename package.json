@@ -20,8 +20,8 @@
     ".output/"
   ],
   "scripts": {
-    "dev": "vite dev --port 3000",
-    "dev:app": "vite dev --port 3000 & sleep 2 && open -a 'Google Chrome' --args --app=http://localhost:3000 && wait",
+    "dev": "vite dev --port 4747",
+    "dev:app": "vite dev --port 4747 & sleep 2 && open -a 'Google Chrome' --args --app=http://localhost:4747 && wait",
     "build": "vite build && node scripts/build-cli.mjs",
     "build:cli": "node scripts/build-cli.mjs",
     "preview": "vite preview",

@@ -55,7 +55,7 @@ Opens automatically in Chrome app mode on localhost.
 
 ```bash
 pnpm install
-pnpm dev          # Dev server at localhost:3000
+pnpm dev          # Dev server at localhost:4747
 ```
 
 ### Commands

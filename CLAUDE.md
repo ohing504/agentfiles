@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**멀티 에이전트** 개발 워크플로우를 발견하고, 이해하고, 가꿔나가는 플랫폼. `npx agentfiles` 실행 시 `localhost:3000`에서 Chrome 앱 모드로 로컬 웹앱이 열리며, `~/.claude/`, `~/.codex/`, `~/.agents/` 및 프로젝트별 워크플로우를 통합 관리한다.
+**멀티 에이전트** 개발 워크플로우를 발견하고, 이해하고, 가꿔나가는 플랫폼. `npx agentfiles` 실행 시 `localhost:4747`에서 Chrome 앱 모드로 로컬 웹앱이 열리며, `~/.claude/`, `~/.codex/`, `~/.agents/` 및 프로젝트별 워크플로우를 통합 관리한다.
 
 현재 상태 및 로드맵은 `docs/WORK.md` 참조.
 
@@ -58,7 +58,7 @@ Browser (React SSR) → Server Functions → 파일시스템
 ## Development Commands
 
 ```bash
-pnpm dev          # 개발 서버 (Vinxi dev, localhost:3000)
+pnpm dev          # 개발 서버 (Vinxi dev, localhost:4747)
 pnpm build        # 프로덕션 빌드 (Vinxi/Nitro)
 pnpm start        # CLI 실행 (빌드 후 프로덕션 서버 + 브라우저)
 pnpm test         # Vitest 실행

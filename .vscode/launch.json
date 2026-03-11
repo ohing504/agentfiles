@@ -34,9 +34,9 @@
       "name": "Chrome App Mode",
       "type": "chrome",
       "request": "launch",
-      "url": "http://localhost:3000",
+      "url": "http://localhost:4747",
       "webRoot": "${workspaceFolder}/src",
-      "runtimeArgs": ["--app=http://localhost:3000"]
+      "runtimeArgs": ["--app=http://localhost:4747"]
     },
     {
       "name": "Debug Tests",

@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url"
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
-const DEFAULT_PORT = 3000
+const DEFAULT_PORT = 4747
 const MAX_PORT_ATTEMPTS = 20
 const HOST = "127.0.0.1"
 

@@ -62,7 +62,7 @@ pnpm install
 pnpm dev
 ```
 
-`localhost:3000` 주소로 개발 서버가 실행됩니다.
+`localhost:4747` 주소로 개발 서버가 실행됩니다.
 
 ### 프로덕션 빌드
 
