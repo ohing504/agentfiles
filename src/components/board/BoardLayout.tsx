@@ -387,6 +387,7 @@ export function BoardLayout() {
             scopeFilter={scope}
             onSelectItem={common.onSelectItem}
             onAction={common.onAction}
+            emptyDescription={m.board_no_mcp()}
             renderTrailing={(server) => (
               <span className="flex items-center gap-1">
                 <Switch
@@ -409,15 +410,30 @@ export function BoardLayout() {
         )
       case "skills":
         return (
-          <EntityListPanel config={skillConfig} items={skills} {...common} />
+          <EntityListPanel
+            config={skillConfig}
+            items={skills}
+            {...common}
+            emptyDescription={m.board_no_skills()}
+          />
         )
       case "agents":
         return (
-          <EntityListPanel config={agentConfig} items={agents} {...common} />
+          <EntityListPanel
+            config={agentConfig}
+            items={agents}
+            {...common}
+            emptyDescription={m.board_no_agents()}
+          />
         )
       case "hooks":
         return (
-          <EntityListPanel config={hookConfig} items={hookItems} {...common} />
+          <EntityListPanel
+            config={hookConfig}
+            items={hookItems}
+            {...common}
+            emptyDescription={m.board_no_hooks()}
+          />
         )
       case "memory":
         return (
@@ -425,6 +441,7 @@ export function BoardLayout() {
             config={memoryConfig}
             items={memoryFiles}
             onSelectItem={common.onSelectItem}
+            emptyDescription={m.board_no_memory()}
           />
         )
       case "lsp":
