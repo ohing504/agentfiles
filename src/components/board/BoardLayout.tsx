@@ -232,16 +232,18 @@ export function BoardLayout() {
 
   // ── Data queries (lifted from individual panels) ──
   const {
-    query: { data: skills = [] },
+    query: { data: skills = [], isLoading: skillsLoading },
   } = useAgentFiles("skill")
   const {
-    query: { data: agents = [] },
+    query: { data: agents = [], isLoading: agentsLoading },
   } = useAgentFiles("agent")
-  const { data: globalHooks = {} } = useHooksQuery("user")
-  const { data: projectHooks = {} } = useHooksQuery("project")
-  const { data: mcpServers = [] } = useMcpQuery()
+  const { data: globalHooks = {}, isLoading: globalHooksLoading } =
+    useHooksQuery("user")
+  const { data: projectHooks = {}, isLoading: projectHooksLoading } =
+    useHooksQuery("project")
+  const { data: mcpServers = [], isLoading: mcpLoading } = useMcpQuery()
   const { toggleMutation } = useMcpMutations()
-  const { data: memoryFiles = [] } = useMemoryFiles()
+  const { data: memoryFiles = [], isLoading: memoryLoading } = useMemoryFiles()
 
   const hookItems = useMemo<HookItem[]>(() => {
     return [
@@ -388,6 +390,7 @@ export function BoardLayout() {
             onSelectItem={common.onSelectItem}
             onAction={common.onAction}
             emptyDescription={m.board_no_mcp()}
+            isLoading={mcpLoading}
             renderTrailing={(server) => (
               <span className="flex items-center gap-1">
                 <Switch
@@ -415,6 +418,7 @@ export function BoardLayout() {
             items={skills}
             {...common}
             emptyDescription={m.board_no_skills()}
+            isLoading={skillsLoading}
           />
         )
       case "agents":
@@ -424,6 +428,7 @@ export function BoardLayout() {
             items={agents}
             {...common}
             emptyDescription={m.board_no_agents()}
+            isLoading={agentsLoading}
           />
         )
       case "hooks":
@@ -433,6 +438,7 @@ export function BoardLayout() {
             items={hookItems}
             {...common}
             emptyDescription={m.board_no_hooks()}
+            isLoading={globalHooksLoading && projectHooksLoading}
           />
         )
       case "memory":
@@ -442,6 +448,7 @@ export function BoardLayout() {
             items={memoryFiles}
             onSelectItem={common.onSelectItem}
             emptyDescription={m.board_no_memory()}
+            isLoading={memoryLoading}
           />
         )
       case "lsp":

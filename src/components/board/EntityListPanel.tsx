@@ -5,6 +5,7 @@ import {
   EntityActionDropdown,
 } from "@/components/ui/entity-action-menu"
 import { ListItem, ListSubItem } from "@/components/ui/list-item"
+import { Skeleton } from "@/components/ui/skeleton"
 import type { EntityConfig } from "@/config/entity-registry"
 import type { EntityActionId } from "@/lib/entity-actions"
 
@@ -18,6 +19,25 @@ interface EntityListPanelProps<T> {
   /** 아이템별 trailing 위젯 (예: MCP Switch) */
   renderTrailing?: (item: T) => React.ReactNode
   emptyDescription?: string
+  /** 로딩 중 Skeleton 표시 */
+  isLoading?: boolean
+}
+
+function SkeletonList({ count = 3 }: { count?: number }) {
+  return (
+    <div className="flex flex-col gap-1 p-1">
+      {Array.from({ length: count }, (_, i) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton placeholders
+        <div key={i} className="flex items-center gap-3 px-3 py-2">
+          <Skeleton className="size-4 rounded" />
+          <div className="flex-1 space-y-1.5">
+            <Skeleton className="h-3.5 w-3/4" />
+            <Skeleton className="h-3 w-1/2" />
+          </div>
+        </div>
+      ))}
+    </div>
+  )
 }
 
 export function EntityListPanel<T>({
@@ -29,8 +49,14 @@ export function EntityListPanel<T>({
   onAction,
   renderTrailing,
   emptyDescription,
+  isLoading,
 }: EntityListPanelProps<T>) {
   const Icon = config.icon
+
+  // --- Loading state ---
+  if (isLoading) {
+    return <SkeletonList />
+  }
 
   // scopeFilter 적용
   const filtered = scopeFilter
