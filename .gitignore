@@ -13,6 +13,7 @@ dist-ssr/
 # env
 .env
 .env.local
+.npmrc
 *.local
 
 # oh-my-claudecode state
