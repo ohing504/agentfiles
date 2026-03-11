@@ -67,7 +67,11 @@ export function useSkillMutations() {
   })
 
   const deleteMutation = useMutation({
-    mutationFn: async (params: { name: string; scope: Scope }) => {
+    mutationFn: async (params: {
+      name: string
+      scope: Scope
+      agent?: string
+    }) => {
       const { deleteItemFn } = await import("@/server/items")
       return deleteItemFn({
         data: {

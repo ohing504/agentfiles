@@ -42,29 +42,35 @@ function getActionLabel(action: EntityAction): string {
       return m.action_edit()
     case "delete":
       return m.action_delete()
+    case "remove-from-agent":
+      return m.action_remove_from_agent()
     default:
       return action.label
   }
 }
 
-// --- Shared delete confirmation dialog ---
+// --- Shared delete/remove confirmation dialog ---
 
-function DeleteConfirmDialog({
-  open,
+type DestructiveActionId = "delete" | "remove-from-agent" | null
+
+function DestructiveConfirmDialog({
+  actionId,
   onOpenChange,
   title,
   description,
+  confirmLabel,
   onConfirm,
 }: {
-  open: boolean
+  actionId: DestructiveActionId
   onOpenChange: (open: boolean) => void
   title?: string
   description?: string
+  confirmLabel?: string
   onConfirm: () => void
 }) {
   return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent>
+    <AlertDialog open={actionId !== null} onOpenChange={onOpenChange}>
+      <AlertDialogContent onClick={(e) => e.stopPropagation()}>
         <AlertDialogHeader>
           <AlertDialogTitle>{title ?? m.action_delete()}</AlertDialogTitle>
           {description && (
@@ -79,12 +85,35 @@ function DeleteConfirmDialog({
               onOpenChange(false)
             }}
           >
-            {m.action_delete()}
+            {confirmLabel ?? m.action_delete()}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
   )
+}
+
+function getDestructiveDialogProps(
+  actionId: DestructiveActionId,
+  itemName?: string,
+  deleteTitle?: string,
+  deleteDescription?: string,
+): { title?: string; description?: string; confirmLabel?: string } {
+  if (actionId === "remove-from-agent") {
+    return {
+      title: itemName
+        ? `${m.action_remove_from_agent()} "${itemName}"?`
+        : m.action_remove_from_agent(),
+      description: m.action_remove_from_agent_desc(),
+      confirmLabel: m.action_remove_from_agent(),
+    }
+  }
+  return {
+    title:
+      deleteTitle ??
+      (itemName ? `${m.action_delete()} "${itemName}"?` : undefined),
+    description: deleteDescription ?? m.action_delete_all_desc(),
+  }
 }
 
 // --- EntityActionContextMenu (right-click) ---
@@ -106,9 +135,17 @@ export function EntityActionContextMenu({
   deleteDescription,
   children,
 }: ActionMenuSharedProps & { children: React.ReactNode }) {
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [confirmAction, setConfirmAction] =
+    useState<DestructiveActionId>(null)
 
   if (actions.length === 0) return <>{children}</>
+
+  const dialogProps = getDestructiveDialogProps(
+    confirmAction,
+    itemName,
+    deleteTitle,
+    deleteDescription,
+  )
 
   return (
     <>
@@ -121,8 +158,11 @@ export function EntityActionContextMenu({
               <ContextMenuItem
                 variant={action.variant}
                 onSelect={() => {
-                  if (action.id === "delete") {
-                    setShowDeleteConfirm(true)
+                  if (
+                    action.id === "delete" ||
+                    action.id === "remove-from-agent"
+                  ) {
+                    setConfirmAction(action.id)
                   } else {
                     onAction(action.id)
                   }
@@ -136,12 +176,15 @@ export function EntityActionContextMenu({
         </ContextMenuContent>
       </ContextMenu>
 
-      <DeleteConfirmDialog
-        open={showDeleteConfirm}
-        onOpenChange={setShowDeleteConfirm}
-        title={deleteTitle ?? (itemName ? `${m.action_delete()} "${itemName}"?` : undefined)}
-        description={deleteDescription}
-        onConfirm={() => onAction("delete")}
+      <DestructiveConfirmDialog
+        actionId={confirmAction}
+        onOpenChange={(open) => {
+          if (!open) setConfirmAction(null)
+        }}
+        {...dialogProps}
+        onConfirm={() => {
+          if (confirmAction) onAction(confirmAction)
+        }}
       />
     </>
   )
@@ -156,9 +199,17 @@ export function EntityActionDropdown({
   deleteTitle,
   deleteDescription,
 }: ActionMenuSharedProps) {
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [confirmAction, setConfirmAction] =
+    useState<DestructiveActionId>(null)
 
   if (actions.length === 0) return null
+
+  const dialogProps = getDestructiveDialogProps(
+    confirmAction,
+    itemName,
+    deleteTitle,
+    deleteDescription,
+  )
 
   return (
     <>
@@ -174,7 +225,7 @@ export function EntityActionDropdown({
             <MoreHorizontal className="size-4" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
+        <DropdownMenuContent align="end" className="min-w-44">
           {actions.map((action) => (
             <span key={action.id}>
               {action.separatorBefore && <DropdownMenuSeparator />}
@@ -182,8 +233,11 @@ export function EntityActionDropdown({
                 variant={action.variant}
                 onClick={(e) => e.stopPropagation()}
                 onSelect={() => {
-                  if (action.id === "delete") {
-                    setShowDeleteConfirm(true)
+                  if (
+                    action.id === "delete" ||
+                    action.id === "remove-from-agent"
+                  ) {
+                    setConfirmAction(action.id)
                   } else {
                     onAction(action.id)
                   }
@@ -197,12 +251,15 @@ export function EntityActionDropdown({
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <DeleteConfirmDialog
-        open={showDeleteConfirm}
-        onOpenChange={setShowDeleteConfirm}
-        title={deleteTitle ?? (itemName ? `${m.action_delete()} "${itemName}"?` : undefined)}
-        description={deleteDescription}
-        onConfirm={() => onAction("delete")}
+      <DestructiveConfirmDialog
+        actionId={confirmAction}
+        onOpenChange={(open) => {
+          if (!open) setConfirmAction(null)
+        }}
+        {...dialogProps}
+        onConfirm={() => {
+          if (confirmAction) onAction(confirmAction)
+        }}
       />
     </>
   )

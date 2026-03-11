@@ -9,6 +9,7 @@ export type EntityActionId =
   | "open-folder"
   | "edit"
   | "delete"
+  | "remove-from-agent"
 
 export interface EntityAction {
   id: EntityActionId
@@ -53,18 +54,25 @@ const edit: EntityAction = {
   separatorBefore: true,
 }
 
-const deleteAction: EntityAction = {
-  id: "delete",
-  label: "Delete",
+const removeFromAgent: EntityAction = {
+  id: "remove-from-agent",
+  label: "Remove from Agent",
   icon: Trash2,
   variant: "destructive",
   separatorBefore: true,
 }
 
+const deleteAction: EntityAction = {
+  id: "delete",
+  label: "Delete",
+  icon: Trash2,
+  variant: "destructive",
+}
+
 // --- Entity action definitions ---
 
 export const ENTITY_ACTIONS: Record<EntityActionType, EntityAction[]> = {
-  skill: [openVscode, openCursor, openFolder, deleteAction],
+  skill: [openVscode, openCursor, openFolder, removeFromAgent, deleteAction],
   agent: [openVscode, openCursor, edit, deleteAction],
   hook: [openVscode, openCursor, edit, deleteAction],
   plugin: [openVscode, openCursor, deleteAction],
