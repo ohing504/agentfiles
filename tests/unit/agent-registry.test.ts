@@ -4,6 +4,7 @@ import {
   getAgentRegistry,
   getSupportedEntities,
 } from "@/services/agent-registry"
+import type { AgentType } from "@/shared/types"
 
 describe("agent-registry", () => {
   it("returns all registered agents", () => {
@@ -15,16 +16,16 @@ describe("agent-registry", () => {
   it("returns config for claude-code", () => {
     const config = getAgentConfig("claude-code")
     expect(config).toBeDefined()
-    expect(config!.displayName).toBe("Claude Code")
-    expect(config!.entities).toContain("skill")
-    expect(config!.entities).toContain("plugin")
-    expect(config!.entities).toContain("mcp")
-    expect(config!.entities).toContain("hook")
-    expect(config!.entities).toContain("agent")
+    expect(config?.displayName).toBe("Claude Code")
+    expect(config?.entities).toContain("skill")
+    expect(config?.entities).toContain("plugin")
+    expect(config?.entities).toContain("mcp")
+    expect(config?.entities).toContain("hook")
+    expect(config?.entities).toContain("agent")
   })
 
   it("returns undefined for unknown agent", () => {
-    const config = getAgentConfig("unknown-agent" as any)
+    const config = getAgentConfig("unknown-agent" as AgentType)
     expect(config).toBeUndefined()
   })
 
@@ -35,7 +36,7 @@ describe("agent-registry", () => {
   })
 
   it("returns empty array for unknown agent entities", () => {
-    const entities = getSupportedEntities("unknown" as any)
+    const entities = getSupportedEntities("unknown" as AgentType)
     expect(entities).toEqual([])
   })
 })

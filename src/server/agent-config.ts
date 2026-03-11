@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start"
-import type { BoardColumnId } from "@/shared/types"
+import type { AgentType, BoardColumnId } from "@/shared/types"
 
 export const getMainAgentFn = createServerFn({ method: "GET" }).handler(
   async () => {
@@ -14,9 +14,9 @@ export const setMainAgentFn = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const { setMainAgent } = await import("@/services/agentfiles-config")
     const { getAgentConfig } = await import("@/services/agent-registry")
-    const config = getAgentConfig(data.agent as any)
+    const config = getAgentConfig(data.agent as AgentType)
     if (!config) throw new Error(`Unknown agent: ${data.agent}`)
-    await setMainAgent(data.agent as any)
+    await setMainAgent(data.agent as AgentType)
     return { success: true }
   })
 
