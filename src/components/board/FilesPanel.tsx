@@ -1,9 +1,10 @@
 import { useQuery } from "@tanstack/react-query"
-import { FileIcon, Loader2Icon } from "lucide-react"
+import { FileIcon } from "lucide-react"
 import { useState } from "react"
 import { FileTreeNode } from "@/components/files-editor/components/FileTree"
 import { useProjectContext } from "@/components/ProjectContext"
 import { Empty, EmptyDescription, EmptyMedia } from "@/components/ui/empty"
+import { Skeleton } from "@/components/ui/skeleton"
 import { m } from "@/paraglide/messages"
 import { getFileTreeFn } from "@/server/files"
 import type { DashboardDetailTarget } from "./types"
@@ -39,8 +40,14 @@ export function FilesPanel({ scopeFilter, onSelectItem }: FilesPanelProps) {
 
   if (isLoading)
     return (
-      <div className="flex items-center justify-center py-6">
-        <Loader2Icon className="size-4 animate-spin text-muted-foreground" />
+      <div className="flex flex-col gap-1 p-1">
+        {Array.from({ length: 4 }, (_, i) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton placeholders
+          <div key={i} className="flex items-center gap-3 px-3 py-2">
+            <Skeleton className="size-4 rounded" />
+            <Skeleton className="h-3.5 flex-1" />
+          </div>
+        ))}
       </div>
     )
 
