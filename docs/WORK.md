@@ -8,13 +8,8 @@
 
 ### v1 — 정식 릴리즈
 
-**대시보드 통합 + 정리**
+**디자인 + 기능**
 - [ ] 패널별 디자인 개선 (Codex App / Claude Desktop / Notion 참고)
-- [ ] 에디터 페이지 → 대시보드 패널 통합 (Skills, Hooks, MCP, Plugins)
-- [ ] 사이드바 네비게이션 단순화 (에디터 페이지 제거에 맞춰 정리)
-- [ ] 레거시 코드/파일 정리 (안 쓰는 컴포넌트, 라우트 제거)
-
-**기능 추가**
 - [ ] 선호 언어 설정 — Settings에 preferred language 추가
 - [ ] AI 요약 카드 — skill/hook/plugin/MCP에 대한 선호 언어 요약 자동 생성 (Claude CLI pipe 모드)
   - 상세 패널에 Overview 탭 추가: 트리거 조건, 핵심 동작, 커스터마이징 포인트
@@ -39,6 +34,7 @@
 
 ## Shipped
 
+- **엔티티 시스템 아키텍처 재설계** (2026-03-11) — EntityConfig + EntityListPanel/EntityDetailPanel 제네릭 시스템으로 7개 엔티티 통합. 에디터 페이지 제거, features/ 디렉토리 해체, 레거시 코드 전면 정리. Panel/DetailPanel compound components 도입.
 - **Files 패널 통합** (2026-03-10) — /files 페이지 제거, 대시보드 FileDetailPanel에 FileViewer + Edit 드롭다운 통합. 7개 레거시 파일 삭제.
 - **v2 Board-style 대시보드** (2026-03-09) — Notion 보드 스타일 레이아웃. 스코프 행(User/Project)이 전체 너비 차지, 행 안에 엔티티별 카드 수평 배치. Sticky 컬럼 헤더, 행 단위 Collapsible, shadcn Empty 빈 상태, i18n 지원. BoardConfig 타입 + agentfiles.json 저장. 레거시 그리드/OverviewPanel/ScopeGroup 삭제.
 - **Agent selector + 아이콘** (2026-03-09) — AppHeader에 Main Agent 선택기 UI, ClaudeIcon(주황) + OpenAIIcon. AgentConfig 타입/레지스트리, agentfiles.json 저장.

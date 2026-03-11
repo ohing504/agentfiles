@@ -1,12 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router"
-import { ProjectOverviewGrid } from "@/features/dashboard/components/ProjectOverviewGrid"
+import { BoardLayout } from "@/components/board/BoardLayout"
 
 export const Route = createFileRoute("/")({ component: DashboardPage })
 
 function DashboardPage() {
   return (
     <div className="h-full overflow-hidden">
-      <ProjectOverviewGrid />
+      <BoardLayout />
     </div>
   )
 }

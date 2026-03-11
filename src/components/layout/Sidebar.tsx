@@ -1,14 +1,5 @@
 import { Link } from "@tanstack/react-router"
-import {
-  LayoutDashboardIcon,
-  PanelLeftIcon,
-  Plug2Icon,
-  ScrollTextIcon,
-  ServerIcon,
-  SettingsIcon,
-  WorkflowIcon,
-  ZapIcon,
-} from "lucide-react"
+import { LayoutDashboardIcon, PanelLeftIcon, SettingsIcon } from "lucide-react"
 
 import { ProjectSwitcher } from "@/components/ProjectSwitcher"
 import {
@@ -67,51 +58,8 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild tooltip={m.nav_skills()}>
-                  <Link to="/skills" activeProps={{ "data-active": true }}>
-                    <ScrollTextIcon />
-                    <span>{m.nav_skills()}</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild tooltip="Agents">
-                  <Link to="/agents" activeProps={{ "data-active": true }}>
-                    <WorkflowIcon />
-                    <span>Agents</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild tooltip="Hooks">
-                  <Link to="/hooks" activeProps={{ "data-active": true }}>
-                    <ZapIcon />
-                    <span>Hooks</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild tooltip={m.nav_mcp_servers()}>
-                  <Link to="/mcp" activeProps={{ "data-active": true }}>
-                    <ServerIcon />
-                    <span>{m.nav_mcp_servers()}</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild tooltip={m.nav_plugins()}>
-                  <Link to="/plugins" activeProps={{ "data-active": true }}>
-                    <Plug2Icon />
-                    <span>{m.nav_plugins()}</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
                 <SidebarMenuButton asChild tooltip={m.config_title()}>
-                  <Link
-                    to="/global/settings"
-                    activeProps={{ "data-active": true }}
-                  >
+                  <Link to="/settings" activeProps={{ "data-active": true }}>
                     <SettingsIcon />
                     <span>{m.config_title()}</span>
                   </Link>
